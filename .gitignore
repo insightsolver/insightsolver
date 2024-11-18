@@ -1,0 +1,17 @@
+# Exclure tous les fichiers .DS_Store dans tous les dossiers
+.DS_Store
+tests/
+input/
+venv/
+txt/
+
+# Dossiers générés lors de la construction du package
+build/
+dist/
+*.egg-info/
+
+# Caches Python
+insightsolver/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
