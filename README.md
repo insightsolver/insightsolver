@@ -43,7 +43,7 @@ solver.print()
 
 ## Documentation
 
-You can find a pdf version of the technical documentation [here](https://github.com/insightsolver/insightsolver/doc/insightsolver_api_client.pdf).
+You can find a pdf version of the technical documentation [here](https://github.com/insightsolver/insightsolver/blob/main/doc/insightsolver_api_client.pdf).
 
 ## Dependencies
 
