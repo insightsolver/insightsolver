@@ -38,11 +38,9 @@ API_SOURCE_PUBLIC = '-5547756002485302797'
 
 import pandas as pd
 import numpy as np
-
 from requests.models import Response
 from typing import Optional, Union, Dict, Sequence
 import numbers
-
 import mpmath # Useful for when the p-values are very small
 
 ################################################################################
@@ -67,7 +65,6 @@ np.set_printoptions(
 	#threshold = sys.maxsize,
 	legacy = legacy,
 )
-
 
 ################################################################################
 ################################################################################
@@ -170,14 +167,26 @@ class InsightSolver:
 		Name of the target variable (by default it's the first column).
 	target_goal: (str or int)
 		Target goal.
+	target_threshold: (int or float)
+		Threshold used to convert a continuous target variable to a binary target variable.
+	M: int
+		Number of points in the population.
+	M0: int
+		Number of points 0 in the population.
+	M1: int
+		Number of points 1 in the population.
 	columns_types: dict
 		Types of the columns.
+	columns_descr: dict
+		Textual descriptions of the columns.
 	threshold_M_max: int (default 10000)
 		Threshold on the maximum number of observations to consider, above which we under sample the observations to 10000.
 	specified_constraints: dict
 		Dictionary of the specified constraints on ``m_min``, ``m_max``, ``coverage_min``, ``coverage_max``.
 	top_N_rules: int (default 10)
 		An integer that specifies the maximum number of rules to get from the rule mining.
+	rule_mining_results: dict
+		Dictionary that contains the results of the rule mining.
 
 	Methods
 	-------
