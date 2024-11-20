@@ -1,9 +1,19 @@
-# insightsolver
-This is the repo for the *InsightSolver API client*.  InsightSolver is a solution for advanced data insights powered by a centralized rule-mining engine. It helps organizations uncover hidden patterns, generate actionable insights, and make data-driven decisions.
+# InsightSolver
 
-## Installation
+**InsightSolver** is a solution for advanced data insights powered by a centralized cloud-based rule-mining engine.
+It enables organizations to uncover hidden patterns, generate actionable insights, and make smarter data-driven decisions.
+This repository hosts the Python-based *InsightSolver API client*.
 
-You can install the InsightSolver API client in different ways:
+## 🚀 Getting started
+
+To get started, you need the following:
+
+1. A service key.
+2. The `insightsolver` Python module installed.
+
+## 🛠️ Installation
+
+You can install the `insightsolver` Python module in different ways:
 
 1. *100% CLI*. If you have git installed and you don't need a local copy of the repo: 
 ```bash
@@ -19,8 +29,10 @@ pip install .
 ```bash
 pip install .
 ```
+4. *100% CLI*. *(coming soon)* From PyPi: `pip install insightsolver`.
 
-## Quick start
+
+## ⚡ Quick start
 
 ```python
 # Import data
@@ -40,21 +52,29 @@ solver.fit(
 # Print the result
 solver.print()
 ```
+A demo can also be found in [here](https://github.com/insightsolver/insightsolver/blob/main/demo/demo_insightsolver.py)
 
-## Documentation
+## 📚 Documentation
 
-You can find a pdf version of the technical documentation [here](https://github.com/insightsolver/insightsolver/blob/main/doc/insightsolver_api_client.pdf).
+Comprehensive technical documentation for the `insightsolver` module is available here:
 
-## Dependencies
+- [PDF version](https://github.com/insightsolver/insightsolver/blob/main/doc/insightsolver_api_client.pdf).
+- ReadTheDocs.com *(coming soon)*.
+
+## 📦 Dependencies
 
 - Python 3.9 or higher
 - pandas, numpy, requests, jsonpickle, google-auth, cryptography, mpmath.
 
-## License
+## ⚖️ License
 
-See the [LICENSE](./LICENSE) file for more details.
+Here you'll find the [LICENSE](./LICENSE).
 
-## Contact
+## 🤝 Contact
 
-[support@insightsolver.com](mailto:support@insightsolver.com)
+- Email: [support@insightsolver.com](mailto:support@insightsolver.com)
+- Official website *(coming soon)*: [www.insightsolver.com](https://www.insightsolver.com).
+- LinkedIn: *(coming soon)*
+
+
 
