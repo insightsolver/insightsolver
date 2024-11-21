@@ -1,5 +1,9 @@
 from setuptools import setup, find_packages
 
+# Lire le fichier README en utf-8
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setup(
 	name="insightsolver",                   # Nom du package (doit être unique sur PyPI)
 	version="0.1.0",                        # Version du package
@@ -20,7 +24,7 @@ setup(
     maintainer="InsightSolver",
     maintainer_email="support@insightsolver.com",
 	description="InsightSolver offers rule-based insights generation for actionable data-driven decisions.",
-	long_description=open("README.md").read(),
+	long_description=long_description,
 	long_description_content_type="text/markdown",
 	url="https://github.com/insightsolver/insightsolver",  # URL du projet
 	classifiers=[
