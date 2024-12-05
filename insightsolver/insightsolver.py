@@ -527,6 +527,15 @@ class InsightSolver:
 		}
 		df_subrules_S.rename(columns=d_rename,inplace=True)
 
+		# Parse the shuffling_scores if they are there
+		if ('shuffling_scores' in df_subrules_S.columns)&(len(df_subrules_S)>0):
+			if 'p_value' in df_subrules_S['shuffling_scores'].iloc[0]:
+				df_subrules_S['p_value_cohen_d'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['p_value']['cohen_d'])
+			if 'Z_score' in df_subrules_S['shuffling_scores'].iloc[0]:
+				df_subrules_S['Z_score_cohen_d'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['Z_score']['cohen_d'])
+			if 'F_score' in df_subrules_S['shuffling_scores'].iloc[0]:
+				df_subrules_S['F_score_cohen_d'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['F_score']['cohen_d'])
+
 		# Move some columns left
 		first_cols = [
 			'p_value_ratio',
@@ -575,6 +584,7 @@ class InsightSolver:
 		do_print_rule_DataFrame: bool          = False,
 		do_print_subrules_S: bool              = True,
 		do_show_coverage_diff: bool            = False,
+		do_show_cohen_d: bool                  = True,
 		do_print_feature_contributions_S: bool = True,
 	)->None:
 		"""
@@ -655,6 +665,11 @@ class InsightSolver:
 					'm',
 					'm1',
 				]
+			if do_show_cohen_d&('Z_score_cohen_d' in df_subrules_S.columns):
+				cols += [
+					'cohen_d',
+				]
+				df_subrules_S.rename(columns={'Z_score_cohen_d':'cohen_d'},inplace=True)
 			# Si on veut montrer la différence des coverage successifs des sous-règles
 			if do_show_coverage_diff:
 				df_subrules_S['coverage_diff'] = df_subrules_S['coverage'].diff()
@@ -674,6 +689,8 @@ class InsightSolver:
 				df_subrules_S_formatted['PPV']           = df_subrules_S_formatted['PPV'].map('{:.4f}'.format)
 				df_subrules_S_formatted['lift']          = df_subrules_S_formatted['lift'].map('{:.4f}'.format)
 				df_subrules_S_formatted['coverage']      = df_subrules_S_formatted['coverage'].map('{:.4f}'.format)
+				if 'cohen_d' in df_subrules_S_formatted.columns:
+					df_subrules_S_formatted['cohen_d'] = df_subrules_S_formatted['cohen_d'].map('{:.4f}'.format)
 			df_subrules_S_str = df_subrules_S_formatted.rename(
 				columns = {'complexity':'c'},
 			).to_string(
@@ -706,6 +723,7 @@ class InsightSolver:
 		verbose: bool                                 = False,  # Verbosity
 		r: Optional[int]                              = None,   # Number of rules to print. "None" will print all of them. "1" will print only the first one, "2" will print the 1st and 2nd rule, etc.
 		do_print_dataset_metadata: bool               = True,   # If we want to print the dataset metadata.
+		do_show_cohen_d: bool                         = True,   # If we want to print the d of Cohen of the subrules.
 		do_print_rule_mining_results: bool            = True,   # If we want to print the rule mining results.
 		do_print_rule_DataFrame: bool                 = False,  # If we want to print the the DataFrame of rules.
 		do_print_subrules_S: bool                     = True,   # If we want to print the the DataFrame of the subrules of the rules S.
@@ -772,6 +790,7 @@ class InsightSolver:
 							indentation                      = indentation,
 							do_print_rule_DataFrame          = do_print_rule_DataFrame,
 							do_print_subrules_S              = do_print_subrules_S,
+							do_show_cohen_d                  = do_show_cohen_d,
 							do_show_coverage_diff            = do_show_coverage_diff,
 							do_print_feature_contributions_S = do_print_feature_contributions_S,
 						)
