@@ -185,6 +185,12 @@ class InsightSolver:
 		Dictionary of the specified constraints on ``m_min``, ``m_max``, ``coverage_min``, ``coverage_max``.
 	top_N_rules: int (default 10)
 		An integer that specifies the maximum number of rules to get from the rule mining.
+	n_benchmark_original: int (default 5)
+		An integer that specifies the number of benchmarking runs to execute where the target is not shuffled.
+	n_benchmark_shuffle: int (default 20)
+		An integer that specifies the number of benchmarking runs to execute where the target is shuffled.
+	benchmark_scores: dict
+		Dictionary of the benchmarking scores against shuffled data.
 	rule_mining_results: dict
 		Dictionary that contains the results of the rule mining.
 
@@ -263,6 +269,8 @@ class InsightSolver:
 		threshold_M_max: Optional[int]                          = 10000,  # Maximum number of observations to consider
 		specified_constraints: Optional[Dict]                   = dict(), # Specified constraints on the rule mining
 		top_N_rules: Optional[int]                              = 10,     # Maximum number of rules to get from the rule mining
+		n_benchmark_original: Optional[int]                     = 5,      # Number of benchmarking runs to execute without shuffling.
+		n_benchmark_shuffle: Optional[int]                      = 20,     # Number of benchmarking runs to execute with shuffling.
 		verbose: bool                                           = False,  # Verbosity during the initialization of the solver
 	):
 		"""
@@ -288,6 +296,10 @@ class InsightSolver:
 			Dictionary of the specified constraints on m_min, m_max, coverage_min, coverage_max.
 		top_N_rules: int (default 10)
 			An integer that specifies the maximum number of rules to get from the rule mining.
+		n_benchmark_original: int (default 5)
+			An integer that specifies the number of benchmarking runs to execute where the target is not shuffled.
+		n_benchmark_shuffle: int (default 20)
+			An integer that specifies the number of benchmarking runs to execute where the target is shuffled.
 		target_threshold: float
 			Threshold used to convert a continuous target variable to a binary target variable.
 		M: int
@@ -360,7 +372,11 @@ class InsightSolver:
 		self.columns_descr           = columns_descr
 		self.specified_constraints   = specified_constraints
 		self.top_N_rules             = top_N_rules
-		# Results
+		self.n_benchmark_original    = n_benchmark_original
+		self.n_benchmark_shuffle     = n_benchmark_shuffle
+		# Benchmarking scores
+		self.benchmark_scores = dict()
+		# Rule mining results
 		self.rule_mining_results     = dict()
 	def ingest_dict(
 		self,
@@ -370,7 +386,7 @@ class InsightSolver:
 		"""
 		This method aims to ingest a Python dict in the solver.
 		"""
-		# dataset_metadata :
+		# dataset_metadata
 		if verbose:
 			print('Reading dataset_metadata...')
 		if 'dataset_metadata' in d:
@@ -395,7 +411,12 @@ class InsightSolver:
 			self.M  = None
 			self.M0 = None
 			self.M1 = None
-		# rule_mining_results :
+		# benchmark_scores
+		if verbose:
+			print('Reading benchmark_scores...')
+		if 'benchmark_scores' in d:
+			self.benchmark_scores = d['benchmark_scores'].copy()
+		# rule_mining_results
 		if verbose:
 			print('Reading rule_mining_results...')
 		if 'rule_mining_results' in d:
@@ -444,6 +465,8 @@ class InsightSolver:
 			threshold_M_max         = self.threshold_M_max,
 			specified_constraints   = self.specified_constraints,
 			top_N_rules             = self.top_N_rules,
+			n_benchmark_original    = self.n_benchmark_original,
+			n_benchmark_shuffle     = self.n_benchmark_shuffle,
 			verbose                 = verbose,
 			api_source              = api_source,
 			do_compress_data        = do_compress_data,
@@ -734,6 +757,7 @@ class InsightSolver:
 		verbose: bool                                 = False,  # Verbosity
 		r: Optional[int]                              = None,   # Number of rules to print. "None" will print all of them. "1" will print only the first one, "2" will print the 1st and 2nd rule, etc.
 		do_print_dataset_metadata: bool               = True,   # If we want to print the dataset metadata.
+		do_print_benchmark_scores:bool                = True,   # If we want to print the benchmarking scores.
 		do_show_cohen_d: bool                         = True,   # If we want to print the d of Cohen of the subrules.
 		do_show_wy_ratio: bool                        = True,   # If we want to print the WY ratio of the subrules.
 		do_print_rule_mining_results: bool            = True,   # If we want to print the rule mining results.
@@ -773,6 +797,32 @@ class InsightSolver:
 					print('M                :',self.M)
 					print('M0               :',self.M0)
 					print('M1               :',self.M1)
+			if do_print_benchmark_scores:
+				# benchmark_scores
+				print('\nbenchmark_scores :')
+				if ('original' in self.benchmark_scores.keys())&('shuffled' in self.benchmark_scores.keys()):
+					df_benchmark_scores_original = pd.DataFrame(data=self.benchmark_scores['original'])
+					df_benchmark_scores_shuffled = pd.DataFrame(data=self.benchmark_scores['shuffled'])
+					n_benchmark_original = len(df_benchmark_scores_original)
+					n_benchmark_shuffled = len(df_benchmark_scores_shuffled)
+					print(f'• Original (n={n_benchmark_original}) :')
+					print(df_benchmark_scores_original)
+					print(f'• Shuffled (n={n_benchmark_original}) :')
+					print(df_benchmark_scores_shuffled)
+					s_benchmark_scores_original_mean = df_benchmark_scores_original.mean(axis=0)
+					s_benchmark_scores_original_std  = df_benchmark_scores_original.std(axis=0)
+					s_benchmark_scores_shuffled_mean = df_benchmark_scores_shuffled.mean(axis=0)
+					s_benchmark_scores_shuffled_std  = df_benchmark_scores_shuffled.std(axis=0)
+					df_benchmark_scores = pd.DataFrame.from_dict(
+						data = {
+						'original_mean' : s_benchmark_scores_original_mean,
+						'original_std'  : s_benchmark_scores_original_std,
+						'shuffled_mean' : s_benchmark_scores_shuffled_mean,
+						'shuffled_std'  : s_benchmark_scores_shuffled_std,
+						},
+						orient = 'index',
+					)
+					print(df_benchmark_scores)
 			if do_print_rule_mining_results:
 				# rule_mining_results
 				if r==None:
@@ -1018,6 +1068,8 @@ def search_best_ruleset_from_API_public(
 	api_source              : str                                        = 'auto', # Source of the API call
 	do_compress_data        : bool                                       = True,   # If we want to compress the communications (slower to compress but faster to transmit)
 	do_compute_memory_usage : bool                                       = True,   # If we want to compute the memory usage of the API (this significantly slows down computation time but is good for monitoring purposes)
+	n_benchmark_original    : int                                        = 5,      # Number of benchmarking runs to execute where the target is not shuffled.
+	n_benchmark_shuffle     : int                                        = 20,     # Number of benchmarking runs to execute where the target is shuffled.
 )->dict:
 	"""
 	This function is meant to make a rule mining API call.
@@ -1050,6 +1102,10 @@ def search_best_ruleset_from_API_public(
 		A boolean that specifies if we want to compress the data.
 	do_compute_memory_usage: bool
 		A bool that specifies if we want to get the memory usage of the computation.
+	n_benchmark_original: int
+		Number of benchmarking runs to execute where the target is not shuffled.
+	n_benchmark_shuffle: int
+		Number of benchmarking runs to execute where the target is shuffled.
 
 	Returns
 	-------
@@ -1081,7 +1137,10 @@ def search_best_ruleset_from_API_public(
 		'columns_names_to_btypes' : columns_names_to_btypes,
 		'threshold_M_max'         : threshold_M_max,
 		'specified_constraints'   : specified_constraints,
+		'top_N_rules'             : top_N_rules,
 		'api_source'              : api_source,
+		'n_benchmark_original'    : n_benchmark_original,
+		'n_benchmark_shuffle'     : n_benchmark_shuffle,
 	}
 	# Make the API call
 	from .api_utilities import search_best_ruleset_from_API_dict
