@@ -809,20 +809,6 @@ class InsightSolver:
 					print(df_benchmark_scores_original)
 					print(f'• Shuffled (n={n_benchmark_original}) :')
 					print(df_benchmark_scores_shuffled)
-					s_benchmark_scores_original_mean = df_benchmark_scores_original.mean(axis=0)
-					s_benchmark_scores_original_std  = df_benchmark_scores_original.std(axis=0)
-					s_benchmark_scores_shuffled_mean = df_benchmark_scores_shuffled.mean(axis=0)
-					s_benchmark_scores_shuffled_std  = df_benchmark_scores_shuffled.std(axis=0)
-					df_benchmark_scores = pd.DataFrame.from_dict(
-						data = {
-						'original_mean' : s_benchmark_scores_original_mean,
-						'original_std'  : s_benchmark_scores_original_std,
-						'shuffled_mean' : s_benchmark_scores_shuffled_mean,
-						'shuffled_std'  : s_benchmark_scores_shuffled_std,
-						},
-						orient = 'index',
-					)
-					print(df_benchmark_scores)
 			if do_print_rule_mining_results:
 				# rule_mining_results
 				if r==None:
