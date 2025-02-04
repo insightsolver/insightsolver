@@ -80,6 +80,7 @@ def validate_class_integrity(
 	threshold_M_max: Optional[int],
 	specified_constraints: Optional[Dict],
 	top_N_rules: Optional[int],
+	filtering_score: Optional[str],
 )->None:
 	"""
 	This function aims to validate the integrity of the InsightSolver class.
@@ -106,6 +107,13 @@ def validate_class_integrity(
 	M,n=df.shape
 	if (len(features_types)==n-1)&(all(features_types[key]=='ignore' for key in features_types.keys())):
 		raise Exception("ERROR (columns_types): The specified type of each feature is 'ignore'.")
+	# Validate that the filtering_score is valid
+	if filtering_score==None:
+		raise Exception("ERROR (filtering_score): The filtering score cannot be None.")
+	elif filtering_score!='auto':
+		scores = filtering_score.split('&')
+		if not set(scores)<{'lift','coverage','p_value','F_score','Z_score'}:
+			raise Exception(f"ERROR (filtering_score): The filtering score is not valid because it contains these scores: {scores}.")
 
 def format_value(
 	value,
@@ -183,6 +191,8 @@ class InsightSolver:
 		Dictionary of the specified constraints on ``m_min``, ``m_max``, ``coverage_min``, ``coverage_max``.
 	top_N_rules: int (default 10)
 		An integer that specifies the maximum number of rules to get from the rule mining.
+	filtering_score: str (default 'auto')
+		A string that specifies the filtering score to be used when selecting rules.
 	n_benchmark_original: int (default 5)
 		An integer that specifies the number of benchmarking runs to execute where the target is not shuffled.
 	n_benchmark_shuffle: int (default 20)
@@ -275,6 +285,7 @@ class InsightSolver:
 		threshold_M_max: Optional[int]                          = 10000,  # Maximum number of observations to consider
 		specified_constraints: Optional[Dict]                   = dict(), # Specified constraints on the rule mining
 		top_N_rules: Optional[int]                              = 10,     # Maximum number of rules to get from the rule mining
+		filtering_score: Optional[str]                          = 'auto', # Filtering score to be used when selecting rules.
 		n_benchmark_original: Optional[int]                     = 5,      # Number of benchmarking runs to execute without shuffling.
 		n_benchmark_shuffle: Optional[int]                      = 20,     # Number of benchmarking runs to execute with shuffling.
 		verbose: bool                                           = False,  # Verbosity during the initialization of the solver
@@ -302,6 +313,8 @@ class InsightSolver:
 			Dictionary of the specified constraints on m_min, m_max, coverage_min, coverage_max.
 		top_N_rules: int (default 10)
 			An integer that specifies the maximum number of rules to get from the rule mining.
+		filtering_score: str (default 'auto')
+			A string that specifies the filtering score to be used when selecting rules.
 		n_benchmark_original: int (default 5)
 			An integer that specifies the number of benchmarking runs to execute where the target is not shuffled.
 		n_benchmark_shuffle: int (default 20)
@@ -349,6 +362,7 @@ class InsightSolver:
 			threshold_M_max       = threshold_M_max,
 			specified_constraints = specified_constraints,
 			top_N_rules           = top_N_rules,
+			filtering_score       = filtering_score,
 		)
 		# Handling threshold_M_max
 		if threshold_M_max==None:
@@ -378,10 +392,11 @@ class InsightSolver:
 		self.columns_descr           = columns_descr
 		self.specified_constraints   = specified_constraints
 		self.top_N_rules             = top_N_rules
+		self.filtering_score         = filtering_score
 		self.n_benchmark_original    = n_benchmark_original
 		self.n_benchmark_shuffle     = n_benchmark_shuffle
 		# Benchmarking scores
-		self.benchmark_scores = dict()
+		self.benchmark_scores        = dict()
 		# Rule mining results
 		self.rule_mining_results     = dict()
 	def ingest_dict(
@@ -474,6 +489,7 @@ class InsightSolver:
 			n_benchmark_original    = self.n_benchmark_original,
 			n_benchmark_shuffle     = self.n_benchmark_shuffle,
 			verbose                 = verbose,
+			filtering_score         = self.filtering_score,
 			api_source              = api_source,
 			do_compress_data        = do_compress_data,
 		)
@@ -1216,6 +1232,7 @@ def search_best_ruleset_from_API_public(
 	specified_constraints   : Optional[Dict]                             = dict(), # Specify some constraints on the rules
 	top_N_rules             : Optional[int]                              = 10,     # Maximum number of rules to keep
 	verbose                 : bool                                       = False,  # Verbosity
+	filtering_score         : str                                        = 'auto', # Filtering score
 	api_source              : str                                        = 'auto', # Source of the API call
 	do_compress_data        : bool                                       = True,   # If we want to compress the communications (slower to compress but faster to transmit)
 	do_compute_memory_usage : bool                                       = True,   # If we want to compute the memory usage of the API (this significantly slows down computation time but is good for monitoring purposes)
@@ -1247,6 +1264,8 @@ def search_best_ruleset_from_API_public(
 		An integer that specifies the maximum number of rules to get from the rule mining.
 	verbose: bool
 		Verbosity.
+	filtering_score: str
+		A string that specifies the filtering score to be used when selecting rules.
 	api_source: str
 		A string used to identify the source of the API call.
 	do_compress_data: bool
@@ -1289,6 +1308,7 @@ def search_best_ruleset_from_API_public(
 		'threshold_M_max'         : threshold_M_max,
 		'specified_constraints'   : specified_constraints,
 		'top_N_rules'             : top_N_rules,
+		'filtering_score'         : filtering_score,
 		'api_source'              : api_source,
 		'n_benchmark_original'    : n_benchmark_original,
 		'n_benchmark_shuffle'     : n_benchmark_shuffle,
