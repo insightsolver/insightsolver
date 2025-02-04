@@ -111,9 +111,11 @@ def validate_class_integrity(
 	if filtering_score==None:
 		raise Exception("ERROR (filtering_score): The filtering score cannot be None.")
 	elif filtering_score!='auto':
+		valid_scores = ['lift','coverage','p_value','F_score','Z_score','TPR','PPV']
 		scores = filtering_score.split('&')
-		if not set(scores)<{'lift','coverage','p_value','F_score','Z_score'}:
-			raise Exception(f"ERROR (filtering_score): The filtering score is not valid because it contains these scores: {scores}.")
+		invalid_scores = sorted(set(scores)-set(valid_scores))
+		if len(invalid_scores)>0:
+			raise Exception(f"ERROR (filtering_score): The filtering score is not valid because it contains these scores: {invalid_scores}.")
 
 def format_value(
 	value,
