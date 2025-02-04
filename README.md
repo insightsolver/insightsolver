@@ -61,6 +61,10 @@ Comprehensive technical documentation for the `insightsolver` module is availabl
 - [PDF version](https://github.com/insightsolver/insightsolver/blob/main/doc/insightsolver_api_client.pdf).
 - ReadTheDocs.com *(coming soon)*.
 
+## 📄 Changelog
+
+Here you'll find the [changelog](./changelog.md).
+
 ## 📦 Dependencies
 
 - Python 3.9 or higher

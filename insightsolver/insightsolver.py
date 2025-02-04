@@ -159,8 +159,6 @@ class InsightSolver:
 
 	Attributes
 	----------
-	verbose: bool (default False)
-		If we want the initialization to be verbose.
 	df: DataFrame
 		The DataFrame that contains the data to analyse.
 	target_name: str (default None)
@@ -222,6 +220,14 @@ class InsightSolver:
 		Prints the content of the InsightSolver ('light' mode).
 	print_dense: None
 		Prints the content of the InsightSolver ('dense' mode).
+	to_dict: dict
+		Exports the content of the InsightSolver object to a Python dict.
+	to_json_string: str
+		Exports the content of the InsightSolver object to a JSON string.
+	to_dataframe: DataFrame
+		Exports the rule mining results to a Pandas DataFrame.
+	to_csv: str
+		Exports the rule mining results to a CSV string and/or a local CSV file.
 
 	Example
 	-------
@@ -642,7 +648,6 @@ class InsightSolver:
 		if 'G_gini' in rule_i.keys():
 			print(f'{indentation}G_gini          :',rule_i['G_gini'])
 		rule_S = rule_i['rule_S']
-		#print(f'{indentation}rule_R       :',rule_i['rule_R'])
 		print(f'{indentation}rule_S          :',rule_S)
 		p_value_ratio_S = {k:v for k,v in rule_i['p_value_ratio_S'].items() if k in rule_i['rule_S'].keys()}
 		print(f'{indentation}p_value_ratio_S :',p_value_ratio_S)
@@ -1035,6 +1040,166 @@ class InsightSolver:
 				df_string_with_spacing = f"{index_columns}\n{header}\n\n{content}"
 				# Show the result
 				print(df_string_with_spacing)
+	def to_dict(
+		self,
+	):
+		"""
+		This method aims to export the content of the InsightSolver object to a dictionary.
+		"""
+		from copy import deepcopy
+		# Declare a Python dictionary
+		d = dict()
+		# dataset_metadata :
+		d['dataset_metadata']                           = dict()
+		d['dataset_metadata']['target_threshold']       = self.target_threshold
+		d['dataset_metadata']['M']                      = self.M
+		d['dataset_metadata']['M0']                     = self.M0
+		d['dataset_metadata']['M1']                     = self.M1
+		d['dataset_metadata']['columns_descr']          = self.columns_descr
+		# benchmark_scores
+		d['benchmark_scores']                           = deepcopy(self.benchmark_scores)
+		# rule_mining_results :
+		d['rule_mining_results']                        = deepcopy(self.rule_mining_results)
+		# Return the result
+		return d
+	def to_json_string(
+		self,
+		verbose      = False,
+	):
+		"""
+		This method aims to export the content of the InsightSolver object to a JSON string.
+		"""
+		# Export the InsightSolver object to a dict
+		d = self.to_dict()
+		# Convert the dict to a JSON string
+		import jsonpickle # pip install jsonpickle
+		json_string = jsonpickle.encode(d)
+		# Return the result
+		return json_string
+	def to_dataframe(
+		self,
+		verbose            = False,
+		do_append_datetime = False,
+		do_rename_cols     = False,
+	):
+		"""
+		This method aims to export the content of the InsightSolver object to a DataFrame.
+		"""
+		# Handling the rules
+		if verbose:
+			print('Creating df_rule_mining_results...')
+		df = pd.DataFrame.from_dict(
+			data   = self.rule_mining_results,
+			orient = 'index',
+		)
+		df.index.name = 'i'
+		df.reset_index(inplace=True)
+		cols_rule_mining_results = df.columns.to_list()
+		if verbose:
+			print(df)
+		# Handling the metadata
+		cols_metadata = [
+			'target_name',                   # Dataset metadata     - str
+			'target_goal',                   # Dataset metadata     - str / int
+			'target_threshold',              # Dataset metadata     - int / float
+			'M',                             # Dataset metadata     - int
+			'M0',                            # Dataset metadata     - int
+			'M1',                            # Dataset metadata     - int
+			'columns_descr',                 # Dataset metadata     - dict
+			'specified_constraints',         # Constraints medatada - dict
+			'benchmark_scores',              # Benchmarking scores  - dict
+		]
+		for col_metadata in cols_metadata:
+			df[col_metadata] = len(df)*[getattr(self, col_metadata)]
+		# If we want to add a datetime column to specify when the table was created
+		if do_append_datetime:
+			from datetime import datetime
+			df['datetime_export'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		# Order the columns
+		cols_A = [
+			'datetime_export',
+			'user_id',
+			'target_name',
+			'target_goal',
+			'target_threshold',
+			'M',
+			'M0',
+			'M1',
+			'columns_descr',
+			'specified_constraints',
+			'benchmark_scores',
+			'i',
+			'm',
+			'm0',
+			'm1',
+			'coverage',
+			'm1/M1',
+			'mu_rule',
+			'mu_pop',
+			'sigma_pop',
+			'lift',
+			'p_value',
+			'F_score',
+			'Z_score',
+			'rule_S',
+			'complexity_S',
+			'F1_pop',
+			'G_bad_class',
+			'G_information',
+			'G_gini',
+			'p_value_ratio_S',
+			'F_score_ratio_S',
+			'subrules_S',
+			'feature_contributions_S',
+			'shuffling_scores'
+		]
+		cols_B = df.columns.to_list()
+		cols_B_minus_A = [col for col in cols_B if col not in cols_A]
+		if len(cols_B_minus_A)>0:
+			raise Exception(f"ERROR: Some columns are missing in the implementation : {cols_B_minus_A}")
+		cols_A_inter_B = [col for col in cols_A if col in cols_B]
+		df = df[cols_A_inter_B]
+		# Rename some columns
+		if do_rename_cols:
+			"""
+			This renaming is useful for BigQuery:
+			- Forbidden to have '/' in a column name
+			- Columns names are not case sensitive, so it cannot distinguish between M and m, M0 and m0, M1 and m1.
+			"""
+			d_rename = {
+				'm1/M1' : 'coverage1', # To avoid the character '/'
+				'M'     : 'm_pop',     # To avoir the collision between M and m
+				'M0'    : 'm0_pop',    # To avoir the collision between M0 and m0
+				'M1'    : 'm1_pop',    # To avoir the collision between M1 and m1
+				'm'     : 'm_rule',    # To avoir the collision between M  and m
+				'm0'    : 'm0_rule',   # To avoir the collision between M0 and m0
+				'm1'    : 'm1_rule',   # To avoir the collision between M1 and m1
+			}
+			df.rename(
+				columns = d_rename,
+				inplace = True,
+			)
+		# Return the result
+		return df
+	def to_csv(
+		self,
+		output_file    = None,
+		verbose        = False,
+		do_rename_cols = False,
+	):
+		"""
+		This method is meant to export the content of the InsightSolver object to a CSV file.
+		"""
+		df = self.to_dataframe(
+			do_rename_cols = do_rename_cols,
+		)
+		if (output_file!=None)&verbose:
+			print('Exporting :',output_file)
+		csv_string = df.to_csv(output_file,index=False)
+		if (output_file!=None)&verbose:
+			print('Done.')
+		# Return the result
+		return csv_string
 
 ################################################################################
 ################################################################################

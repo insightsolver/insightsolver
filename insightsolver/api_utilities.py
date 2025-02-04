@@ -923,6 +923,7 @@ def search_best_ruleset_from_API_dict(
 		...
 	elif isinstance(d_in_transformed,str):
 		raise Exception('ERROR: The content of the incoming .json() method is a string.')
+	# Untransform the dict
 	try:
 		d_in_original = untransform_dict(
 			d_transformed = d_in_transformed,
@@ -931,6 +932,7 @@ def search_best_ruleset_from_API_dict(
 		)
 	except:
 		raise Exception("ERROR: Cannot untransform the incoming dict.")
+	# Convert the rules keys to integer
 	try:
 		d_in_original['rule_mining_results'] = {int(key):val for key,val in d_in_original['rule_mining_results'].items()}
 	except:
