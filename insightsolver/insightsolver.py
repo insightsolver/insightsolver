@@ -91,11 +91,11 @@ def validate_class_integrity(
 	if target_name not in df.columns:
 		raise Exception(f"ERROR (target_name invalid): target_name='{target_name}' not in df.columns.")
 	# Validate that the columns types are valid
-	for key in columns_types.keys():
-		if key not in df.columns:
-			raise Exception(f"ERROR (columns_types invalid): the key='{key}' of columns_types is not a column of df.")
-		if columns_types[key] not in ['binary','multiclass','continuous','ignore']:
-			raise Exception(f"ERROR (columns_types invalid): the column='{key}' cannot be of type='{columns_types[key]}' because it must be in ['binary','multiclass','continuous','ignore'].")
+	for column_name in columns_types.keys():
+		if column_name not in df.columns:
+			raise Exception(f"ERROR (columns_types invalid): the dict 'columns_types' contains the column_name='{column_name}' but it is not a column of df.")
+		if columns_types[column_name] not in ['binary','multiclass','continuous','ignore']:
+			raise Exception(f"ERROR (columns_types invalid): the column='{column_name}' cannot be of type='{columns_types[column_name]}' because it must be in ['binary','multiclass','continuous','ignore'].")
 	# Validate that the target is not ignored
 	if target_name in columns_types.keys():
 		if columns_types[target_name]=='ignore':
@@ -105,7 +105,7 @@ def validate_class_integrity(
 	if target_name in features_types.keys():
 		features_types.pop(target_name)
 	M,n=df.shape
-	if (len(features_types)==n-1)&(all(features_types[key]=='ignore' for key in features_types.keys())):
+	if (len(features_types)==n-1)&(all(features_types[column_name]=='ignore' for column_name in features_types.keys())):
 		raise Exception("ERROR (columns_types): The specified type of each feature is 'ignore'.")
 	# Validate that the filtering_score is valid
 	if filtering_score==None:
@@ -279,6 +279,7 @@ class InsightSolver:
 
 	def __init__(
 		self,
+		verbose: bool                                           = False,  # Verbosity during the initialization of the solver
 		df: Optional[pd.DataFrame]                              = None,   # DataFrame in which we want to analyse the data
 		target_name: Optional[Union[str,int]]                   = None,   # Name of the target variable
 		target_goal: Optional[Union[str,numbers.Real,np.uint8]] = None,   # Target goal
@@ -290,7 +291,6 @@ class InsightSolver:
 		filtering_score: Optional[str]                          = 'auto', # Filtering score to be used when selecting rules.
 		n_benchmark_original: Optional[int]                     = 5,      # Number of benchmarking runs to execute without shuffling.
 		n_benchmark_shuffle: Optional[int]                      = 20,     # Number of benchmarking runs to execute with shuffling.
-		verbose: bool                                           = False,  # Verbosity during the initialization of the solver
 	):
 		"""
 		The initialization occurs when an ``InsightSolver`` class instance is created.
@@ -321,17 +321,7 @@ class InsightSolver:
 			An integer that specifies the number of benchmarking runs to execute where the target is not shuffled.
 		n_benchmark_shuffle: int (default 20)
 			An integer that specifies the number of benchmarking runs to execute where the target is shuffled.
-		target_threshold: float
-			Threshold used to convert a continuous target variable to a binary target variable.
-		M: int
-			Number of points, i.e. number of rows of df.
-		M0: int
-			Number of points carrying the value 0.
-		M1: int
-			Number of points carrying the value 1.
-		rule_mining_results: dict
-			Dictionary that contains the results of the rule mining.
-
+		
 		Returns
 		-------
 		solver: InsightSolver
@@ -1208,11 +1198,18 @@ class InsightSolver:
 		"""
 		This method is meant to export the content of the InsightSolver object to a CSV file.
 		"""
+		# Avoid to generate a string containing np.float64 and np.int64 everywhere
+		if np.__version__>='2.0.0':
+			np.set_printoptions(legacy='1.25')
+
 		df = self.to_dataframe(
 			do_rename_cols = do_rename_cols,
 		)
 		if (output_file!=None)&verbose:
 			print('Exporting :',output_file)
+
+		# Make sure that np.int64 and np.float64 are not written everywhere.
+		# Create the CSV string
 		csv_string = df.to_csv(output_file,index=False)
 		if (output_file!=None)&verbose:
 			print('Done.')

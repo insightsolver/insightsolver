@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 (2025-02-05)
+
+*Bug fixing:*
+
+- Fixed a bug in the method `to_csv` where the generated string was filled with `np.float64` and `np.int64`.
+
 ## 0.1.1 (2025-02-04)
 
 *Class `InsightSolver`:*
