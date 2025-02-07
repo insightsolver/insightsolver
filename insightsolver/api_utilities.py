@@ -589,11 +589,16 @@ def request_cloud_public_keys(
 		url           = 'http://localhost:8080/'
 		headers       = None
 	elif computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
-		if input_file_service_key==None:
-			raise Exception("ERROR: The service key is None but must be specified for cloud computing.")
-		else:
-			import os
-			os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = input_file_service_key
+		# Determine where the code is running
+		if "K_SERVICE" not in os.environ:
+			# If the API client is running outside a Google Cloud Run container, we need a service key
+			if input_file_service_key==None:
+				# If no service key is provided, raise an error
+				raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
+			else:
+				# If a service key is provided, put it in the environment variables
+				import os
+				os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = input_file_service_key
 		project_name  = 'insightsolver'
 		region        = 'northamerica-northeast1' # for 'insightsolver_cloud_run_function'        
 		if computing_source in ['remote_cloud_function', 'remote_cloud_function_prod']:
@@ -605,7 +610,10 @@ def request_cloud_public_keys(
 		request       = google.auth.transport.requests.Request()
 		import google.oauth2.id_token
 		TOKEN         = google.oauth2.id_token.fetch_id_token(request, url)
-		headers       = {'Authorization': f"Bearer {TOKEN}", "Content-Type": "application/json"}
+		headers       = {
+			'Authorization': f"Bearer {TOKEN}",
+			"Content-Type": "application/json",
+		}
 	else:
 		raise Exception(f"ERROR: computing_source='{computing_source}' is invalid. It must be ['local_cloud_function', 'remote_cloud_function', 'remote_cloud_function_prod', 'remote_cloud_function_dev'].")
 
@@ -678,11 +686,16 @@ def request_cloud_computation(
 		url           = 'http://localhost:8080/'
 		headers       = None
 	elif computing_source in ['remote_cloud_function','remote_cloud_function_prod','remote_cloud_function_dev']:
-		if input_file_service_key==None:
-			raise Exception("ERROR: The service key is None but must be specified for cloud computing.")
-		else:
-			import os
-			os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = input_file_service_key
+		# Determine where the code is running
+		if "K_SERVICE" not in os.environ:
+			# If the API client is running outside a Google Cloud Run container, we need a service key
+			if input_file_service_key==None:
+				# If no service key is provided, raise an error
+				raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
+			else:
+				# If a service key is provided, put it in the environment variables
+				import os
+				os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = input_file_service_key
 		project_name  = 'insightsolver'
 		region        = 'northamerica-northeast1' # for 'insightsolver_cloud_run_function'        
 		if computing_source in ['remote_cloud_function','remote_cloud_function_prod']:
@@ -694,7 +707,10 @@ def request_cloud_computation(
 		request       = google.auth.transport.requests.Request()
 		import google.oauth2.id_token
 		TOKEN         = google.oauth2.id_token.fetch_id_token(request, url)
-		headers       = {'Authorization': f"Bearer {TOKEN}", "Content-Type": "application/json"}
+		headers       = {
+			'Authorization': f"Bearer {TOKEN}",
+			"Content-Type": "application/json",
+		}
 	else:
 		raise Exception(f"ERROR: computing_source='{computing_source}' is invalid. It must in ['local_cloud_function', 'remote_cloud_function', 'remote_cloud_function_prod', 'remote_cloud_function_dev'].")
 

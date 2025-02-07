@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 (2025-02-07)
+
+*Optimization:*
+
+- Now the service key is only required for remote cloud computation when the API client is running outside a Google Cloud Run container.
+
 ## 0.1.2 (2025-02-05)
 
 *Bug fixing:*
