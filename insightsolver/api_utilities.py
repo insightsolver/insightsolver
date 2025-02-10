@@ -606,6 +606,7 @@ def request_cloud_public_keys(
 		headers       = None
 	elif computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
 		# Determine where the code is running
+		import os
 		if "K_SERVICE" not in os.environ:
 			# If the API client is running outside a Google Cloud Run container, we need a service key
 			if input_file_service_key==None:
@@ -703,6 +704,7 @@ def request_cloud_computation(
 		headers       = None
 	elif computing_source in ['remote_cloud_function','remote_cloud_function_prod','remote_cloud_function_dev']:
 		# Determine where the code is running
+		import os
 		if "K_SERVICE" not in os.environ:
 			# If the API client is running outside a Google Cloud Run container, we need a service key
 			if input_file_service_key==None:
@@ -916,6 +918,7 @@ def search_best_ruleset_from_API_dict(
 	# Add the private key id in the dict
 	if computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
 		# Determine where the code is running
+		import os
 		if "K_SERVICE" not in os.environ:
 			# If the API client is running outside a Google Cloud Run container, we need a service key
 			if input_file_service_key==None:
