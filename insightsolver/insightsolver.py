@@ -4,7 +4,7 @@
 * `Author`:        Noé Aubin-Cadot
 * `Organization`:  InsightSolver
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2024-12-10
+* `Last Updated`:  2025-02-10
 * `First Created`: 2024-09-09
 
 Description
@@ -456,6 +456,7 @@ class InsightSolver:
 		verbose:bool              = False,  # Verbosity
 		computing_source:str      = 'auto', # Where to compute the rule mining
 		service_key:Optional[str] = None,   # Path+name of the service key
+		user_email:Optional[str]  = None,   # User email
 		api_source:str            = 'auto', # Source of the API call
 		do_compress_data:bool     = False,  # If we want to compress the data for the communications with the server
 	)->None:
@@ -472,6 +473,7 @@ class InsightSolver:
 			df                      = self.df,
 			computing_source        = computing_source,
 			input_file_service_key  = service_key,
+			user_email              = user_email,
 			target_name             = self.target_name,
 			target_goal             = self.target_goal,
 			columns_names_to_btypes = self.columns_types,
@@ -1223,7 +1225,8 @@ class InsightSolver:
 def search_best_ruleset_from_API_public(
 	df                      : pd.DataFrame,                                        # The Pandas DataFrame that contains the data to analyse.
 	computing_source        : str                                        = 'auto', # Specify if the execution is local or remote
-	input_file_service_key  : Optional[str]                              = None,   # For a remote execution a service key file is necessary
+	input_file_service_key  : Optional[str]                              = None,   # For a remote execution from outside GCP, a service key file is necessary
+	user_email              : Optional[str]                              = None,   # For a remote execution from inside GCP, a user email is necessary
 	target_name             : Optional[Union[str,int]]                   = None,   # Name of the target variable
 	target_goal             : Optional[Union[str,numbers.Real,np.uint8]] = None,   # Target goal
 	columns_names_to_btypes : Optional[Dict]                             = dict(), # Specify the btypes of the variables
@@ -1248,7 +1251,9 @@ def search_best_ruleset_from_API_public(
 	computing_source: str
 		If the rule mining should be computed locally or remotely.
 	input_file_service_key: str
-		The string that specifies the path to the service key (necessary to use the remote Cloud Function).
+		The string that specifies the path to the service key (necessary to use the remote Cloud Function from outside GCP).
+	user_email: str
+		The email of the user (necessary to use the remote Cloud Function from inside GCP).
 	target_name: str
 		Name of the column of the target variable.
 	target_goal: str (or other modality of the target variable)
@@ -1317,6 +1322,7 @@ def search_best_ruleset_from_API_public(
 	d_in_original = search_best_ruleset_from_API_dict(
 		d_out_original          = d_out_original,
 		input_file_service_key  = input_file_service_key,
+		user_email              = user_email,
 		computing_source        = computing_source,
 		do_compress_data        = do_compress_data,
 		do_compute_memory_usage = do_compute_memory_usage,

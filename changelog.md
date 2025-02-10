@@ -1,8 +1,17 @@
 # Changelog
 
+## 0.1.4 (2025-02-10)
+
+*Improvements:*
+
+- New function `hash_string` in the script `api_utilities.py`.
+- The function `search_best_ruleset_from_API_dict ` in `api_utilities.py` has a new parameter `user_email`. When running inside a Google Cloud Run container, the hash of the user's email (`email_hash`) is sent to the server instead of informations from a service key. This is useful when using the InsightSolver API from a web app deployed in GCP without a service key.
+- The function `search_best_ruleset_from_API_public` in `insightsolver.py` has a new parameter `user_email`.
+- The method `InsightSolver.fit()` has a new parameter `user_email`.
+
 ## 0.1.3 (2025-02-07)
 
-*Optimization:*
+*Improvements:*
 
 - Now the service key is only required for remote cloud computation when the API client is running outside a Google Cloud Run container.
 

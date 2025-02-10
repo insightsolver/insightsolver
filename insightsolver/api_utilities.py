@@ -4,7 +4,7 @@
 * `Author`:        Noé Aubin-Cadot
 * `Organization`:  InsightSolver
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2024-11-18
+* `Last Updated`:  2025-02-10
 * `First Created`: 2024-09-16
 
 Description
@@ -22,6 +22,7 @@ requiring enhanced data privacy and integrity.
 Functions provided
 ------------------
 
+- ``hash_string``: Computes the hash of a string.
 - ``convert_bytes_to_base64_string``: Convert bytes to a base64 string.
 - ``convert_base64_string_to_bytes``: Convert a base64 string to bytes.
 - ``compress_string``: Compress a string using gzip.
@@ -49,6 +50,21 @@ Exclusive Use License - see `LICENSE <license.html>`_ for details.
 
 from typing import Optional, Union, Dict, Sequence
 import requests
+
+################################################################################
+################################################################################
+# Defining a function for hashing a string
+
+def hash_string(
+	string,
+):
+	"""
+	A function to compute the hash of a string using hashlib.
+	"""
+	import hashlib
+	id_bytes = string.encode('utf-8')
+	sha256_hash = hashlib.sha256(id_bytes).hexdigest()
+	return sha256_hash
 
 ################################################################################
 ################################################################################
@@ -800,6 +816,7 @@ def generate_keys():
 def search_best_ruleset_from_API_dict(
 	d_out_original          : dict,                                    # The original dict pre-transformation
 	input_file_service_key  : Optional[str] = None,                    # The service key
+	user_email              : Optional[str] = None,                    # Email of the user (only for use inside a Google Cloud Run container)
 	computing_source        : str           = 'remote_cloud_function', # The computing source
 	do_compress_data        : bool          = True,                    # If we want to compress the data
 	do_compute_memory_usage : bool          = True,                    # If we want to compute the memory usage
@@ -810,17 +827,19 @@ def search_best_ruleset_from_API_dict(
 
 	Parameters
 	----------
-	d_out_original : dict
+	d_out_original: dict
 		The original dict, pre-transformation, that contains the necessary data for the server to do rule mining.
-	input_file_service_key : str, optional
+	input_file_service_key: str, optional
 		The service key of the client.
-	computing_source : str, optional
+	user_email: str, optional
+		Email of the user (only for use inside a Google Cloud Run container).
+	computing_source: str, optional
 		The computing source.
-	do_compress_data : bool, optional
+	do_compress_data: bool, optional
 		If we want to compress the data to reduce transmission size.
-	do_compute_memory_usage : bool, optional
+	do_compute_memory_usage: bool, optional
 		If we want to compute the memory usage.
-	verbose : bool, optional
+	verbose: bool, optional
 		Verbosity.
 
 	Returns
@@ -896,12 +915,27 @@ def search_best_ruleset_from_API_dict(
 	d_out_transformed['do_compute_memory_usage'] = do_compute_memory_usage
 	# Add the private key id in the dict
 	if computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
-		# Take the ID of the key
-		import json
-		# Open the key
-		with open(input_file_service_key, 'r') as f:
-			# Take the service_key_
-			d_out_transformed['private_key_id'] = json.load(f)['private_key_id']
+		# Determine where the code is running
+		if "K_SERVICE" not in os.environ:
+			# If the API client is running outside a Google Cloud Run container, we need a service key
+			if input_file_service_key==None:
+				# If no service key is provided, raise an error
+				raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
+			else:
+				# If a service key is provided, take the ID of the key
+				import json
+				# Open the key
+				with open(input_file_service_key, 'r') as f:
+					# Take the service_key
+					d_out_transformed['private_key_id'] = json.load(f)['private_key_id']
+		else:
+			# If the API client is running inside a Google Cloud Run container
+			if user_email==None:
+				# If there is no email, raise an error
+				raise Exception("ERROR: The InsightSolver API client is running inside a Google Cloud Run container and the user email is None, but it must be specified for remote cloud computing.")
+			else:
+				# We identify the user via its email's hash instead of the private key id from the service key
+				d_out_transformed['email_hash'] = hash_string(user_email)
 	# Add other things
 	d_out_transformed['session_id'] = session_id
 	d_out_transformed['encrypted_symmetric_key_base64'] = encrypted_symmetric_key_base64
