@@ -820,9 +820,9 @@ class InsightSolver:
 					df_benchmark_scores_shuffled = pd.DataFrame(data=self.benchmark_scores['shuffled'])
 					n_benchmark_original = len(df_benchmark_scores_original)
 					n_benchmark_shuffled = len(df_benchmark_scores_shuffled)
-					print(f'• Original (n={n_benchmark_original}) :')
+					print(f'• Original ({n_benchmark_original} tests) :')
 					print(df_benchmark_scores_original)
-					print(f'• Shuffled (n={n_benchmark_original}) :')
+					print(f'• Shuffled ({n_benchmark_shuffled} tests) :')
 					print(df_benchmark_scores_shuffled)
 			if do_print_rule_mining_results:
 				# rule_mining_results

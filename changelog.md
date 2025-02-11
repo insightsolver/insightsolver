@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5 (2025-02-11)
+
+*Improvements:*
+
+- Fixed a bug in `solver.print()` where the shown number of tests against shuffled data was wrong.
+
 ## 0.1.4 (2025-02-10)
 
 *Improvements:*
