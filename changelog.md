@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.6 (2025-02-19)
+
+*Improvements:*
+
+- New attribute `monitoring_metadata` in the class `InsightSolver` that contains `p_value_min`, `Z_score_max`, `F_score_max` and `precision_p_values`. These are useful to benchmark the rules against shuffled data.
+- The method `print` can now print the content of the attribute `monitoring_metadata`.
+- The method `to_dict` not exports also the attribute `monitoring_metadata`.
+- The method `ingest_dict` now imports also the attribute `monitoring_metadata`.
+
 ## 0.1.5 (2025-02-11)
 
 *Improvements:*

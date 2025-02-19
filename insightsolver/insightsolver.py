@@ -199,6 +199,8 @@ class InsightSolver:
 		An integer that specifies the number of benchmarking runs to execute where the target is not shuffled.
 	n_benchmark_shuffle: int (default 20)
 		An integer that specifies the number of benchmarking runs to execute where the target is shuffled.
+	monitoring_metadata: dict
+		Dictionary of monitoring metadata.
 	benchmark_scores: dict
 		Dictionary of the benchmarking scores against shuffled data.
 	rule_mining_results: dict
@@ -387,6 +389,8 @@ class InsightSolver:
 		self.filtering_score         = filtering_score
 		self.n_benchmark_original    = n_benchmark_original
 		self.n_benchmark_shuffle     = n_benchmark_shuffle
+		# Monitoring metadata
+		self.monitoring_metadata     = dict()
 		# Benchmarking scores
 		self.benchmark_scores        = dict()
 		# Rule mining results
@@ -424,6 +428,11 @@ class InsightSolver:
 			self.M  = None
 			self.M0 = None
 			self.M1 = None
+		# monitoring_metadata
+		if verbose:
+			print('Reading monitoring_metadata...')
+		if 'monitoring_metadata' in d:
+			self.monitoring_metadata = d['monitoring_metadata'].copy()
 		# benchmark_scores
 		if verbose:
 			print('Reading benchmark_scores...')
@@ -772,6 +781,7 @@ class InsightSolver:
 		verbose: bool                                 = False,  # Verbosity
 		r: Optional[int]                              = None,   # Number of rules to print. "None" will print all of them. "1" will print only the first one, "2" will print the 1st and 2nd rule, etc.
 		do_print_dataset_metadata: bool               = True,   # If we want to print the dataset metadata.
+		do_print_monitoring_metadata: bool            = False,  # If we want to print the monitoring metadata.
 		do_print_benchmark_scores:bool                = True,   # If we want to print the benchmarking scores.
 		do_show_cohen_d: bool                         = True,   # If we want to print the d of Cohen of the subrules.
 		do_show_wy_ratio: bool                        = True,   # If we want to print the WY ratio of the subrules.
@@ -801,7 +811,6 @@ class InsightSolver:
 				do_print_dataset_metadata=False
 				if r==0:
 					r=1 # revert to at least one rule
-			# A method to print the content of an instance of the class
 			if do_print_dataset_metadata:
 				# dataset_metadata
 				print('\ndataset_metadata :')
@@ -812,6 +821,17 @@ class InsightSolver:
 					print('M                :',self.M)
 					print('M0               :',self.M0)
 					print('M1               :',self.M1)
+			if do_print_monitoring_metadata:
+				# monitoring_metadata
+				print('\nmonitoring_metadata :')
+				if 'p_value_min' in self.monitoring_metadata.keys():
+					print('p_value_min        :',self.monitoring_metadata['p_value_min'])
+				if 'Z_score_max' in self.monitoring_metadata.keys():
+					print('Z_score_max        :',self.monitoring_metadata['Z_score_max'])
+				if 'F_score_max' in self.monitoring_metadata.keys():
+					print('F_score_max        :',self.monitoring_metadata['F_score_max'])
+				if 'precision_p_values' in self.monitoring_metadata.keys():
+					print('precision_p_values :',self.monitoring_metadata['precision_p_values'])
 			if do_print_benchmark_scores:
 				# benchmark_scores
 				print('\nbenchmark_scores :')
@@ -1066,6 +1086,8 @@ class InsightSolver:
 		d['dataset_metadata']['M0']                     = self.M0
 		d['dataset_metadata']['M1']                     = self.M1
 		d['dataset_metadata']['columns_descr']          = self.columns_descr
+		# monitoring_metadata
+		d['monitoring_metadata']                        = deepcopy(self.monitoring_metadata)
 		# benchmark_scores
 		d['benchmark_scores']                           = deepcopy(self.benchmark_scores)
 		# rule_mining_results :
