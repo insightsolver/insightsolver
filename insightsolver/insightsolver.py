@@ -4,7 +4,7 @@
 * `Author`:        Noé Aubin-Cadot
 * `Organization`:  InsightSolver
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-02-10
+* `Last Updated`:  2025-02-21
 * `First Created`: 2024-09-09
 
 Description
@@ -187,6 +187,8 @@ class InsightSolver:
 		Types of the columns.
 	columns_descr: dict
 		Textual descriptions of the columns.
+	other_modalities: dict
+		Modalities that are mapped to the modality 'other'.
 	threshold_M_max: int (default 10000)
 		Threshold on the maximum number of observations to consider, above which we under sample the observations to 10000.
 	specified_constraints: dict
@@ -384,6 +386,7 @@ class InsightSolver:
 		self.M1                      = None
 		self.columns_types           = columns_types
 		self.columns_descr           = columns_descr
+		self.other_modalities        = None
 		self.specified_constraints   = specified_constraints
 		self.top_N_rules             = top_N_rules
 		self.filtering_score         = filtering_score
@@ -423,21 +426,36 @@ class InsightSolver:
 				self.M1 = d['dataset_metadata']['M1']
 			else:
 				self.M1 = None
+			if 'columns_names_to_descr' in d['dataset_metadata']:
+				self.columns_descr = d['dataset_metadata']['columns_names_to_descr']
+			else:
+				self.columns_descr = None
+			if 'features_names_to_other_modalities' in d['dataset_metadata']:
+				self.other_modalities = d['dataset_metadata']['features_names_to_other_modalities']
+			else:
+				self.other_modalities = None
 		else:
 			print("WARNING : dict does not have key 'dataset_metadata'.")
-			self.M  = None
-			self.M0 = None
-			self.M1 = None
+			self.M                = None
+			self.M0               = None
+			self.M1               = None
+			self.other_modalities = None
 		# monitoring_metadata
 		if verbose:
 			print('Reading monitoring_metadata...')
 		if 'monitoring_metadata' in d:
 			self.monitoring_metadata = d['monitoring_metadata'].copy()
+		else:
+			print("WARNING : dict does not have key 'monitoring_metadata'.")
+			self.monitoring_metadata = dict()
 		# benchmark_scores
 		if verbose:
 			print('Reading benchmark_scores...')
 		if 'benchmark_scores' in d:
 			self.benchmark_scores = d['benchmark_scores'].copy()
+		else:
+			print("WARNING : dict does not have key 'benchmark_scores'.")
+			self.benchmark_scores = dict()
 		# rule_mining_results
 		if verbose:
 			print('Reading rule_mining_results...')
@@ -1080,18 +1098,19 @@ class InsightSolver:
 		# Declare a Python dictionary
 		d = dict()
 		# dataset_metadata :
-		d['dataset_metadata']                           = dict()
-		d['dataset_metadata']['target_threshold']       = self.target_threshold
-		d['dataset_metadata']['M']                      = self.M
-		d['dataset_metadata']['M0']                     = self.M0
-		d['dataset_metadata']['M1']                     = self.M1
-		d['dataset_metadata']['columns_descr']          = self.columns_descr
+		d['dataset_metadata']                                       = dict()
+		d['dataset_metadata']['target_threshold']                   = self.target_threshold
+		d['dataset_metadata']['M']                                  = self.M
+		d['dataset_metadata']['M0']                                 = self.M0
+		d['dataset_metadata']['M1']                                 = self.M1
+		d['dataset_metadata']['columns_names_to_descr']             = self.columns_descr
+		d['dataset_metadata']['features_names_to_other_modalities'] = self.other_modalities
 		# monitoring_metadata
-		d['monitoring_metadata']                        = deepcopy(self.monitoring_metadata)
+		d['monitoring_metadata']                                    = deepcopy(self.monitoring_metadata)
 		# benchmark_scores
-		d['benchmark_scores']                           = deepcopy(self.benchmark_scores)
+		d['benchmark_scores']                                       = deepcopy(self.benchmark_scores)
 		# rule_mining_results :
-		d['rule_mining_results']                        = deepcopy(self.rule_mining_results)
+		d['rule_mining_results']                                    = deepcopy(self.rule_mining_results)
 		# Return the result
 		return d
 	def to_json_string(

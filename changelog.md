@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.7 (2025-02-21)
+
+*Improvements:*
+
+- A new attribute `other_modalities` is added to the class `InsightSolver`. This attribute contains a dict that tells which modalities are sent to the string `'other'` during the pre-processing phase. The new attribute `other_modalities` is compatible with the methods `ingest_dict` and `to_dict`.
+- The method `ingest_dict` now ingests also `columns_descr`.
+- The method `to_dict` now exports also `columns_descr`.
+
 ## 0.1.6 (2025-02-19)
 
 *Improvements:*
