@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.8 (2025-02-24)
+
+*Improvements:*
+
+- New function `S_to_index_points_in_rule` that takes a rule `S` and extracts the index of the points of `df` that lie inside `S`.
+- New method `S_to_index_points_in_rule` for the class `InsightSolver`. This method generates the Pandas Index of the points of `df` that lie inside `S`.
+- New method `S_to_s_points_in_rule` for the class `InsightSolver`. This method generates a boolean Pandas Series that tells if a point lies inside `S`.
+- New method `S_to_df_filtered` for the class `InsightSolver`. This method generates a Pandas DataFrame that obtained by keeping only the rows of `df` that lie inside `S`.
+
 ## 0.1.7 (2025-02-21)
 
 *Improvements:*

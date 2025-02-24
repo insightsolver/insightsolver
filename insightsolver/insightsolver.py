@@ -68,7 +68,7 @@ np.set_printoptions(
 
 ################################################################################
 ################################################################################
-# Defining the solver class
+# Defining some utilities
 
 def validate_class_integrity(
 	verbose: bool,
@@ -98,7 +98,10 @@ def validate_class_integrity(
 			raise Exception(f"ERROR (columns_types invalid): the column='{column_name}' cannot be of type='{columns_types[column_name]}' because it must be in ['binary','multiclass','continuous','ignore'].")
 	# Validate that the target is not ignored
 	if target_name in columns_types.keys():
-		if columns_types[target_name]=='ignore':
+		# Take the target type
+		target_type = columns_types[target_name]
+		# If the target type is 'ignore' there's a problem
+		if target_type=='ignore':
 			raise Exception(f"ERROR: target_name='{target_name}' is specified as 'ignore'.")
 	# Validate that not all features are ignored
 	features_types = columns_types.copy()
@@ -159,6 +162,166 @@ def format_value(
 	else:
 		return value
 
+def S_to_index_points_in_rule(
+	solver,
+	S:dict,
+	verbose:bool              = False,
+	df:Optional[pd.DataFrame] = None,
+)->pd.Index:
+	"""
+	This function takes a rule S and returns the index of the points inside the rule of a DataFrame.
+	If no DataFrame is provided, the one used to train the solver is used.
+	"""
+	if verbose:
+		print('S :',S)
+	# Create a temporary DataFrame that will be iteratively filtered
+	if isinstance(df,pd.DataFrame):
+		# If df is specified, we take it
+		df_features_filtre = df.copy()
+	else:
+		# If df is not specified, we take the DataFrame in the solver
+		df_features_filtre = solver.df.copy()
+	# Take the features names in the rule S
+	feature_names = list(S.keys())
+	# Make sure that the names are legit
+	feature_names_illegal = set(feature_names)-set(solver.df.columns)
+	if len(feature_names_illegal)>0:
+		raise Exception(f"ERROR: there are illegal names in the rule S : {feature_names_illegal}.")
+	# Sort the features names from the rule S
+	feature_names.sort()
+	if verbose:
+		print('feature_names :',feature_names)
+	# Loop over the features of the rule S
+	for feature_name in feature_names:
+		if verbose:
+			print('• feature_name :',feature_name)
+		# Take the value of the feature in the rule S
+		feature_S = S[feature_name]
+		if verbose:
+			print('•- feature_S :',feature_S)
+		# Take the btype of the feature
+		feature_type = solver.columns_types[feature_name]
+		if verbose:
+			print('•- feature_type :',feature_type)
+		"""
+		The types :
+		- binary
+		- multiclass
+		- continuous
+		- ignore
+		"""
+		# Depending on the type of the feature the data is filtered differently
+		if feature_type=='ignore':
+			# If the variable has the type 'ignore', we skip it.
+			continue
+		elif feature_type in ['binary','multiclass']:
+			# If the variable is a categorical variable
+			if feature_S==set():
+				# If the variable can take no modality, return an empty list
+				return pd.Index([],name=df_features_filtre.index.name)
+			if isinstance(feature_S,int):
+				# If the rule is an integer, convert to a set with one element
+				feature_S = {feature_S}
+			elif isinstance(feature_S,float):
+				# If the rule is a float, convert to a set with one element
+				if pd.isna(feature_S):
+					# If the float is a NaN, convert it to 'nan'
+					feature_S = 'nan'
+				elif int(feature_S)==feature_S:
+					# If the float is an integer, convert it to an integer (to have 0 or 1 instead of 0.0 or 1.0)
+					feature_S = int(feature_S)
+				# Convert to a set with one element
+				feature_S = {feature_S}
+			elif isinstance(feature_S,str):
+				# If the rule is a string, convert to a set with one element
+				feature_S = {feature_S}
+			if verbose:
+				print('•- feature_S :',feature_S)
+			# Create a mask to filter the DataFrame
+			mask = pd.Series(
+				data  = False,
+				index = df_features_filtre.index,
+			)
+			# Loop over the modalities of the rule S
+			for modality in feature_S:
+				if modality in [np.nan,'nan']:
+					# If the modality is NaN
+					# Keep the NaNs
+					mask = mask|df_features_filtre[feature_name].isna()
+				elif modality=='other':
+					# If the modality is 'other'
+					if 'other' in df_features_filtre[feature_name]:
+						# If 'other' is a modality of the original data
+						# Keep the modality 'other'
+						mask = mask|(df_features_filtre[feature_name]=='other')
+					if feature_name in solver.other_modalities.keys():
+						# If the feature is present in the conversion to other modalities
+						if len(solver.other_modalities[feature_name])>0:
+							# If at least one modality was mapped to 'other'
+							# Take the other modalities
+							other_modalities = solver.other_modalities[feature_name]
+							# Keep the other modalities
+							mask = mask|(df_features_filtre[feature_name].isin(other_modalities))
+				elif modality in df_features_filtre.values:
+					# If the modality is in the original data
+					# Keep the modality
+					mask = mask|(df_features_filtre[feature_name]==modality)
+				elif str(modality) in df_features_filtre.values:
+					# If str(modality) is in the original data
+					# Keep str(modality)
+					print("WARNING: 'str(modality)' is in the data but not 'modality'.")
+					mask = mask|(df_features_filtre[feature_name]==str(modality))
+				else:
+					raise Exception(f"ERROR: the modality='{modality}' is not in the data.")
+			# Filter the DataFrame by the mask
+			df_features_filtre = df_features_filtre[mask]
+		elif feature_type=='continuous':
+			# If the feature is continuous
+			if feature_S[1] in ['exclude_nan','include_nan']:
+				# If the feature is continuous with NaNs
+				[[s_rule_min,s_rule_max],include_or_exlude_nan] = feature_S
+				if verbose:
+					print('•- s_rule_min =',s_rule_min)
+					print('•- s_rule_max =',s_rule_max)
+					print('•- include_or_exlude_nan =',include_or_exlude_nan)
+				# Take the continuous values of the feature
+				s = df_features_filtre[feature_name]
+				# Keep only the values between the interval
+				mask = (s_rule_min<=s)&(s<=s_rule_max)
+				# Handle NaNs
+				if include_or_exlude_nan=='exclude_nan':
+					# NaNs are a priori excluded because (s_rule_min<=s)&(s<=s_rule_max) can only be True for non NaNs.
+					...
+				elif include_or_exlude_nan=='include_nan':
+					# If we want to include NaNs
+					mask = mask|s.isna()
+				else:
+					raise Exception(f"ERROR: include_or_exlude_nan='{include_or_exlude_nan}' should be either 'include_nan' or 'exclude_nan'.")
+				# Filter the data
+				df_features_filtre = df_features_filtre[mask]
+			else:
+				# If the feature is continuous without NaNs
+				s_rule_min,s_rule_max = feature_S
+				if verbose:
+					print('•- s_rule_min =',s_rule_min)
+					print('•- s_rule_max =',s_rule_max)
+				# Take the continuous values of the feature
+				s = df_features_filtre[feature_name]
+				# Keep only the values between the interval
+				mask = (s_rule_min<=s)&(s<=s_rule_max)
+				# Filter the data
+				df_features_filtre = df_features_filtre[mask]
+	# Take the index
+	index = df_features_filtre.index
+	# Sort the index
+	index = index.sort_values()
+	# Return the index
+	return index
+
+################################################################################
+################################################################################
+# Defining the solver class
+
 class InsightSolver:
 	"""
 	The class ``InsightSolver`` is meant to :
@@ -218,13 +381,19 @@ class InsightSolver:
 		Ingests a JSON string.
 	fit: None
 		Fits the solver.
+	S_to_index_points_in_rule: Pandas Index
+		Returns the index of the points in a rule S.
+	S_to_s_points_in_rule: Pandas Series
+		Returns a boolean Pandas Series that tells if the point is in the rule S.
+	S_to_df_filtered: Pandas DataFrame
+		Returns the filtered df of rows that are in the rule S.
 	ruleset_count: int
 		Counts the number of rules held by the InsightSolver.
 	i_to_rule: dict
 		Gives the rule i of the InsightSolver.
-	i_to_subrules_dataframe: DataFrame
+	i_to_subrules_dataframe: Pandas DataFrame
 		Returns a DataFrame containing the informations about the subrules of the rule i.
-	i_to_feature_contributions_S: DataFrame
+	i_to_feature_contributions_S: Pandas DataFrame
 		Returns a DataFrame of the feature contributions of the variables in the rule S at position i.
 	i_to_print: None
 		Prints the content of the rule i in the InsightSolver.
@@ -240,7 +409,7 @@ class InsightSolver:
 		Exports the content of the InsightSolver object to a Python dict.
 	to_json_string: str
 		Exports the content of the InsightSolver object to a JSON string.
-	to_dataframe: DataFrame
+	to_dataframe: Pandas DataFrame
 		Exports the rule mining results to a Pandas DataFrame.
 	to_csv: str
 		Exports the rule mining results to a CSV string and/or a local CSV file.
@@ -518,6 +687,79 @@ class InsightSolver:
 		self.ingest_dict(
 			d = d_in_original,
 		)
+	def S_to_index_points_in_rule(
+		self,
+		S:dict,
+		verbose:bool              = False,
+		df:Optional[pd.DataFrame] = None,
+	)->pd.Index:
+		"""
+		This method returns the index of the points inside a rule S.
+		"""
+		# Convert the rule S to an index
+		index_points_in_rule = S_to_index_points_in_rule(
+			solver  = self,
+			S       = S,
+			verbose = verbose,
+			df      = df,
+		)
+		# Return the index
+		return index_points_in_rule
+	def S_to_s_points_in_rule(
+		self,
+		S:dict,
+		verbose:bool              = False,
+		df:Optional[pd.DataFrame] = None,
+	)->pd.Series:
+		"""
+		This method returns a boolean Series that tells if the points are in the rule S or not.
+		"""
+		# Take a look at if df is provided
+		if not isinstance(df,pd.DataFrame):
+			# If df is not provided we take the one in the solver
+			df = self.df
+		# Make sure that df is a DataFrame
+		if not isinstance(df,pd.DataFrame):
+			raise Exception(f"ERROR: df must be a DataFrame but not '{type(df)}'.")	
+		# Take the index of the points in the rule S
+		index_points_in_rule = self.S_to_index_points_in_rule(
+			S       = S,
+			verbose = verbose,
+			df      = df,
+		)
+		# Create a Pandas Series that tells if the points are in the rule or not
+		s_points_in_rule = pd.Series(
+			data  = False,
+			index = df.index,
+			name  = 'in_S',
+			dtype = bool,
+		)
+		s_points_in_rule.loc[index_points_in_rule] = True
+		# Return the result
+		return s_points_in_rule
+	def S_to_df_filtered(
+		self,
+		S:dict,
+		verbose:bool              = False,
+		df:Optional[pd.DataFrame] = None,
+	):
+		"""
+		This method returns the DataFrame of rows of df that lie inside a rule S.
+		"""
+		# Take a look at if df is provided
+		if not isinstance(df,pd.DataFrame):
+			# If df is not provided we take the one in the solver
+			df = self.df
+		# Take the index of the points in the rule S
+		index_points_in_rule = self.S_to_index_points_in_rule(
+			S       = S,
+			verbose = verbose,
+			df      = df,
+		)
+		# Create a copy of the DataFrame of the filtered rows
+		df_filtered = df.loc[index_points_in_rule].copy()
+		# Return the result
+		return df_filtered
 	def ruleset_count(
 		self,
 	)->int:
