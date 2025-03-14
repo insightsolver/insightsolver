@@ -250,7 +250,7 @@ def S_to_index_points_in_rule(
 					mask = mask|df_features_filtre[feature_name].isna()
 				elif modality=='other':
 					# If the modality is 'other'
-					if 'other' in df_features_filtre[feature_name]:
+					if 'other' in df_features_filtre[feature_name].values:
 						# If 'other' is a modality of the original data
 						# Keep the modality 'other'
 						mask = mask|(df_features_filtre[feature_name]=='other')
@@ -262,11 +262,11 @@ def S_to_index_points_in_rule(
 							other_modalities = solver.other_modalities[feature_name]
 							# Keep the other modalities
 							mask = mask|(df_features_filtre[feature_name].isin(other_modalities))
-				elif modality in df_features_filtre.values:
+				elif modality in df_features_filtre[feature_name].values:
 					# If the modality is in the original data
 					# Keep the modality
 					mask = mask|(df_features_filtre[feature_name]==modality)
-				elif str(modality) in df_features_filtre.values:
+				elif str(modality) in df_features_filtre[feature_name].values:
 					# If str(modality) is in the original data
 					# Keep str(modality)
 					print("WARNING: 'str(modality)' is in the data but not 'modality'.")

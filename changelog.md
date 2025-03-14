@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.9 (2025-03-14)
+
+*Improvements:*
+
+- Fixed a bug in the function `S_to_index_points_in_rule`.
+
 ## 0.1.8 (2025-02-24)
 
 *Improvements:*
