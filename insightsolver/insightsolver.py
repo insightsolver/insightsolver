@@ -649,12 +649,13 @@ class InsightSolver:
 		self.rule_mining_results = {int(k):self.rule_mining_results[k] for k in self.rule_mining_results.keys()}
 	def fit(
 		self,
-		verbose:bool              = False,  # Verbosity
-		computing_source:str      = 'auto', # Where to compute the rule mining
-		service_key:Optional[str] = None,   # Path+name of the service key
-		user_email:Optional[str]  = None,   # User email
-		api_source:str            = 'auto', # Source of the API call
-		do_compress_data:bool     = False,  # If we want to compress the data for the communications with the server
+		verbose:bool                 = False,  # Verbosity
+		computing_source:str         = 'auto', # Where to compute the rule mining
+		service_key:Optional[str]    = None,   # Path+name of the service key
+		user_email:Optional[str]     = None,   # User email
+		api_source:str               = 'auto', # Source of the API call
+		do_compress_data:bool        = True,   # If we want to compress the data for the communications with the server
+		do_compute_memory_usage:bool = True,   # If we want to monitor the first thread memory usage on the server side
 	)->None:
 		"""
 		This method aims to fit the solver.
@@ -682,6 +683,7 @@ class InsightSolver:
 			filtering_score         = self.filtering_score,
 			api_source              = api_source,
 			do_compress_data        = do_compress_data,
+			do_compute_memory_usage = do_compute_memory_usage,
 		)
 		# Ingest the untransformed incoming dict
 		self.ingest_dict(

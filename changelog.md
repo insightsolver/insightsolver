@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.10 (2025-03-26)
+
+*Improvements:*
+
+- Added a parameter `do_compute_memory_usage` to the method `fit`.
+
 ## 0.1.9 (2025-03-14)
 
 *Improvements:*
