@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.11 (2025-04-01)
+
+*Improvements:*
+
+- New methods `to_excel` and `to_excel_string` for the class `InsightSolver`.
+
 ## 0.1.10 (2025-03-26)
 
 *Improvements:*

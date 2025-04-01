@@ -72,7 +72,7 @@ np.set_printoptions(
 
 def validate_class_integrity(
 	verbose: bool,
-	df: Optional[pd.DataFrame] ,
+	df: Optional[pd.DataFrame],
 	target_name: Optional[Union[str,int]],
 	target_goal: Optional[Union[str,numbers.Real,np.uint8]],
 	columns_types: Optional[Dict],
@@ -413,6 +413,10 @@ class InsightSolver:
 		Exports the rule mining results to a Pandas DataFrame.
 	to_csv: str
 		Exports the rule mining results to a CSV string and/or a local CSV file.
+	to_excel: None
+		Exports the rule mining results to a Excel file.
+	to_excel_string: str
+		Exports the rule mining results to a Excel string.
 
 	Example
 	-------
@@ -1334,7 +1338,7 @@ class InsightSolver:
 				print(df_string_with_spacing)
 	def to_dict(
 		self,
-	):
+	)->dict:
 		"""
 		This method aims to export the content of the InsightSolver object to a dictionary.
 		"""
@@ -1360,7 +1364,7 @@ class InsightSolver:
 	def to_json_string(
 		self,
 		verbose      = False,
-	):
+	)->str:
 		"""
 		This method aims to export the content of the InsightSolver object to a JSON string.
 		"""
@@ -1376,7 +1380,7 @@ class InsightSolver:
 		verbose            = False,
 		do_append_datetime = False,
 		do_rename_cols     = False,
-	):
+	)->pd.DataFrame:
 		"""
 		This method aims to export the content of the InsightSolver object to a DataFrame.
 		"""
@@ -1481,27 +1485,77 @@ class InsightSolver:
 		output_file    = None,
 		verbose        = False,
 		do_rename_cols = False,
-	):
+	)->str:
 		"""
 		This method is meant to export the content of the InsightSolver object to a CSV file.
 		"""
 		# Avoid to generate a string containing np.float64 and np.int64 everywhere
 		if np.__version__>='2.0.0':
 			np.set_printoptions(legacy='1.25')
-
+		# Export to a DataFrame
 		df = self.to_dataframe(
 			do_rename_cols = do_rename_cols,
 		)
 		if (output_file!=None)&verbose:
 			print('Exporting :',output_file)
-
-		# Make sure that np.int64 and np.float64 are not written everywhere.
 		# Create the CSV string
 		csv_string = df.to_csv(output_file,index=False)
 		if (output_file!=None)&verbose:
 			print('Done.')
 		# Return the result
 		return csv_string
+	def to_excel(
+		self,
+		output_file,
+		verbose        = False,
+		do_rename_cols = False,
+	)->None:
+		"""
+		This method is meant to export the RuleSet to a Excel file.
+		"""
+		df = self.to_dataframe(
+			do_rename_cols = do_rename_cols,
+		)
+		if verbose:
+			print('Exporting :',output_file)
+		df.to_excel(
+			excel_writer = output_file,
+			index        = False,
+			engine       = 'openpyxl',
+		)
+		if verbose:
+			print('Done.')
+	def to_excel_string(
+		self,
+		verbose        = False,
+		do_rename_cols = False,
+	)->str:
+		"""
+		This method is meant to export the RuleSet to a Excel string.
+		"""
+		df = self.to_dataframe(
+			do_rename_cols = do_rename_cols,
+		)
+		if verbose:
+			print('Exporting to a Excel string...')
+		# Create a buffer in memory
+		import io
+		excel_buffer = io.BytesIO()
+		# Write df to a Excel file in the buffer
+		df.to_excel(
+			excel_writer = excel_buffer,
+			index        = False,
+			engine       = 'openpyxl',
+		)
+		if verbose:
+			print('Done.')
+		# Take the content of the buffer as bytes
+		excel_bytes = excel_buffer.getvalue()
+		# Convert the bytes as string
+		import base64
+		excel_string = base64.b64encode(excel_bytes).decode()
+		# Return the result
+		return excel_string
 
 ################################################################################
 ################################################################################
