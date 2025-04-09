@@ -4,7 +4,7 @@
 * `Author`:        Noé Aubin-Cadot
 * `Organization`:  InsightSolver
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-02-21
+* `Last Updated`:  2025-04-09
 * `First Created`: 2024-09-09
 
 Description
@@ -70,32 +70,135 @@ np.set_printoptions(
 ################################################################################
 # Defining some utilities
 
+def compute_admissible_btypes(
+	M:int,
+	dtype:str,
+	nunique:int,
+)->list[str]:
+	"""
+	This function computes the admissible btypes a column can take.
+
+	The btypes:
+	- 'binary'
+	- 'multiclass'
+	- 'continuous'
+	- 'ignore'
+	"""
+	if dtype in ['uint8','int32','int64','float32','float64']:
+		if nunique<=2:
+			return [
+				'binary',
+				'multiclass',
+				'continuous',
+				'ignore',
+			]
+		else: # If nunique>2 it cannot be binary
+			return [
+				#'binary',
+				'multiclass',
+				'continuous',
+				'ignore',
+			]
+	elif dtype in ['object']: # If 'object', it cannot be 'continuous'
+		if nunique<=2:
+			return [
+				'binary',
+				'multiclass',
+				#'continuous',
+				'ignore',
+			]
+		elif nunique<M: # If 3<=nunique<M, it cannot be 'binary'
+			return [
+				#'binary',
+				'multiclass',
+				'continuous',
+				'ignore',
+			]
+		else: # If nunique=M, we ignore 'multiclass' because all the modalities appear only once
+			return [
+				#'binary',
+				#'multiclass',
+				'continuous',
+				'ignore',
+			]
+	else: # other dtypes are not handled
+		return [
+			#'binary',
+			#'multiclass',
+			#'continuous',
+			'ignore',
+		]
+
+def compute_columns_names_to_admissible_btypes(
+	df: pd.DataFrame,
+)->dict[str,list[str]]:
+	"""
+	This function computes a dict that maps the columns names of df to lists of admissible btypes.
+	"""
+	# Take the dtype and nunique per column:
+	s_dtype        = df.dtypes       # Pandas Series that maps column_name -> dtype
+	s_nunique      = df.nunique()    # Pandas Series that maps column_name -> nunique
+	s_contains_nan = df.isna().any() # Pandas Series that maps column_name -> if it contains a NaN
+	M              = len(df)         # Number of rows
+	# Convert to a Pandas DataFrame
+	list_of_Series = (s_dtype,s_nunique,s_contains_nan)
+	df_dtype_nunique = pd.concat(list_of_Series,axis=1).rename(columns={0:'dtype',1:'nunique',2:'contains_nan'})
+	# Compute a dict that maps column_name -> btype
+	columns_names_to_admissible_btypes = df_dtype_nunique.apply(lambda x:compute_admissible_btypes(M=M,dtype=x['dtype'],nunique=x['nunique']),axis=1).to_dict()
+	# Return the result
+	return columns_names_to_admissible_btypes
+
 def validate_class_integrity(
-	verbose: bool,
-	df: Optional[pd.DataFrame],
-	target_name: Optional[Union[str,int]],
-	target_goal: Optional[Union[str,numbers.Real,np.uint8]],
-	columns_types: Optional[Dict],
-	columns_descr:Optional[Dict],
-	threshold_M_max: Optional[int],
-	specified_constraints: Optional[Dict],
-	top_N_rules: Optional[int],
-	filtering_score: Optional[str],
+	verbose: bool,                         # Verbosity
+	df: Optional[pd.DataFrame],            # DataFrame that'll be used to fit the solver
+	target_name: Optional[Union[str,int]], # Target variable (must be a column of df)
+	target_goal: Optional[Union[str,numbers.Real,np.uint8]], # Target goal
+	columns_types: Optional[Dict],         # The specified types of the columns
+	columns_descr:Optional[Dict],          # The textual descriptions of the columns
+	threshold_M_max: Optional[int],        # The threshold on the maximum number of points to consider (must be a strictly positive integer)
+	specified_constraints: Optional[Dict], # The specified constraints
+	top_N_rules: Optional[int],            # The top N rules (must be a strictly positive integer)
+	filtering_score: str,                  # The filtering score (must be a legit string)
+	n_benchmark_original: int,             # To benchmark against random permutations (must be at least 2)
+	n_benchmark_shuffle: int,              # To benchmark against random permutations (must be at least 2)
 )->None:
 	"""
 	This function aims to validate the integrity of the InsightSolver class.
 	"""
 	if verbose:
 		print("Validating the integrity of the class...")
+
 	# Validate that target_name is a column of df
 	if target_name not in df.columns:
 		raise Exception(f"ERROR (target_name invalid): target_name='{target_name}' not in df.columns.")
-	# Validate that the columns types are valid
+
+	# Validate the columns types
+	if columns_types!=None:
+		# First, we make sure that the keys are legit
+		# Take the set of valid keys
+		keys_valid = set(df.columns)
+		# Take the set of provided keys
+		keys_present = columns_types.keys()
+		# Look at if some keys are illegal
+		keys_illegal = keys_present-keys_valid
+		# If some keys are illegal
+		if len(keys_illegal)>0:
+			raise Exception(f"ERROR (columns_types): some keys are illegal: {keys_illegal}.")
+		# Then we make sure that the values are legit
+		columns_names_to_admissible_btypes = compute_columns_names_to_admissible_btypes(
+			df = df,
+		)
+		for column_name,column_type in columns_types.items():
+			admissible_btypes = columns_names_to_admissible_btypes[column_name]
+			if column_type not in admissible_btypes:
+				raise Exception(f"ERROR (columns_types): the column_name='{column_name}' is specified as a column_type='{column_type}' but it is not a valid value in {admissible_btypes}.")
+
 	for column_name in columns_types.keys():
 		if column_name not in df.columns:
 			raise Exception(f"ERROR (columns_types invalid): the dict 'columns_types' contains the column_name='{column_name}' but it is not a column of df.")
 		if columns_types[column_name] not in ['binary','multiclass','continuous','ignore']:
 			raise Exception(f"ERROR (columns_types invalid): the column='{column_name}' cannot be of type='{columns_types[column_name]}' because it must be in ['binary','multiclass','continuous','ignore'].")
+
 	# Validate that the target is not ignored
 	if target_name in columns_types.keys():
 		# Take the target type
@@ -103,6 +206,7 @@ def validate_class_integrity(
 		# If the target type is 'ignore' there's a problem
 		if target_type=='ignore':
 			raise Exception(f"ERROR: target_name='{target_name}' is specified as 'ignore'.")
+
 	# Validate that not all features are ignored
 	features_types = columns_types.copy()
 	if target_name in features_types.keys():
@@ -110,15 +214,65 @@ def validate_class_integrity(
 	M,n=df.shape
 	if (len(features_types)==n-1)&(all(features_types[column_name]=='ignore' for column_name in features_types.keys())):
 		raise Exception("ERROR (columns_types): The specified type of each feature is 'ignore'.")
-	# Validate that the filtering_score is valid
-	if filtering_score==None:
-		raise Exception("ERROR (filtering_score): The filtering score cannot be None.")
-	elif filtering_score!='auto':
+
+	# Validate columns_descr
+	if columns_descr!=None:
+		# Take the set of valid keys
+		keys_valid = set(df.columns)
+		# Take the set of provided keys
+		keys_present = columns_descr.keys()
+		# Look at if some keys are illegal
+		keys_illegal = keys_present-keys_valid
+		# If some keys are illegal
+		if len(keys_illegal)>0:
+			raise Exception(f"ERROR (columns_descr): some keys are illegal: {keys_illegal}.")
+
+	# Validate threshold_M_max
+	if threshold_M_max!=None:
+		if threshold_M_max<=0:
+			raise Exception(f"ERROR (threshold_M_max): threshold_M_max must be a strictly positive number, not {threshold_M_max}.")
+
+	# Validate the specified_constraints
+	if isinstance(specified_constraints, dict):
+		# Take the set of valid keys
+		keys_valid = {
+			'm_min',
+			'm_max',
+			'coverage_min',
+			'coverage_max',
+			'mu_rule_min',
+			'mu_rule_max',
+			'lift_min',
+			'lift_max',
+		}
+		# Take the set of keys present in the dict
+		keys_present = specified_constraints.keys()
+		# Look at if some keys are illegal
+		keys_illegal = keys_present-keys_valid
+		# If some keys are illegal
+		if len(keys_illegal)>0:
+			raise Exception(f"ERROR (specified_constraints): some keys are illegal: {keys_illegal}.")
+
+	# Validate the top_N_rules
+	if top_N_rules!=None:
+		if top_N_rules<=0:
+			raise Exception(f"ERROR (top_N_rules): The parameter top_N_rules must be a strictly positive integer. The value {top_N_rules} is invalid.")
+
+	# Validate the filtering_score
+	if filtering_score!='auto':
 		valid_scores = ['lift','coverage','p_value','F_score','Z_score','TPR','PPV']
 		scores = filtering_score.split('&')
 		invalid_scores = sorted(set(scores)-set(valid_scores))
 		if len(invalid_scores)>0:
 			raise Exception(f"ERROR (filtering_score): The filtering score is not valid because it contains these scores: {invalid_scores}.")
+
+	# Validate n_benchmark_original
+	if n_benchmark_original<2:
+		raise Exception(f"ERROR (n_benchmark_original): The parameter n_benchmark_original must be an integer >= 2.")
+	
+	# Validate n_benchmark_original
+	if n_benchmark_shuffle<2:
+		raise Exception(f"ERROR (n_benchmark_shuffle): The parameter n_benchmark_shuffle must be an integer >= 2.")
 
 def format_value(
 	value,
@@ -463,7 +617,7 @@ class InsightSolver:
 	def __init__(
 		self,
 		verbose: bool                                           = False,  # Verbosity during the initialization of the solver
-		df: Optional[pd.DataFrame]                              = None,   # DataFrame in which we want to analyse the data
+		df: pd.DataFrame                                        = None,   # DataFrame that contains the data from which we wish to extract insights
 		target_name: Optional[Union[str,int]]                   = None,   # Name of the target variable
 		target_goal: Optional[Union[str,numbers.Real,np.uint8]] = None,   # Target goal
 		columns_types: Optional[Dict]                           = dict(), # Types of the columns
@@ -471,9 +625,9 @@ class InsightSolver:
 		threshold_M_max: Optional[int]                          = 10000,  # Maximum number of observations to consider
 		specified_constraints: Optional[Dict]                   = dict(), # Specified constraints on the rule mining
 		top_N_rules: Optional[int]                              = 10,     # Maximum number of rules to get from the rule mining
-		filtering_score: Optional[str]                          = 'auto', # Filtering score to be used when selecting rules.
-		n_benchmark_original: Optional[int]                     = 5,      # Number of benchmarking runs to execute without shuffling.
-		n_benchmark_shuffle: Optional[int]                      = 20,     # Number of benchmarking runs to execute with shuffling.
+		filtering_score: str                                    = 'auto', # Filtering score to be used when selecting rules.
+		n_benchmark_original: int                               = 5,      # Number of benchmarking runs to execute without shuffling.
+		n_benchmark_shuffle: int                                = 20,     # Number of benchmarking runs to execute with shuffling.
 	):
 		"""
 		The initialization occurs when an ``InsightSolver`` class instance is created.
@@ -519,7 +673,7 @@ class InsightSolver:
 
 			# Create an instance of the class InsightSolver
 			solver = InsightSolver(
-				df          = df,          # A dataset
+				df          = df,          # A Pandas DataFrame
 				target_name = target_name, # Name of the target variable
 				target_goal = target_goal, # Target goal
 			)
@@ -538,6 +692,8 @@ class InsightSolver:
 			specified_constraints = specified_constraints,
 			top_N_rules           = top_N_rules,
 			filtering_score       = filtering_score,
+			n_benchmark_original  = n_benchmark_original,
+			n_benchmark_shuffle   = n_benchmark_shuffle,
 		)
 		# Handling threshold_M_max
 		if threshold_M_max==None:

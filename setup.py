@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
 	name="insightsolver",                   # Nom du package (doit être unique sur PyPI)
-	version="0.1.12",                        # Version du package
+	version="0.1.13",                       # Version du package
 	packages=find_packages(),               # Trouver tous les sous-packages automatiquement
 	install_requires=[                      # Dépendances du package
 		"pandas",

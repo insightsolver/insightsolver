@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.13 (2025-04-09)
+
+*Improvements:*
+
+- The function `validate_class_integrity` not validates more parameters of the solver before fitting it via the API.
+- New function `compute_admissible_btypes` that computes the admissible *btypes* for a given column.
+- New function `compute_columns_names_to_admissible_btypes` that computes the admissible *btypes* for each columns.
+
 ## 0.1.12 (2025-04-08)
 
 *Improvements:*
