@@ -417,6 +417,12 @@ class InsightSolver:
 		Exports the rule mining results to a Excel file.
 	to_excel_string: str
 		Exports the rule mining results to a Excel string.
+	get_credits_needed_for_computation: int
+		Get the number of credits needed for the fitting computation of the solver.
+	get_df_credits_infos: Pandas DataFrame
+		Get a DataFrame of the transactions involving credits.
+	get_credits_available: int
+		Get the number of credits available.
 
 	Example
 	-------
@@ -660,6 +666,7 @@ class InsightSolver:
 		api_source:str               = 'auto', # Source of the API call
 		do_compress_data:bool        = True,   # If we want to compress the data for the communications with the server
 		do_compute_memory_usage:bool = True,   # If we want to monitor the first thread memory usage on the server side
+		do_check_enough_credits:bool = False,  # Check if there are enough credits to fit the solver
 	)->None:
 		"""
 		This method aims to fit the solver.
@@ -669,6 +676,21 @@ class InsightSolver:
 		# Taking the global variables
 		if api_source=='auto':
 			api_source = API_SOURCE_PUBLIC
+		# Check if there are enough credits to fit the solver
+		if do_check_enough_credits:
+			if computing_source!='local_cloud_function':
+				# Get the number of credits needed
+				credits_needed = self.get_credits_needed_for_computation()
+				# Get the number of credits available
+				credits_available = self.get_credits_available(
+					computing_source = computing_source,
+					service_key      = service_key,
+					user_email       = user_email,
+				)
+				# If the available credits are below the needed credits, raise an exception
+				if credits_needed>credits_available:
+					raise Exception(f"ERROR: There is only {credits_available} credits available but {credits_needed} credits are needed.")
+
 		# Make a rule mining API call
 		d_in_original = search_best_ruleset_from_API_public(
 			df                      = self.df,
@@ -1556,6 +1578,77 @@ class InsightSolver:
 		excel_string = base64.b64encode(excel_bytes).decode()
 		# Return the result
 		return excel_string
+	def get_credits_needed_for_computation(
+		self,
+	)->int:
+		"""
+		This method is meant to compute the number of credits for the computation during the fitting of the solver.
+		"""
+		# Compute the number of credits needed for computation
+		from .api_utilities import compute_credits_from_df
+		credits_needed = compute_credits_from_df(
+			df = self.df,
+		)
+		# Return the result
+		return credits_needed
+	def get_df_credits_infos(
+		self,
+		computing_source:str      = 'auto', # Where to compute the rule mining
+		service_key:Optional[str] = None,   # Path+name of the service key
+		user_email:Optional[str]  = None,   # User email
+	)->pd.DataFrame:
+		"""
+		This method is meant to retrieve from the server the transactions involving credits.
+		"""
+		# Manage where the computation is executed
+		if computing_source=='auto':
+			computing_source='remote_cloud_function'
+		# Create the outgoing dict
+		d_out_credits_infos = {
+			'do_compute_credits_available' : False,
+			'do_compute_df_credits_infos'  : True,
+		}
+		# Send the dict to the API server and receive a new dict
+		from .api_utilities import request_cloud_credits_infos
+		d_in_credits_infos = request_cloud_credits_infos(
+			computing_source       = computing_source,
+			d_out_credits_infos    = d_out_credits_infos,
+			input_file_service_key = service_key,
+			user_email             = user_email,
+		)
+		# Extract the DataFrame
+		df_credits_infos = d_in_credits_infos['df_credits_infos']
+		# Return the result
+		return df_credits_infos
+	def get_credits_available(
+		self,
+		computing_source:str      = 'auto', # Where to compute the rule mining
+		service_key:Optional[str] = None,   # Path+name of the service key
+		user_email:Optional[str]  = None,   # User email
+	)->int:
+		"""
+		This method is meant to retrieve from the server the amount of credits available.
+		"""
+		# Manage where the computation is executed
+		if computing_source=='auto':
+			computing_source='remote_cloud_function'
+		# Create the outgoing dict
+		d_out_credits_infos = {
+			'do_compute_credits_available' : True,
+			'do_compute_df_credits_infos'  : False,
+		}
+		# Send the dict to the API server and receive a new dict
+		from .api_utilities import request_cloud_credits_infos
+		d_in_credits_infos = request_cloud_credits_infos(
+			computing_source       = computing_source,
+			d_out_credits_infos    = d_out_credits_infos,
+			input_file_service_key = service_key,
+			user_email             = user_email,
+		)
+		# Extract the credits available
+		credits_available = d_in_credits_infos['credits_available']
+		# Return the result
+		return credits_available
 
 ################################################################################
 ################################################################################

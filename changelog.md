@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.12 (2025-04-08)
+
+*Improvements:*
+
+- New function `api_utilities/compute_credits_from_df` that computes the amount of credits consumed for a given DataFrame.
+- New function `api_utilities/request_cloud_credits_infos` that makes a request to get informations about credits available.
+- New method `solver.get_credits_needed_for_computation` that computes the amount of credits needed for the computation involved in fitting the solver. 
+- New method `solver.get_df_credits_infos` that retrieves from the API server the transactions involving credits.
+- New method `solver.get_credits_available` that retrieves from the API server the number of credits available.
+- The method `solver.fit` now checks if there is enough credits available before sending data to the API server.
+
 ## 0.1.11 (2025-04-01)
 
 *Improvements:*

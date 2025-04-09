@@ -4,7 +4,7 @@
 * `Author`:        Noé Aubin-Cadot
 * `Organization`:  InsightSolver
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-02-10
+* `Last Updated`:  2025-04-08
 * `First Created`: 2024-09-16
 
 Description
@@ -31,9 +31,11 @@ Functions provided
 - ``decrypt_and_decompress_string``: Decrypt an encrypted string.
 - ``transform_dict``: Convert a dictionary for easier client-server communication.
 - ``untransform_dict``: Reverse the dictionary transformation to restore the original data format.
+- ``generate_keys``: Generate RSA and ECDSA private and public keys.
+- ``compute_credits_from_df``: Compute the amount of credits consumed for a given DataFrame.
+- ``request_cloud_credits_infos``: Request the server for informations about the credits available.
 - ``request_cloud_public_keys``: Request the server for public keys.
 - ``request_cloud_computation``: Request the server for computation.
-- ``generate_keys``: Generate RSA and ECDSA private and public keys.
 - ``search_best_ruleset_from_API_dict``: Make the API call.
 
 License
@@ -48,8 +50,11 @@ Exclusive Use License - see `LICENSE <license.html>`_ for details.
 ################################################################################
 # Import some libraries
 
-from typing import Optional, Union, Dict, Sequence
+from typing import Optional, Union, Dict, Sequence, Any, Tuple
 import requests
+
+import pandas as pd
+import numpy as np
 
 ################################################################################
 ################################################################################
@@ -526,12 +531,293 @@ def untransform_dict(
 	# Return the result
 	return d_original
 
+
+################################################################################
+################################################################################
+# Defining some cryptographic functions
+
+def generate_keys():
+	"""
+	This function generates RSA and ECDSA private and public keys.
+	The generated keys:
+
+	- ``rsa_private_key``
+	- ``ecdsa_private_key``
+	- ``rsa_public_key_pem_bytes``
+	- ``ecdsa_public_key_pem_bytes``
+
+	Returns
+	-------
+	tuple
+		A tuple containing four elements:
+
+		- rsa_private_key: The generated RSA private key.
+		- ecdsa_private_key: The generated ECDSA private key.
+		- rsa_public_key_pem_bytes: The RSA public key serialized in PEM format.
+		- ecdsa_public_key_pem_bytes: The ECDSA public key serialized in PEM format.
+	"""
+	# Import necessary libraries
+	from cryptography.hazmat.primitives.asymmetric import rsa, ec
+	from cryptography.hazmat.primitives import serialization
+	# Generate the private RSA key
+	# The RSA key allows the encrypted transfer of the AES symmetric key.
+	# Highly secure fields (finance, healthcare, etc.) generally use 2048 bits.
+	# Therefore, a 4096-bit key is highly secure and future-proof.
+	# There's no need to go to 8192 bits, as it is too computationally expensive and overkill.
+	rsa_private_key = rsa.generate_private_key(
+		public_exponent = 65537, # Public exponent
+		key_size        = 4096,  # RSA key size in bits
+	)
+
+	# Generate the private ECDSA key
+	# The ECDSA key enables digital signatures (for authenticity and data integrity)
+	# ECDSA: Elliptic Curve Digital Signature Algorithm
+	# Based on the SECP521R1 elliptic curve
+	# This curve is standardized by NIST and used in many high-security systems.
+	ecdsa_private_key = ec.generate_private_key(
+		curve = ec.SECP521R1(), # Elliptic curve used
+	)
+
+	# Generate the RSA public key
+	rsa_public_key = rsa_private_key.public_key()
+
+	# Generate the ECDSA public key
+	ecdsa_public_key = ecdsa_private_key.public_key()
+	
+	# Serialize the RSA public key
+	rsa_public_key_pem_bytes = rsa_public_key.public_bytes(
+		encoding = serialization.Encoding.PEM,                     # PEM (Privacy-Enhanced Mail) encoding
+		format   = serialization.PublicFormat.SubjectPublicKeyInfo # Format according to SubjectPublicKeyInfo standard
+	)
+
+	# Serialize the ECDSA public key
+	ecdsa_public_key_pem_bytes = ecdsa_public_key.public_bytes(
+		encoding = serialization.Encoding.PEM,                     # PEM (Privacy-Enhanced Mail) encoding
+		format   = serialization.PublicFormat.SubjectPublicKeyInfo # Format according to SubjectPublicKeyInfo standard
+	)
+
+	# Return the keys
+	return rsa_private_key,ecdsa_private_key,rsa_public_key_pem_bytes,ecdsa_public_key_pem_bytes
+
 ################################################################################
 ################################################################################
 # Defining functions for specific requests to the server
 
+def generate_url_headers(
+	computing_source       : str,                  # A string to specify where the server is
+	input_file_service_key : Optional[str] = None, # The service key of the client
+)->Tuple[str, Optional[Dict[str, Any]]]:
+	"""
+	This function generates the url and the headers for the POST request.
+
+	Parameters
+	----------
+	computing_source : str
+		Where the server is.
+	input_file_service_key : optional
+		The client's service key, needed if the server is remote.
+		Default is `None`.
+	"""
+	# Define the POST request parameters
+	if computing_source=='local_cloud_function':
+		# If we want to call a local server
+		# This requires a local rule mining server
+		# Define the POST request parameters
+		url           = 'http://localhost:8080/'
+		headers       = None
+	elif computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
+		# Determine where the code is running
+		import os
+		if "K_SERVICE" not in os.environ:
+			# If the API client is running outside a Google Cloud Run container, we need a service key
+			if input_file_service_key==None:
+				# If no service key is provided, raise an error
+				raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
+			else:
+				# If a service key is provided, put it in the environment variables
+				import os
+				os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = input_file_service_key
+		project_name  = 'insightsolver'
+		region        = 'northamerica-northeast1' # for 'insightsolver_cloud_run_function'        
+		if computing_source in ['remote_cloud_function', 'remote_cloud_function_prod']:
+			function_name = 'insightsolver_cloud_run_function_prod'
+		elif computing_source=='remote_cloud_function_dev':
+			function_name = 'insightsolver_cloud_run_function_dev'
+		url           = f'https://{region}-{project_name}.cloudfunctions.net/{function_name}'
+		import google.auth.transport.requests
+		request       = google.auth.transport.requests.Request()
+		import google.oauth2.id_token
+		TOKEN         = google.oauth2.id_token.fetch_id_token(request, url)
+		headers       = {
+			'Authorization': f"Bearer {TOKEN}",
+			"Content-Type": "application/json",
+		}
+	else:
+		raise Exception(f"ERROR: computing_source='{computing_source}' is invalid. It must be ['local_cloud_function', 'remote_cloud_function', 'remote_cloud_function_prod', 'remote_cloud_function_dev'].")
+
+	# Return the results
+	return (
+		url,     # Return the url
+		headers, # Return the headers
+	)
+
+def compute_credits_from_df(
+	df: pd.DataFrame,
+)->int:
+	"""
+	This function computes the number of credits consumed by a rule mining via the API.
+	This number is based on the size of the DataFrame sent to the API.
+
+	Parameters
+	----------
+	df : pd.DataFrame
+		Input DataFrame whose size is used to compute credits.
+
+	Returns
+	-------
+	int
+		The computed number of credits consumed.
+	"""
+	# Take the size of df
+	m,n = df.shape
+	# Compute the amount of credits
+	from math import ceil
+	credits = ceil(m*n/10000)
+	# Return the amount of credits
+	return credits
+
+def request_cloud_credits_infos(
+	computing_source       : str,                  # A string to specify where the server is
+	d_out_credits_infos    : dict,                 # Dict that specifies which infos about the credits are asked for
+	input_file_service_key : Optional[str] = None, # The service key of the client
+	user_email             : Optional[str] = None, # Email of the user (only for use inside a Google Cloud Run container)
+	timeout                : int           = 60,   # No need for a big timeout because we're only asking for infos about the credits
+)->dict:
+	"""
+	Send a dict that specifies which infos about the credits are asked for.
+
+	Parameters
+	----------
+	computing_source : str
+		Where the server is.
+	d_out_credits_infos : dict
+		A dictionary containing the infos about the credits that are asked for. The dictionary format is:
+
+		- ``private_key_id``: private_key_id of the service_key.
+		- ``user_email``: Email of the user.
+		- ``do_compute_credits_available``: A boolean that specifies where the number of credits available is requested.
+		- ``do_compute_df_credits_infos``: A boolean that specifies if a DataFrame containing all credits transactions is asked for.
+	input_file_service_key : optional
+		The client's service key, needed if the server is remote.
+		Default is `None`.
+	timeout : int, optional
+		The timeout duration for the request, in seconds. Default is 60 seconds, as this operation is 
+		typically fast and does not involve computation.
+
+	"""
+
+	# Make sure that the dict contains both keys
+	if ('do_compute_credits_available' not in d_out_credits_infos.keys()):
+		raise Exception("ERROR: the key 'do_compute_credits_available' is not in the outgoing dict.")
+	elif ('do_compute_df_credits_infos' not in d_out_credits_infos.keys()):
+		raise Exception("ERROR: the key 'do_compute_df_credits_infos' is not in the outgoing dict.")
+
+	# Make sure that at least one is True
+	if (not d_out_credits_infos['do_compute_credits_available'])&(not d_out_credits_infos['do_compute_df_credits_infos']):
+		raise Exception("ERROR: the outgoing dict needs that at least one of the keys 'do_compute_credits_available' or 'do_compute_df_credits_infos' to be True.")
+
+	# Make sure the private_key_id is in the dict
+	if computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
+		# Determine where the code is running
+		import os
+		if "K_SERVICE" not in os.environ:
+			# If the API client is running outside a Google Cloud Run container, we need a service key
+			if (input_file_service_key==None)&('private_key_id' not in d_out_credits_infos.keys()):
+				# If no service key is provided, raise an error
+				raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
+			elif (input_file_service_key==None)&('private_key_id' in d_out_credits_infos.keys()):
+				...
+			elif (input_file_service_key!=None)&('private_key_id' not in d_out_credits_infos.keys()):
+				# If a service key is provided, take the ID of the key
+				import json
+				# Open the key
+				with open(input_file_service_key, 'r') as f:
+					# Take the service_key
+					d_out_credits_infos['private_key_id'] = json.load(f)['private_key_id']
+			elif (input_file_service_key!=None)&('private_key_id' in d_out_credits_infos.keys()):
+				...
+		else:
+			# If the API client is running inside a Google Cloud Run container
+			if (user_email==None)&('user_email' not in d_out_credits_infos.keys()):
+				# If there is no email, raise an error
+				raise Exception("ERROR: The InsightSolver API client is running inside a Google Cloud Run container and the user email is None, but it must be specified for remote cloud computing.")
+			elif (user_email==None)&('user_email' in d_out_credits_infos.keys()):
+				...
+			elif (user_email!=None)&('user_email' not in d_out_credits_infos.keys()):
+				# We identify the user via its email instead of the private key id from the service key
+				d_out_credits_infos['user_email'] = user_email
+			elif (user_email!=None)&('user_email' in d_out_credits_infos.keys()):
+				...
+
+	# Generate the url and the headers of the POST request
+	url,headers = generate_url_headers(
+		computing_source       = computing_source,
+		input_file_service_key = input_file_service_key,
+	)
+	# Make the POST request
+	import requests
+	response = requests.post(
+		url            = url,                 # URL of the request
+		headers        = headers,             # A dict of HTTP headers to send to the URL
+		json           = d_out_credits_infos, # The dict of to send to the URL
+		timeout        = timeout,             # Max number of seconds to wait for the server for a response.
+	)
+	# Make sure that the response is ok
+	if response.status_code != 200:
+		print(response.text)
+		raise Exception(f"ERROR (request_cloud_credits_infos): Received status code {response.status_code}")
+	# Take the incoming response.
+	try:
+		d_in_transformed = response.json()
+	except:
+		raise Exception("ERROR: The incoming response does not contain a .json() method.")
+
+	if isinstance(d_in_transformed,dict):
+		...
+	elif isinstance(d_in_transformed,str):
+		raise Exception('ERROR: The content of the incoming .json() method is a string.')
+	# Untransform the dict
+	try:
+		d_in_credits_infos = untransform_dict(
+			d_transformed = d_in_transformed,
+		)
+	except:
+		raise Exception("ERROR: Cannot untransform the incoming dict.")
+
+	# Make sure the incoming dict contains the requested keys
+	expected_incoming_keys = [
+		'credits_available',
+		'df_credits_infos_to_dict',
+	]
+	for key in expected_incoming_keys:
+		if key not in d_in_credits_infos.keys():
+			raise Exception(f"ERROR (request_cloud_credits_infos): The incoming dict does not contain the key '{key}'.")
+	# Convert the DataFrame info from json to dict
+	df_credits_infos_to_dict = d_in_credits_infos['df_credits_infos_to_dict']
+	if df_credits_infos_to_dict is not None:
+		df_credits_infos = pd.DataFrame(
+			data = json.loads(df_credits_infos_to_dict),
+		)
+		df_credits_infos = df_credits_infos.map(lambda x: np.nan if x is None else x)
+	else:
+		df_credits_infos = None
+	d_in_credits_infos['df_credits_infos'] = df_credits_infos
+
+	# Return the result
+	return d_in_credits_infos
+
 def request_cloud_public_keys(
-	computing_source       : str,                  # Where the server is
+	computing_source       : str,                  # A string to specify where the server is
 	d_client_public_keys   : dict,                 # Dict of the public keys of the client
 	input_file_service_key : Optional[str] = None, # The service key of the client
 	timeout                : int           = 60,   # No need for a big timeout because we're only asking for keys and not computation
@@ -597,49 +883,18 @@ def request_cloud_public_keys(
 		If the request fails or the server does not return the expected keys.
 	"""
 
-	# Define the POST request parameters
-	if computing_source=='local_cloud_function':
-		# If we want to call a local server
-		# This requires a local rule mining server
-		# Define the POST request parameters
-		url           = 'http://localhost:8080/'
-		headers       = None
-	elif computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
-		# Determine where the code is running
-		import os
-		if "K_SERVICE" not in os.environ:
-			# If the API client is running outside a Google Cloud Run container, we need a service key
-			if input_file_service_key==None:
-				# If no service key is provided, raise an error
-				raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
-			else:
-				# If a service key is provided, put it in the environment variables
-				import os
-				os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = input_file_service_key
-		project_name  = 'insightsolver'
-		region        = 'northamerica-northeast1' # for 'insightsolver_cloud_run_function'        
-		if computing_source in ['remote_cloud_function', 'remote_cloud_function_prod']:
-			function_name = 'insightsolver_cloud_run_function_prod'
-		elif computing_source=='remote_cloud_function_dev':
-			function_name = 'insightsolver_cloud_run_function_dev'
-		url           = f'https://{region}-{project_name}.cloudfunctions.net/{function_name}'
-		import google.auth.transport.requests
-		request       = google.auth.transport.requests.Request()
-		import google.oauth2.id_token
-		TOKEN         = google.oauth2.id_token.fetch_id_token(request, url)
-		headers       = {
-			'Authorization': f"Bearer {TOKEN}",
-			"Content-Type": "application/json",
-		}
-	else:
-		raise Exception(f"ERROR: computing_source='{computing_source}' is invalid. It must be ['local_cloud_function', 'remote_cloud_function', 'remote_cloud_function_prod', 'remote_cloud_function_dev'].")
+	# Generate the url and the headers of the POST request
+	url,headers = generate_url_headers(
+		computing_source       = computing_source,
+		input_file_service_key = input_file_service_key,
+	)
 
 	# Make the POST request
 	import requests
 	response = requests.post(
 		url            = url,                  # URL of the request
-		json           = d_client_public_keys, # The dict of to send to the URL
 		headers        = headers,              # A dict of HTTP headers to send to the URL
+		json           = d_client_public_keys, # The dict of to send to the URL
 		timeout        = timeout,              # Max number of seconds to wait for the server for a response.
 	)
 	# Make sure that the response is ok
@@ -665,11 +920,12 @@ def request_cloud_public_keys(
 	return d_server_public_keys
 
 def request_cloud_computation(
-	computing_source       : str,                  # A string to specify the computing source
-	d_out_transformed      : dict,                 # The transformed dict to send to the server
-	input_file_service_key : Optional[str] = None, # The service key
-	timeout                : int           = 600,  # The timeout
-)->requests.Response:
+	computing_source       : str,                   # A string to specify where the server is
+	d_out_transformed      : dict,                  # The transformed dict to send to the server
+	input_file_service_key : Optional[str] = None,  # The service key
+	timeout                : int           = 600,   # The timeout
+	verbose                : bool          = False, # Verbosity
+)->dict:
 	"""
 	Send the transformed dict to the server for it to compute the rule mining.
 
@@ -687,129 +943,56 @@ def request_cloud_computation(
 
 	Returns
 	-------
-	requests.Response
-		The response from the server after attempting the computation request.
-
-	Raises
-	------
-	requests.exceptions.RequestException
-		If the request to the server fails due to a network issue or server error.
+	dict
+		The dict that contains the rule mining results.
 	"""
-	# Define the POST request parameters
-	if computing_source=='local_cloud_function':
-		# If we want to call a local server
-		# This requires a local rule mining server
-		# Define the POST request parameters
-		url           = 'http://localhost:8080/'
-		headers       = None
-	elif computing_source in ['remote_cloud_function','remote_cloud_function_prod','remote_cloud_function_dev']:
-		# Determine where the code is running
-		import os
-		if "K_SERVICE" not in os.environ:
-			# If the API client is running outside a Google Cloud Run container, we need a service key
-			if input_file_service_key==None:
-				# If no service key is provided, raise an error
-				raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
-			else:
-				# If a service key is provided, put it in the environment variables
-				import os
-				os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = input_file_service_key
-		project_name  = 'insightsolver'
-		region        = 'northamerica-northeast1' # for 'insightsolver_cloud_run_function'        
-		if computing_source in ['remote_cloud_function','remote_cloud_function_prod']:
-			function_name = 'insightsolver_cloud_run_function_prod'
-		elif computing_source=='remote_cloud_function_dev':
-			function_name = 'insightsolver_cloud_run_function_dev'
-		url           = f'https://{region}-{project_name}.cloudfunctions.net/{function_name}'
-		import google.auth.transport.requests
-		request       = google.auth.transport.requests.Request()
-		import google.oauth2.id_token
-		TOKEN         = google.oauth2.id_token.fetch_id_token(request, url)
-		headers       = {
-			'Authorization': f"Bearer {TOKEN}",
-			"Content-Type": "application/json",
-		}
-	else:
-		raise Exception(f"ERROR: computing_source='{computing_source}' is invalid. It must in ['local_cloud_function', 'remote_cloud_function', 'remote_cloud_function_prod', 'remote_cloud_function_dev'].")
+
+	# Generate the url and the headers of the POST request
+	url,headers = generate_url_headers(
+		computing_source       = computing_source,
+		input_file_service_key = input_file_service_key,
+	)
 
 	# Make the POST request
 	import requests
 	response = requests.post(
 		url            = url,               # The URL of the request
-		json           = d_out_transformed, # The dict to send to the URL as json
 		headers        = headers,           # The dict of HTTP headers to send to the URL
+		json           = d_out_transformed, # The dict to send to the URL as json
 		timeout        = timeout,           # Max number of seconds to wait for the server for a response.
 	)
 
-	# Return the response
-	return response
+	if verbose:
+		# Take a look at the computation time of the request
+		print('Request time (h:mm:ss) :',response.elapsed)
+		print('status_code :',response.status_code)
+		print('reason      :',response.reason)
+		#print('text        :',response.text)
 
-################################################################################
-################################################################################
-# Defining some cryptographic functions
+	# Take a look at the error message
+	if not response.ok:
+		# status_code = '400'
+		# reason      = 'BAD REQUEST'
+		try:
+			print('error       :',response.json()['error'])
+		except:
+			print('error       :',response.text)
+		raise Exception("ERROR: The API call did not succeed.")
+	# status_code = '200'
+	# reason      = 'OK'
 
-def generate_keys():
-	"""
-	This function generates RSA and ECDSA private and public keys.
-	The generated keys:
+	# Take the incoming response.
+	try:
+		d_in_transformed = response.json()
+	except:
+		raise Exception("ERROR: The incoming response does not contain a .json() method.")
+	if isinstance(d_in_transformed,dict):
+		...
+	elif isinstance(d_in_transformed,str):
+		raise Exception('ERROR: The content of the incoming .json() method is a string.')
 
-	- ``rsa_private_key``
-	- ``ecdsa_private_key``
-	- ``rsa_public_key_pem_bytes``
-	- ``ecdsa_public_key_pem_bytes``
-
-    Returns
-    -------
-    tuple
-        A tuple containing four elements:
-
-        - rsa_private_key: The generated RSA private key.
-        - ecdsa_private_key: The generated ECDSA private key.
-        - rsa_public_key_pem_bytes: The RSA public key serialized in PEM format.
-        - ecdsa_public_key_pem_bytes: The ECDSA public key serialized in PEM format.
-	"""
-	# Import necessary libraries
-	from cryptography.hazmat.primitives.asymmetric import rsa, ec
-	from cryptography.hazmat.primitives import serialization
-	# Generate the private RSA key
-	# The RSA key allows the encrypted transfer of the AES symmetric key.
-	# Highly secure fields (finance, healthcare, etc.) generally use 2048 bits.
-	# Therefore, a 4096-bit key is highly secure and future-proof.
-	# There's no need to go to 8192 bits, as it is too computationally expensive and overkill.
-	rsa_private_key = rsa.generate_private_key(
-		public_exponent = 65537, # Public exponent
-		key_size        = 4096,  # RSA key size in bits
-	)
-
-	# Generate the private ECDSA key
-	# The ECDSA key enables digital signatures (for authenticity and data integrity)
-	# ECDSA: Elliptic Curve Digital Signature Algorithm
-	# Based on the SECP521R1 elliptic curve
-	# This curve is standardized by NIST and used in many high-security systems.
-	ecdsa_private_key = ec.generate_private_key(
-		curve = ec.SECP521R1(), # Elliptic curve used
-	)
-
-	# Generate the RSA public key
-	rsa_public_key = rsa_private_key.public_key()
-
-	# Generate the ECDSA public key
-	ecdsa_public_key = ecdsa_private_key.public_key()
-	
-	# Serialize the RSA public key
-	rsa_public_key_pem_bytes = rsa_public_key.public_bytes(
-		encoding = serialization.Encoding.PEM,                     # PEM (Privacy-Enhanced Mail) encoding
-		format   = serialization.PublicFormat.SubjectPublicKeyInfo # Format according to SubjectPublicKeyInfo standard
-	)
-
-	# Serialize the ECDSA public key
-	ecdsa_public_key_pem_bytes = ecdsa_public_key.public_bytes(
-		encoding = serialization.Encoding.PEM,                     # PEM (Privacy-Enhanced Mail) encoding
-		format   = serialization.PublicFormat.SubjectPublicKeyInfo # Format according to SubjectPublicKeyInfo standard
-	)
-
-	# Return the keys
-	return rsa_private_key,ecdsa_private_key,rsa_public_key_pem_bytes,ecdsa_public_key_pem_bytes
+	# Return the dict
+	return d_in_transformed
 
 ################################################################################
 ################################################################################
@@ -915,7 +1098,7 @@ def search_best_ruleset_from_API_dict(
 	encrypted_symmetric_key_signature_base64 = convert_bytes_to_base64_string(encrypted_symmetric_key_signature_bytes)
 	# Specify if we want to compute the memory usage
 	d_out_transformed['do_compute_memory_usage'] = do_compute_memory_usage
-	# Add the private key id in the dict
+	# Add the private_key_id in the dict
 	if computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
 		# Determine where the code is running
 		import os
@@ -938,44 +1121,19 @@ def search_best_ruleset_from_API_dict(
 				raise Exception("ERROR: The InsightSolver API client is running inside a Google Cloud Run container and the user email is None, but it must be specified for remote cloud computing.")
 			else:
 				# We identify the user via its email's hash instead of the private key id from the service key
-				d_out_transformed['email_hash'] = hash_string(user_email)
+				d_out_transformed['user_email'] = user_email
 	# Add other things
 	d_out_transformed['session_id'] = session_id
 	d_out_transformed['encrypted_symmetric_key_base64'] = encrypted_symmetric_key_base64
 	d_out_transformed['encrypted_symmetric_key_signature_base64'] = encrypted_symmetric_key_signature_base64
 	# Cloud computation
-	response = request_cloud_computation(
+	d_in_transformed = request_cloud_computation(
 		input_file_service_key = input_file_service_key,
 		computing_source       = computing_source,
 		d_out_transformed      = d_out_transformed,
 		timeout                = 600,
+		verbose                = verbose,
 	)
-	if verbose:
-		# Take a look at the computation time of the request
-		print('Request time (h:mm:ss) :',response.elapsed)
-		print('status_code :',response.status_code)
-		print('reason      :',response.reason)
-		#print('text        :',response.text)
-	# Take a look at the error message
-	if not response.ok:
-		# status_code = '400'
-		# reason      = 'BAD REQUEST'
-		try:
-			print('error       :',response.json()['error'])
-		except:
-			print('error       :',response.text)
-		raise Exception("ERROR: The API call did not succeed.")
-	# status_code = '200'
-	# reason      = 'OK'
-	# Take the incoming response.
-	try:
-		d_in_transformed = response.json()
-	except:
-		raise Exception("ERROR: The incoming response does not contain a .json() method.")
-	if isinstance(d_in_transformed,dict):
-		...
-	elif isinstance(d_in_transformed,str):
-		raise Exception('ERROR: The content of the incoming .json() method is a string.')
 	# Untransform the dict
 	try:
 		d_in_original = untransform_dict(
