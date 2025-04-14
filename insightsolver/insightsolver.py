@@ -354,7 +354,16 @@ def S_to_index_points_in_rule(
 		if verbose:
 			print('•- feature_S :',feature_S)
 		# Take the btype of the feature
-		feature_type = solver.columns_types[feature_name]
+		if feature_name in solver.columns_types.keys():
+			# If the type is specified in the solver, we take it
+			feature_type = solver.columns_types[feature_name]
+		else:
+			# If the type is not specified in the solver, we guess it from the rule
+			if isinstance(S[feature_name],set):
+				# We can take 'multiclass' temporarily, even if it is 'binary'
+				feature_type = 'multiclass'
+			else:
+				feature_type = 'continuous'
 		if verbose:
 			print('•- feature_type :',feature_type)
 		"""
@@ -427,8 +436,6 @@ def S_to_index_points_in_rule(
 					mask = mask|(df_features_filtre[feature_name]==str(modality))
 				else:
 					raise Exception(f"ERROR: the modality='{modality}' is not in the data.")
-			# Filter the DataFrame by the mask
-			df_features_filtre = df_features_filtre[mask]
 		elif feature_type=='continuous':
 			# If the feature is continuous
 			if feature_S[1] in ['exclude_nan','include_nan']:
@@ -451,8 +458,6 @@ def S_to_index_points_in_rule(
 					mask = mask|s.isna()
 				else:
 					raise Exception(f"ERROR: include_or_exlude_nan='{include_or_exlude_nan}' should be either 'include_nan' or 'exclude_nan'.")
-				# Filter the data
-				df_features_filtre = df_features_filtre[mask]
 			else:
 				# If the feature is continuous without NaNs
 				s_rule_min,s_rule_max = feature_S
@@ -463,8 +468,8 @@ def S_to_index_points_in_rule(
 				s = df_features_filtre[feature_name]
 				# Keep only the values between the interval
 				mask = (s_rule_min<=s)&(s<=s_rule_max)
-				# Filter the data
-				df_features_filtre = df_features_filtre[mask]
+	# Filter the data
+	df_features_filtre = df_features_filtre[mask]
 	# Take the index
 	index = df_features_filtre.index
 	# Sort the index

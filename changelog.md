@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.14 (2025-04-14)
+
+*Improvements:*
+
+- Fixed a bug in the function `S_to_index_points_in_rule` that caused it to crash when the type of a feature was not specified in the solver.
+- Fixed a bug in the function `S_to_index_points_in_rule` that caused it to crash when a modality was not in the filtered DataFrame.
+
 ## 0.1.13 (2025-04-09)
 
 *Improvements:*
