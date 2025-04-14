@@ -345,6 +345,11 @@ def S_to_index_points_in_rule(
 	feature_names.sort()
 	if verbose:
 		print('feature_names :',feature_names)
+	# Create a mask to filter the DataFrame
+	mask = pd.Series(
+		data  = True,
+		index = df_features_filtre.index,
+	)
 	# Loop over the features of the rule S
 	for feature_name in feature_names:
 		if verbose:
@@ -400,8 +405,8 @@ def S_to_index_points_in_rule(
 				feature_S = {feature_S}
 			if verbose:
 				print('•- feature_S :',feature_S)
-			# Create a mask to filter the DataFrame
-			mask = pd.Series(
+			# Create a temporary mask to filter the DataFrame
+			mask_temp = pd.Series(
 				data  = False,
 				index = df_features_filtre.index,
 			)
@@ -410,13 +415,13 @@ def S_to_index_points_in_rule(
 				if modality in [np.nan,'nan']:
 					# If the modality is NaN
 					# Keep the NaNs
-					mask = mask|df_features_filtre[feature_name].isna()
+					mask_temp |= df_features_filtre[feature_name].isna()
 				elif modality=='other':
 					# If the modality is 'other'
 					if 'other' in df_features_filtre[feature_name].values:
 						# If 'other' is a modality of the original data
 						# Keep the modality 'other'
-						mask = mask|(df_features_filtre[feature_name]=='other')
+						mask_temp |= (df_features_filtre[feature_name]=='other')
 					if feature_name in solver.other_modalities.keys():
 						# If the feature is present in the conversion to other modalities
 						if len(solver.other_modalities[feature_name])>0:
@@ -424,16 +429,16 @@ def S_to_index_points_in_rule(
 							# Take the other modalities
 							other_modalities = solver.other_modalities[feature_name]
 							# Keep the other modalities
-							mask = mask|(df_features_filtre[feature_name].isin(other_modalities))
+							mask_temp |= (df_features_filtre[feature_name].isin(other_modalities))
 				elif modality in df_features_filtre[feature_name].values:
 					# If the modality is in the original data
 					# Keep the modality
-					mask = mask|(df_features_filtre[feature_name]==modality)
+					mask_temp |= (df_features_filtre[feature_name]==modality)
 				elif str(modality) in df_features_filtre[feature_name].values:
 					# If str(modality) is in the original data
 					# Keep str(modality)
 					print("WARNING: 'str(modality)' is in the data but not 'modality'.")
-					mask = mask|(df_features_filtre[feature_name]==str(modality))
+					mask_temp |= (df_features_filtre[feature_name]==str(modality))
 				else:
 					raise Exception(f"ERROR: the modality='{modality}' is not in the data.")
 		elif feature_type=='continuous':
@@ -448,14 +453,14 @@ def S_to_index_points_in_rule(
 				# Take the continuous values of the feature
 				s = df_features_filtre[feature_name]
 				# Keep only the values between the interval
-				mask = (s_rule_min<=s)&(s<=s_rule_max)
+				mask_temp = (s_rule_min<=s)&(s<=s_rule_max)
 				# Handle NaNs
 				if include_or_exlude_nan=='exclude_nan':
 					# NaNs are a priori excluded because (s_rule_min<=s)&(s<=s_rule_max) can only be True for non NaNs.
 					...
 				elif include_or_exlude_nan=='include_nan':
 					# If we want to include NaNs
-					mask = mask|s.isna()
+					mask_temp |= s.isna()
 				else:
 					raise Exception(f"ERROR: include_or_exlude_nan='{include_or_exlude_nan}' should be either 'include_nan' or 'exclude_nan'.")
 			else:
@@ -467,7 +472,10 @@ def S_to_index_points_in_rule(
 				# Take the continuous values of the feature
 				s = df_features_filtre[feature_name]
 				# Keep only the values between the interval
-				mask = (s_rule_min<=s)&(s<=s_rule_max)
+				mask_temp = (s_rule_min<=s)&(s<=s_rule_max)
+		mask &= mask_temp
+		if verbose:
+			print("•- Number of points remaining:",mask.sum())
 	# Filter the data
 	df_features_filtre = df_features_filtre[mask]
 	# Take the index
