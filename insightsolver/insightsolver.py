@@ -521,7 +521,7 @@ class InsightSolver:
 	other_modalities: dict
 		Modalities that are mapped to the modality 'other'.
 	threshold_M_max: int (default 10000)
-		Threshold on the maximum number of observations to consider, above which we under sample the observations to 10000.
+		Threshold on the maximum number of observations to consider, above which we under sample the observations.
 	specified_constraints: dict
 		Dictionary of the specified constraints on ``m_min``, ``m_max``, ``coverage_min``, ``coverage_max``.
 	top_N_rules: int (default 10)
@@ -638,7 +638,7 @@ class InsightSolver:
 		target_goal: Optional[Union[str,numbers.Real,np.uint8]] = None,   # Target goal
 		columns_types: Optional[Dict]                           = dict(), # Types of the columns
 		columns_descr:Optional[Dict]                            = dict(), # Descriptions of the columns
-		threshold_M_max: Optional[int]                          = 10000,  # Maximum number of observations to consider
+		threshold_M_max: Optional[int]                          = 10000,  # Maximum number of observations to consider (by default 10000)
 		specified_constraints: Optional[Dict]                   = dict(), # Specified constraints on the rule mining
 		top_N_rules: Optional[int]                              = 10,     # Maximum number of rules to get from the rule mining
 		filtering_score: str                                    = 'auto', # Filtering score to be used when selecting rules.
@@ -713,14 +713,13 @@ class InsightSolver:
 		)
 		# Handling threshold_M_max
 		if threshold_M_max==None:
-			threshold_M_max = 10000
-		elif threshold_M_max>10000:
-			threshold_M_max = 10000
+			threshold_M_max = 40000 # If the limit is set to None, we send at most 40000 rows to the server.
+		elif threshold_M_max>40000:
+			threshold_M_max = 40000 # The server will only accept at most 40000 rows.
 		self.threshold_M_max = threshold_M_max
 		# Sample df
 		if len(df)>self.threshold_M_max:
 			# Sample df locally to limit the amount of data sent to the server.
-			# The server will only accept at most 10000 rows.
 			self.df = df.sample(
 				n            = self.threshold_M_max,
 				random_state = 0,
@@ -1912,7 +1911,7 @@ def search_best_ruleset_from_API_public(
 	columns_names_to_descr: dict
 		A dict that specifies the descriptions of the columns.
 	threshold_M_max: int
-		Threshold on the maximum number of points to use during the rule mining (max. 10000 pts in the public API).
+		Threshold on the maximum number of points to use during the rule mining (default 10000 points, maximum 40000 points in the server side of the API).
 	specified_constraints: dict
 		A dict that specifies contraints to be used during the rule mining.
 	top_N_rules: int

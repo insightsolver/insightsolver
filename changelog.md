@@ -11,6 +11,7 @@
 - Now it is possible to do `insightsolver.__version__` to get the current version of the module.
 - The header of `__init__.py` is slightly improved.
 - Fixed a bug in the documentation.
+- The parameter `threshold_M_max` can now be set up to `40000` instead of `10000`.
 
 ## 0.1.14 (2025-04-14)
 
