@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.15 (2025-04-23)
+
+*Improvements:*
+
+- The function `search_best_ruleset_from_API_public` now has six new parameters `columns_names_to_descr`, `do_llm_readable_rules`, `llm_source`, `llm_language`, `do_store_llm_cache`, `do_check_llm_cache`. These parameters are meant to convert the identified rules to human readable text.
+- The method `solver.fit` now has these last five new parameters.
+- New method `solver.i_to_readable_text` meant to show the human readable text of the rule `i` if it is available.
+- The methods `solver.i_to_print` and `solver.print` now show the human readable text of the rules if it is available.
+- Now it is possible to do `insightsolver.__version__` to get the current version of the module.
+- The header of `__init__.py` is slightly improved.
+- Fixed a bug in the documentation.
+
 ## 0.1.14 (2025-04-14)
 
 *Improvements:*

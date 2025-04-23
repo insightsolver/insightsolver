@@ -4,9 +4,11 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+from insightsolver.version import __version__
+
 setup(
 	name="insightsolver",                   # Nom du package (doit être unique sur PyPI)
-	version="0.1.14",                       # Version du package
+	version=__version__,                    # Version du package
 	packages=find_packages(),               # Trouver tous les sous-packages automatiquement
 	install_requires=[                      # Dépendances du package
 		"pandas",

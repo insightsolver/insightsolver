@@ -1,15 +1,16 @@
 """
+* `Organization`:  InsightSolver
 * `Project Name`:  InsightSolver
 * `Module Name`:   insightsolver
+* `File Name`:     insightsolver.py
 * `Author`:        Noé Aubin-Cadot
-* `Organization`:  InsightSolver
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-04-09
+* `Last Updated`:  2025-04-23
 * `First Created`: 2024-09-09
 
 Description
 -----------
-This module contains the ``InsightSolver`` class.
+This file contains the ``InsightSolver`` class.
 It is meant to make rule mining API calls.
 
 Note
@@ -562,6 +563,8 @@ class InsightSolver:
 		Returns a DataFrame containing the informations about the subrules of the rule i.
 	i_to_feature_contributions_S: Pandas DataFrame
 		Returns a DataFrame of the feature contributions of the variables in the rule S at position i.
+	i_to_readable_text: str
+		Returns the readable text of the rule i if it is available.
 	i_to_print: None
 		Prints the content of the rule i in the InsightSolver.
 	get_range_i: list
@@ -836,6 +839,11 @@ class InsightSolver:
 		do_compress_data:bool        = True,   # If we want to compress the data for the communications with the server
 		do_compute_memory_usage:bool = True,   # If we want to monitor the first thread memory usage on the server side
 		do_check_enough_credits:bool = False,  # Check if there are enough credits to fit the solver
+		do_llm_readable_rules: bool  = True,   # If we want to convert the rules to a readable format using a LLM.
+		llm_source: str              = 'auto', # Source where the LLM is running.
+		llm_language: str            = 'auto', # Language of the LLM.
+		do_store_llm_cache: bool     = True,   # If we want to store the result of the LLM in the cache (makes futur LLM calls faster).
+		do_check_llm_cache: bool     = True,   # If we want to check if the results of the prompt are found in the cache (makes LLM calls faster).
 	)->None:
 		"""
 		This method aims to fit the solver.
@@ -869,6 +877,7 @@ class InsightSolver:
 			target_name             = self.target_name,
 			target_goal             = self.target_goal,
 			columns_names_to_btypes = self.columns_types,
+			columns_names_to_descr  = self.columns_descr,
 			threshold_M_max         = self.threshold_M_max,
 			specified_constraints   = self.specified_constraints,
 			top_N_rules             = self.top_N_rules,
@@ -879,6 +888,11 @@ class InsightSolver:
 			api_source              = api_source,
 			do_compress_data        = do_compress_data,
 			do_compute_memory_usage = do_compute_memory_usage,
+			do_llm_readable_rules   = do_llm_readable_rules,
+			llm_source              = llm_source,
+			llm_language            = llm_language,
+			do_store_llm_cache      = do_store_llm_cache,
+			do_check_llm_cache      = do_check_llm_cache,
 		)
 		# Ingest the untransformed incoming dict
 		self.ingest_dict(
@@ -1085,6 +1099,28 @@ class InsightSolver:
 		if do_rename_cols:
 			df_feature_contributions_S.columns = [col.replace('_contribution','') for col in df_feature_contributions_S.columns]
 		return df_feature_contributions_S
+	def i_to_readable_text(
+		self,
+		i,
+	)->Optional[str]:
+		"""
+		Returns the readable text of the rule i if it is available.
+		"""
+		# Take the rule i
+		rule_i = self.i_to_rule(i=i)
+		# Try to take the human readable text of the rule
+		if 'llm' in rule_i.keys():
+			if 'readable' in rule_i['llm']:
+				if 'text' in rule_i['llm']['readable']:
+					readable_text = rule_i['llm']['readable']['text']
+				else:
+					readable_text = None
+			else:
+				readable_text = None
+		else:
+			readable_text = None
+		# Return the result
+		return readable_text
 	def i_to_print(
 		self,
 		i: int,
@@ -1099,7 +1135,9 @@ class InsightSolver:
 		"""
 		This method prints the content of the rule i in the InsightSolver.
 		"""
+		# Take the rule i
 		rule_i = self.i_to_rule(i=i)
+		# Show various scores
 		print(f'{indentation}p_value         :',rule_i['p_value'])
 		print(f'{indentation}F_score         :',rule_i['F_score'])
 		print(f'{indentation}Z_score         :',rule_i['Z_score'])
@@ -1127,9 +1165,13 @@ class InsightSolver:
 		print(f'{indentation}rule_S          :',rule_S)
 		p_value_ratio_S = {k:v for k,v in rule_i['p_value_ratio_S'].items() if k in rule_i['rule_S'].keys()}
 		print(f'{indentation}p_value_ratio_S :',p_value_ratio_S)
-
+		# Show the rule in a human readable textual form if it is available
+		readable_text = self.i_to_readable_text(i=i)
+		if readable_text:
+			print(f'{indentation}text            :',readable_text)
+		# Show the DataFrame of the rule
 		if do_print_rule_DataFrame:
-			# On calcule le DataFrame de la règle par variables
+			# Compute the DataFrame of the rule
 			df_rules_and_p_value_ratio = pd.concat(
 				(
 					pd.Series(rule_S).rename('rule'),
@@ -1146,9 +1188,9 @@ class InsightSolver:
 			).reset_index(
 				drop=True,
 			)
-			# On ajoute la complexité
+			# Append the complexity
 			df_rules_and_p_value_ratio['complexity'] = range(1,len(df_rules_and_p_value_ratio)+1)
-			# On montre le DataFrame de la règle
+			# Show the DataFrame of the rule
 			print(f'\nDataFrame of the components and p_value_ratio :')
 			print(df_rules_and_p_value_ratio)
 		if do_print_subrules_S:
@@ -1183,14 +1225,14 @@ class InsightSolver:
 					'wy_ratio',
 				]
 				df_subrules_S.rename(columns={'Z_score_wy_ratio':'wy_ratio'},inplace=True)
-			# Si on veut montrer la différence des coverage successifs des sous-règles
+			# If we want to show the difference of the successive coverage of the subrules
 			if do_show_coverage_diff:
 				df_subrules_S['coverage_diff'] = df_subrules_S['coverage'].diff()
 				df_subrules_S.loc[0,'coverage_diff'] = df_subrules_S.loc[0,'coverage']-1
 				cols += ['coverage_diff']
-			# On ne garde que certaines colonnes
+			# Keep only certain columns
 			df_subrules_S = df_subrules_S[cols]
-			# On print le DataFrame
+			# Show the DataFrame
 			df_subrules_S_formatted = df_subrules_S.copy()
 			do_compactify_print=1
 			if do_compactify_print:
@@ -1831,6 +1873,7 @@ def search_best_ruleset_from_API_public(
 	target_name             : Optional[Union[str,int]]                   = None,   # Name of the target variable
 	target_goal             : Optional[Union[str,numbers.Real,np.uint8]] = None,   # Target goal
 	columns_names_to_btypes : Optional[Dict]                             = dict(), # Specify the btypes of the variables
+	columns_names_to_descr  : Optional[Dict]                             = dict(), # Specify the descriptions of the variables
 	threshold_M_max         : Optional[int]                              = None,   # Specify the maximum number of rows to use in the rule mining
 	specified_constraints   : Optional[Dict]                             = dict(), # Specify some constraints on the rules
 	top_N_rules             : Optional[int]                              = 10,     # Maximum number of rules to keep
@@ -1841,6 +1884,11 @@ def search_best_ruleset_from_API_public(
 	do_compute_memory_usage : bool                                       = True,   # If we want to compute the memory usage of the API (this significantly slows down computation time but is good for monitoring purposes)
 	n_benchmark_original    : int                                        = 5,      # Number of benchmarking runs to execute where the target is not shuffled.
 	n_benchmark_shuffle     : int                                        = 20,     # Number of benchmarking runs to execute where the target is shuffled.
+	do_llm_readable_rules   : bool                                       = False,  # If we want to convert the rules to a readable format using a LLM.
+	llm_source              : str                                        = 'remote_gemini', # Source where the LLM is running.
+	llm_language            : str                                        = 'auto', # Language of the LLM.
+	do_store_llm_cache      : bool                                       = True,   # If we want to store the result of the LLM in the cache (makes futur LLM calls faster).
+	do_check_llm_cache      : bool                                       = True,   # If we want to check if the results of the prompt are found in the cache (makes LLM calls faster).
 )->dict:
 	"""
 	This function is meant to make a rule mining API call.
@@ -1861,6 +1909,8 @@ def search_best_ruleset_from_API_public(
 		Target goal.
 	columns_names_to_btypes: dict
 		A dict that specifies the btypes of the columns.
+	columns_names_to_descr: dict
+		A dict that specifies the descriptions of the columns.
 	threshold_M_max: int
 		Threshold on the maximum number of points to use during the rule mining (max. 10000 pts in the public API).
 	specified_constraints: dict
@@ -1881,6 +1931,14 @@ def search_best_ruleset_from_API_public(
 		Number of benchmarking runs to execute where the target is not shuffled.
 	n_benchmark_shuffle: int
 		Number of benchmarking runs to execute where the target is shuffled.
+	do_llm_readable_rules: bool
+		If we want to convert the rules to a readable format using a LLM.
+	llm_source: str
+		Source where the LLM is running
+	do_store_llm_cache: bool
+		If we want to store the result of the LLM in the cache (makes futur LLM calls faster).
+	do_check_llm_cache: bool
+		If we want to check if the results of the prompt are found in the cache (makes LLM calls faster).
 
 	Returns
 	-------
@@ -1910,6 +1968,7 @@ def search_best_ruleset_from_API_public(
 		'target_name'             : target_name,
 		'target_goal'             : target_goal,
 		'columns_names_to_btypes' : columns_names_to_btypes,
+		'columns_names_to_descr'  : columns_names_to_descr,
 		'threshold_M_max'         : threshold_M_max,
 		'specified_constraints'   : specified_constraints,
 		'top_N_rules'             : top_N_rules,
@@ -1917,6 +1976,11 @@ def search_best_ruleset_from_API_public(
 		'api_source'              : api_source,
 		'n_benchmark_original'    : n_benchmark_original,
 		'n_benchmark_shuffle'     : n_benchmark_shuffle,
+		'do_llm_readable_rules'   : do_llm_readable_rules,
+		'llm_source'              : llm_source,
+		'llm_language'            : llm_language,
+		'do_store_llm_cache'      : do_store_llm_cache,
+		'do_check_llm_cache'      : do_check_llm_cache,
 	}
 	# Make the API call
 	from .api_utilities import search_best_ruleset_from_API_dict

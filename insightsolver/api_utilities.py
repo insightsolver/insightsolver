@@ -1,20 +1,21 @@
 """
-* `Project Name`:  InsightSolver
-* `Module Name`:   api_utilities
-* `Author`:        Noé Aubin-Cadot
 * `Organization`:  InsightSolver
+* `Project Name`:  InsightSolver
+* `Module Name`:   insightsolver
+* `File Name`:     api_utilities.py
+* `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-04-08
+* `Last Updated`:  2025-04-23
 * `First Created`: 2024-09-16
 
 Description
 -----------
-This module provides essential utility functions to secure and streamline client-server
+This file provides essential utility functions to secure and streamline client-server
 communication within the API. It includes functions for data compression, encryption, 
 decryption, and transformations of data structures, all designed to facilitate efficient 
 and protected message exchange between the client and server.
 
-While all communications are secured via HTTPS, this module goes a step further by adding
+While all communications are secured via HTTPS, this file goes a step further by adding
 an additional layer of encryption, using RSA-4096 and ECDSA-SECP521R1 for secure key exchange 
 and AES-256 for data encryption. These functions are particularly useful for scenarios 
 requiring enhanced data privacy and integrity.
@@ -956,10 +957,10 @@ def request_cloud_computation(
 	# Make the POST request
 	import requests
 	response = requests.post(
-		url            = url,               # The URL of the request
-		headers        = headers,           # The dict of HTTP headers to send to the URL
-		json           = d_out_transformed, # The dict to send to the URL as json
-		timeout        = timeout,           # Max number of seconds to wait for the server for a response.
+		url     = url,               # The URL of the request
+		headers = headers,           # The dict of HTTP headers to send to the URL
+		json    = d_out_transformed, # The dict to send to the URL as json
+		timeout = timeout,           # Max number of seconds to wait for the server for a response.
 	)
 
 	if verbose:
