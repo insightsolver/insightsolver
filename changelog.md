@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.1.16 (2025-04-25)
+
+*Improvements:*
+
+- Updated `__init__.py` to avoid a bug where Pandas would be imported before being installed during the `pip install .`.
+- New method `solver.i_to_S` that returns the rule `S` at position `i`.
+- Fixed a bug in the function `S_to_index_points_in_rule`.
+- Added some libraries in the file `requirements.txt`.
+- Fixed a bug in the function `search_best_ruleset_from_API_public`.
+- The documentation is now up to date.
+- New file `version.py` that'll track the current version of the module.
+
+*New visualization functions:*
+
+- New folder `assets` that contains `.png` files used as headers for some figures.
+- New file `visualization.py` that'll contain visualization functions for the InsightSolver module.
+- New function `classify_variable_as_continuous_or_categorical` in `visualization.py`. This function is meant to classify a variable as continuous or categorical, which has an impact on how to plot the distribution of the variable.
+- New function `compute_feature_label` in `visualization.py`. This function is meant to compute the label of a feature in a rule `S`.
+- New function `show_feature_distributions_of_S` in `visualization.py`. This functions is meant to show the distributions of the points in the rule.
+- New function `generate_insightsolver_banner` in `visualization.py`. This function is meant to generate the InsightSolver banner, which is used as a header in some figures.
+- New function `show_feature_contributions_of_i` in `visualization.py`. This function is meant to generate a figure of feature contributions of the rule at index `i`.
+- New function `show_all_feature_contributions` in `visualization.py`. This functions is meant to generate the feature contribution figures for all rules identified in the solver.
+- New function `show_feature_contributions_and_distributions_of_i` in `visualization.py`. This functions is meant to generate the feature contribution figures and the feature distribution figures for the rule at position `i` in the solver.
+- New function `show_all_feature_contributions_and_distributions` in `visualization.py`. This functions is meant to generate the feature contribution figures and the feature distribution figures for all rules found in a fitted solver.
+
+*New InsightSolver methods:*
+
+- Most of the new visualization functions are now also implemented as new methods for the class `InsightSolver`: `show_feature_distributions_of_S`, `show_feature_contributions_of_i`, `show_all_feature_contributions` and `show_all_feature_contributions_and_distributions`.
+
 ## 0.1.15 (2025-04-23)
 
 *Improvements:*

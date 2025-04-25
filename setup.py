@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 # Lire le fichier README en utf-8
 with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+	long_description = fh.read()
 
 from insightsolver.version import __version__
 
@@ -23,8 +23,8 @@ setup(
 	author="Noé Aubin-Cadot",
 	author_email="noe.aubin-cadot@insightsolver.com",
 	# Organisation responsable de la maintenance du projet
-    maintainer="InsightSolver",
-    maintainer_email="support@insightsolver.com",
+	maintainer="InsightSolver",
+	maintainer_email="support@insightsolver.com",
 	description="InsightSolver offers rule-based insights generation for actionable data-driven decisions.",
 	long_description=long_description,
 	long_description_content_type="text/markdown",
@@ -36,4 +36,7 @@ setup(
 	],
 	python_requires='>=3.9',
 	include_package_data=True,
+	package_data={
+		"insightsolver": ["assets/*.png"],
+	},
 )

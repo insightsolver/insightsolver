@@ -365,11 +365,10 @@ def S_to_index_points_in_rule(
 			feature_type = solver.columns_types[feature_name]
 		else:
 			# If the type is not specified in the solver, we guess it from the rule
-			if isinstance(S[feature_name],set):
-				# We can take 'multiclass' temporarily, even if it is 'binary'
-				feature_type = 'multiclass'
-			else:
+			if isinstance(S[feature_name],list):
 				feature_type = 'continuous'
+			else:
+				feature_type = 'multiclass'
 		if verbose:
 			print('•- feature_type :',feature_type)
 		"""
@@ -444,7 +443,7 @@ def S_to_index_points_in_rule(
 					raise Exception(f"ERROR: the modality='{modality}' is not in the data.")
 		elif feature_type=='continuous':
 			# If the feature is continuous
-			if feature_S[1] in ['exclude_nan','include_nan']:
+			if isinstance(feature_S[0],list):
 				# If the feature is continuous with NaNs
 				[[s_rule_min,s_rule_max],include_or_exlude_nan] = feature_S
 				if verbose:
@@ -559,6 +558,8 @@ class InsightSolver:
 		Counts the number of rules held by the InsightSolver.
 	i_to_rule: dict
 		Gives the rule i of the InsightSolver.
+	i_to_S: dict
+		Returns the rule S for the rule at index i.
 	i_to_subrules_dataframe: Pandas DataFrame
 		Returns a DataFrame containing the informations about the subrules of the rule i.
 	i_to_feature_contributions_S: Pandas DataFrame
@@ -593,6 +594,14 @@ class InsightSolver:
 		Get a DataFrame of the transactions involving credits.
 	get_credits_available: int
 		Get the number of credits available.
+	show_feature_distributions_of_S: None
+		Generates bar plots of the distributions of the points in the specified rule S.
+	show_feature_contributions_of_i: None
+		Generates a horizontal bar plot of the feature contributions for each rule found in the solver.
+	show_all_feature_contributions: None
+		Generates the feature contributions and feature distributions for all rules found in the solver.
+	show_all_feature_contributions_and_distributions: None
+		Generates the feature contributions and feature distributions for all rules found in the solver.
 
 	Example
 	-------
@@ -983,6 +992,19 @@ class InsightSolver:
 	)->dict:
 		rule_i = self.rule_mining_results[i]
 		return rule_i
+	def i_to_S(
+		self,
+		i,
+	):
+		"""
+		This method returns the rule S at position i.
+		"""
+		# Take the rule at position i
+		rule_i = self.i_to_rule(i=i)
+		# Take the rule S at position i
+		rule_S = rule_i['rule_S']
+		# Return the result
+		return rule_S
 	def i_to_subrules_dataframe(
 		self,
 		i:int = 0,  # Number of the rule in the InsightSolver
@@ -1859,6 +1881,140 @@ class InsightSolver:
 		credits_available = d_in_credits_infos['credits_available']
 		# Return the result
 		return credits_available
+	def show_feature_distributions_of_S(
+		self,
+		S:dict,
+		padding_y:int = 5,
+		do_show_kde:bool = False,
+		do_show_vertical_lines:bool = False,
+	)->None:
+		"""
+		This method generates bar plots of the distributions of the points in the specified rule S.
+
+		Parameters
+		----------
+		S : dict
+			The rule S that we wish to visualize.
+		padding_y: int
+			The padding used for the ylim.
+		do_show_kde: bool
+			Boolean to show the KDE of the continuous features.
+		"""
+		from .visualization import show_feature_distributions_of_S
+		show_feature_distributions_of_S(
+			solver                 = self,
+			S                      = S,
+			padding_y              = padding_y,
+			do_show_kde            = do_show_kde,
+			do_show_vertical_lines = do_show_vertical_lines,
+		)
+	def show_feature_contributions_of_i(
+		self,
+		i:int,                        # Index of the rule to show
+		a:float              = 0.5,   # Height per bar
+		b:float              = 1,     # Height for the margins and other elements
+		fig_width:float      = 12,    # Width of the figure
+		language:str         = 'en',  # Language of the figure
+		do_grid:bool         = True,  # If we want to show a vertical grid
+		do_title:bool        = False, # If we want a title automatically generated
+		do_banner:bool       = True,  # If we want to show the banner
+		loss:Optional[float] = None,  # If we want to show a loss
+	)->None:
+		"""
+		This method returns a horizontal bar plots of the feature constributions of a specified rule S.
+		
+		Parameters
+		----------
+		i: int
+			The index of the rule to show.
+		a: float
+			Height per bar.
+		b: float
+			Added height to the figure.
+		fig_width: float
+			Width of the figure
+		language: str
+			Language of the figure ('fr' or 'en').
+		do_grid: bool
+			If we want to show a vertical grid behind the horizontal bars.
+		do_title: bool
+			If we want to show a title.
+		do_banner: bool
+			If we want to show the banner.
+		loss: float
+			If we want to show a loss.
+		"""
+		from .visualization import show_feature_contributions_of_i
+		show_feature_contributions_of_i(
+			solver    = self,      # The solver
+			i         = i,         # Index of the rule to show
+			a         = a,         # Height per bar
+			b         = b,         # Height for the margins and other elements
+			fig_width = fig_width, # Width of the figure
+			language  = language,  # Language of the figure
+			do_grid   = do_grid,   # If we want to show a vertical grid
+			do_title  = do_title,  # If we want a title automatically generated
+			do_banner = do_banner, # If we want to show the banner
+			loss      = loss,      # If we want to show a loss
+		)
+	def show_all_feature_contributions(
+		self,
+		a:float         = 0.5,   # Height per bar
+		b:float         = 1,     # Height for the margin and other elements
+		fig_width:float = 12,    # Width of the figure
+		language:str    = 'en',  # Language of the figure
+		do_grid:bool    = True,  # If we want to show a grid
+		do_title:bool   = False, # If we want to show a title which is automatically generated
+		do_banner:bool  = True,  # If we want to show the banner
+	)->None:
+		"""
+		This method generates a horizontal bar plot of the feature contributions for each rule found in a solver.
+		
+		Parameters
+		----------
+		a: float
+			Height per bar.
+		b: float
+			Added height to the figure.
+		fig_width: float
+			Width of the figure
+		language: str
+			Language of the figure ('fr' or 'en').
+		do_grid: bool
+			If we want to show a vertical grid behind the horizontal bars.
+		do_title: bool
+			If we want to show a title.
+		do_banner: bool
+			If we want to show the banner.
+		"""
+		from .visualization import show_all_feature_contributions
+		show_all_feature_contributions(
+			solver    = self,
+			a         = a,         # Height per bar
+			b         = b,         # Height for the margin and other elements
+			fig_width = fig_width, # Width of the figure
+			language  = language,  # Language of the figure
+			do_grid   = do_grid,   # If we want to show a grid
+			do_title  = do_title,  # If we want to show a title which is automatically generated
+			do_banner = do_banner, # If we want to show the banner
+		)
+	def show_all_feature_contributions_and_distributions(
+		self,
+		do_banner:bool = True, # If we want to show the banner
+	)->None:
+		"""
+		This method generates the feature contributions and feature distributions for all rules found in a fitted solver.
+		
+		Parameters
+		----------
+		do_banner: bool
+			If we want to show the banner.
+		"""
+		from .visualization import show_all_feature_contributions_and_distributions
+		show_all_feature_contributions_and_distributions(
+			solver    = self,
+			do_banner = do_banner, # If we want to show the banner
+		)
 
 ################################################################################
 ################################################################################
@@ -1947,6 +2103,9 @@ def search_best_ruleset_from_API_public(
 	# Manage where the computation is executed
 	if computing_source=='auto':
 		computing_source='remote_cloud_function'
+	# If the computation is local and a service key is not provided but the LLM is asked for, raise an exception
+	if do_llm_readable_rules&(computing_source=='local_cloud_function')&(input_file_service_key==None):
+		raise Exception("ERROR (search_best_ruleset_from_API_public): The remote LLM is asked for, but the computation is local and no service key is provided.")
 	# Taking the global variables
 	if api_source=='auto':
 		api_source = API_SOURCE_PUBLIC

@@ -5,7 +5,7 @@
 * `File Name`:     __init__.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-04-23
+* `Last Updated`:  2025-04-24
 * `First Created`: 2024-09-16
 
 Description
@@ -20,9 +20,25 @@ Exclusive Use License - see `LICENSE <license.html>`_ for details.
 
 """
 
-from .insightsolver import InsightSolver
+# Import the version of the module
 from .version import __version__
 
 __all__ = [
 	"InsightSolver", # On ne rend accessible que la classe InsightSolver
 ]
+
+def _get_insightsolver_class():
+	"""
+	This function is meant to make a differed import of the class InsightSolver after the pip install.
+	Without it, the pip install tries to import Pandas earlier than it is installed.
+	"""
+	# Import the class
+	from .insightsolver import InsightSolver
+	# Return the class
+	return InsightSolver
+
+# Import the class
+InsightSolver = _get_insightsolver_class()
+# Clean up namespace
+del _get_insightsolver_class
+
