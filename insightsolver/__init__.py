@@ -27,18 +27,12 @@ __all__ = [
 	"InsightSolver", # On ne rend accessible que la classe InsightSolver
 ]
 
-def _get_insightsolver_class():
+def __getattr__(name):
 	"""
 	This function is meant to make a differed import of the class InsightSolver after the pip install.
 	Without it, the pip install tries to import Pandas earlier than it is installed.
 	"""
-	# Import the class
-	from .insightsolver import InsightSolver
-	# Return the class
-	return InsightSolver
-
-# Import the class
-InsightSolver = _get_insightsolver_class()
-# Clean up namespace
-del _get_insightsolver_class
-
+	if name == "InsightSolver":
+		from .insightsolver import InsightSolver
+		return InsightSolver
+	raise AttributeError(f"module {__name__} has no attribute {name}")
