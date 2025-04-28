@@ -536,6 +536,8 @@ def show_feature_contributions_of_i(
 		precision_p_values = solver.monitoring_metadata['precision_p_values']
 	else:
 		precision_p_values = 'float64'
+	if precision_p_values=='mpmath':
+		import mpmath
 	# Take the complexity of the rule
 	complexity = len(S)
 	# Compute the figure height

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.17 (2025-04-28)
+
+*Improvements*
+
+- Fixed a bug in the function `show_feature_contributions_of_i` where `mpmath` was not imported.
+- Fixed a bug in the function `search_best_ruleset_from_API_public` where for a local computation without service key, the LLM is now deactivated by default to avoid an error.
+
 ## 0.1.16 (2025-04-25)
 
 *Improvements:*
