@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.18 (2025-04-28)
+
+*Improvements*
+
+- Fixed a bug in the method `solver.to_dataframe()` where the new column `llm` was missing.
+
 ## 0.1.17 (2025-04-28)
 
 *Improvements*

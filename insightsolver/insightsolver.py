@@ -1704,7 +1704,8 @@ class InsightSolver:
 			'F_score_ratio_S',
 			'subrules_S',
 			'feature_contributions_S',
-			'shuffling_scores'
+			'shuffling_scores',
+			'llm',
 		]
 		cols_B = df.columns.to_list()
 		cols_B_minus_A = [col for col in cols_B if col not in cols_A]
