@@ -1,14 +1,20 @@
 # Changelog
 
+## 0.1.19 (2025-04-29)
+
+*Improvements:*
+
+- Added a new key `'requested_action'` in the dict sent to the server from the three functions `request_cloud_credits_infos`, `request_cloud_public_keys` and `request_cloud_computation`. This new key makes the API client and server more flexible and futur proof for eventual new kinds of requests other than cloud credits infos, cloud public keys or cloud computation. For now this new key is optional (to maintain compatibility with versions ≤0.1.18) but eventually it'll become mandatory.
+
 ## 0.1.18 (2025-04-28)
 
-*Improvements*
+*Improvements:*
 
 - Fixed a bug in the method `solver.to_dataframe()` where the new column `llm` was missing.
 
 ## 0.1.17 (2025-04-28)
 
-*Improvements*
+*Improvements:*
 
 - Fixed a bug in the function `show_feature_contributions_of_i` where `mpmath` was not imported.
 - Fixed a bug in the function `search_best_ruleset_from_API_public` where for a local computation without service key, the LLM is now deactivated by default to avoid an error.

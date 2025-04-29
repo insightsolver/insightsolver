@@ -760,6 +760,10 @@ def request_cloud_credits_infos(
 			elif (user_email!=None)&('user_email' in d_out_credits_infos.keys()):
 				...
 
+	# Make sure that the 'requested_action' key is specified
+	if 'requested_action' not in d_out_credits_infos.keys():
+		d_out_credits_infos['requested_action'] = 'cloud_credits_infos'
+
 	# Generate the url and the headers of the POST request
 	url,headers = generate_url_headers(
 		computing_source       = computing_source,
@@ -884,6 +888,10 @@ def request_cloud_public_keys(
 		If the request fails or the server does not return the expected keys.
 	"""
 
+	# Make sure that the 'requested_action' key is specified
+	if 'requested_action' not in d_client_public_keys.keys():
+		d_client_public_keys['requested_action'] = 'cloud_public_keys'
+
 	# Generate the url and the headers of the POST request
 	url,headers = generate_url_headers(
 		computing_source       = computing_source,
@@ -947,6 +955,10 @@ def request_cloud_computation(
 	dict
 		The dict that contains the rule mining results.
 	"""
+
+	# Make sure that the 'requested_action' key is specified
+	if 'requested_action' not in d_out_transformed.keys():
+		d_out_transformed['requested_action'] = 'cloud_computation'
 
 	# Generate the url and the headers of the POST request
 	url,headers = generate_url_headers(
