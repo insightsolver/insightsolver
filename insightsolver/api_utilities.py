@@ -5,7 +5,7 @@
 * `File Name`:     api_utilities.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-04-23
+* `Last Updated`:  2025-05-06
 * `First Created`: 2024-09-16
 
 Description
@@ -769,6 +769,7 @@ def request_cloud_credits_infos(
 		computing_source       = computing_source,
 		input_file_service_key = input_file_service_key,
 	)
+	
 	# Make the POST request
 	import requests
 	response = requests.post(
@@ -777,28 +778,18 @@ def request_cloud_credits_infos(
 		json           = d_out_credits_infos, # The dict of to send to the URL
 		timeout        = timeout,             # Max number of seconds to wait for the server for a response.
 	)
+	
 	# Make sure that the response is ok
 	if response.status_code != 200:
 		print(response.text)
 		raise Exception(f"ERROR (request_cloud_credits_infos): Received status code {response.status_code}")
-	# Take the incoming response.
+	
+	# Take the incoming json dict
 	try:
-		d_in_transformed = response.json()
+		d_in_credits_infos = response.json()
 	except:
 		raise Exception("ERROR: The incoming response does not contain a .json() method.")
-
-	if isinstance(d_in_transformed,dict):
-		...
-	elif isinstance(d_in_transformed,str):
-		raise Exception('ERROR: The content of the incoming .json() method is a string.')
-	# Untransform the dict
-	try:
-		d_in_credits_infos = untransform_dict(
-			d_transformed = d_in_transformed,
-		)
-	except:
-		raise Exception("ERROR: Cannot untransform the incoming dict.")
-
+	
 	# Make sure the incoming dict contains the requested keys
 	expected_incoming_keys = [
 		'credits_available',
@@ -807,12 +798,17 @@ def request_cloud_credits_infos(
 	for key in expected_incoming_keys:
 		if key not in d_in_credits_infos.keys():
 			raise Exception(f"ERROR (request_cloud_credits_infos): The incoming dict does not contain the key '{key}'.")
+	
 	# Convert the DataFrame info from json to dict
-	df_credits_infos_to_dict = d_in_credits_infos['df_credits_infos_to_dict']
-	if df_credits_infos_to_dict is not None:
+	df_credits_infos_to_dict_str = d_in_credits_infos['df_credits_infos_to_dict']
+	if df_credits_infos_to_dict_str is not None:
+		# Convert the JSON string to a dict
+		df_credits_infos_to_dict = json.loads(df_credits_infos_to_dict_str)
+		# Convert the dict to a DataFrame
 		df_credits_infos = pd.DataFrame(
-			data = json.loads(df_credits_infos_to_dict),
+			data = df_credits_infos_to_dict,
 		)
+		# Convert all None to NaN
 		df_credits_infos = df_credits_infos.map(lambda x: np.nan if x is None else x)
 	else:
 		df_credits_infos = None

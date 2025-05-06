@@ -2106,7 +2106,8 @@ def search_best_ruleset_from_API_public(
 		computing_source='remote_cloud_function'
 		# If the computation is in a local server, the local server will not have the service key and so will not use the remote LLM
 	if do_llm_readable_rules&(computing_source=='local_cloud_function'):
-		print("WARNING (search_best_ruleset_from_API_public): do_llm_readable_rules is True but the computing source is a local server, so do_llm_readable_rules is set to False.")
+		if verbose:
+			print("WARNING (search_best_ruleset_from_API_public): do_llm_readable_rules is True but the computing source is a local server, so do_llm_readable_rules is set to False.")
 		do_llm_readable_rules = False
 	# Taking the global variables
 	if api_source=='auto':

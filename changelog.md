@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.20 (2025-05-06)
+
+- The function `request_cloud_credits_infos` in `api_utilities` is now independent of the function `untransform_dict`. This update is meant to simplify the architecture of the API.
+
 ## 0.1.19 (2025-04-29)
 
 *Improvements:*
