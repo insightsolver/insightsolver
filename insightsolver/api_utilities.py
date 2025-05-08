@@ -5,7 +5,7 @@
 * `File Name`:     api_utilities.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-05-06
+* `Last Updated`:  2025-05-08
 * `First Created`: 2024-09-16
 
 Description
@@ -30,6 +30,10 @@ Functions provided
 - ``decompress_string``: Decompress a gzip-compressed string.
 - ``compress_and_encrypt_string``: Compress and encrypt a string for secure transmission.
 - ``decrypt_and_decompress_string``: Decrypt an encrypted string.
+- ``encode_obj``: Takes an object and encode it to a new object compatible with json serialization.
+- ``convert_dict_to_json_string``: Convert a dict to a json string.
+- ``decode_obj``: Inverse operation from ``encode_obj``.
+- ``convert_json_string_to_dict``: Convert a json string to a dict.
 - ``transform_dict``: Convert a dictionary for easier client-server communication.
 - ``untransform_dict``: Reverse the dictionary transformation to restore the original data format.
 - ``generate_keys``: Generate RSA and ECDSA private and public keys.
@@ -56,6 +60,7 @@ import requests
 
 import pandas as pd
 import numpy as np
+import mpmath
 
 ################################################################################
 ################################################################################
@@ -349,6 +354,82 @@ def decrypt_and_decompress_string(
 ################################################################################
 # Defining functions for transforming and untransforming dict
 
+def encode_obj(
+	obj,
+):
+	"""
+	This function takes an object and encode it to a new object compatible with json serialization.
+	"""
+	if isinstance(obj, dict):
+		return {str(k): encode_obj(v) for k, v in obj.items()}
+	elif isinstance(obj, list):
+		return [encode_obj(v) for v in obj]
+	elif isinstance(obj, set):
+		return {"__type__": "set", "items": [encode_obj(v) for v in sorted(obj, key=str)]}
+	elif isinstance(obj, mpmath.mpf):
+		return {"__type__": "mpf", "value": str(obj)}  # préserve toute la précision
+	elif isinstance(obj, (np.integer, np.floating)):
+		return obj.item()  # convertit np.int64/float64 -> int/float
+	elif isinstance(obj, (int, float)):  # natifs, sûrs
+		return obj
+	else:
+		return obj
+
+def convert_dict_to_json_string(
+	d:dict,
+)->str:
+	"""
+	This function converts a dict to a json string.
+	"""
+	# Make a copy of the dict
+	d = d.copy()
+	# Modify the dict so that it's compatible with json
+	import mpmath
+	import numpy as np
+	d = encode_obj(
+		obj = d,
+	)
+	# Convert the modified dict to a json string
+	import json
+	string = json.dumps(d)
+	# Return the result
+	return string
+
+def decode_obj(
+	obj,
+):
+	"""
+	This function does the inverse operation from the function ``encode_obj``.
+	"""
+	if isinstance(obj, dict):
+		if "__type__" in obj:
+			if obj["__type__"] == "mpf":
+				return mpmath.mpf(obj["value"])
+			elif obj["__type__"] == "set":
+				return set(decode_obj(i) for i in obj["items"])
+		return {k: decode_obj(v) for k, v in obj.items()}
+	elif isinstance(obj, list):
+		return [decode_obj(v) for v in obj]
+	else:
+		return obj
+
+def convert_json_string_to_dict(
+	string:str,
+)->dict:
+	"""
+	This function takes a json string and converts it to a dict.
+	"""
+	# Convert the string to a dict
+	import json
+	d = json.loads(string)
+	# Modify the dict to its original state
+	import mpmath
+	d = decode_obj(
+		obj = d,
+	)
+	# Return the result
+	return d
+
 def transform_dict(
 	d_original       : dict,                     # The dict to transform
 	do_compress_data : bool            = False,  # If we want to compress the data
@@ -371,7 +452,7 @@ def transform_dict(
 	symmetric_key : bytes, optional
 		A symmetric key. Typically generated using from secrets import token_bytes;symmetric_key = token_bytes(32). If provided, the data will be encrypted (default is None).
 	json_format : str, optional
-		The format to convert the dictionary to a string. Can be 'json' or 'jsonpickle' (default is 'json').
+		The format to convert the dictionary to a string. Can be 'json' or 'json_extended' (default is 'json').
 
 	Returns
 	-------
@@ -403,9 +484,10 @@ def transform_dict(
 	if json_format=='json':
 		import json
 		original_string = json.dumps(d_original)
-	elif json_format=='jsonpickle':
-		import jsonpickle
-		original_string = jsonpickle.dumps(d_original)
+	elif json_format=='json_extended':
+		original_string = convert_dict_to_json_string(d_original)
+	else:
+		raise Exception(f"ERROR: json_format='{json_format}' must be in ['json', 'json_extended'].")
 	# If a symmetric key is provided we'll encrypt the data
 	if symmetric_key!=None:
 		do_encrypt_data = True
@@ -524,11 +606,10 @@ def untransform_dict(
 	if json_format=='json':
 		import json
 		d_original = json.loads(original_string)
-	elif json_format=='jsonpickle':
-		import jsonpickle
-		d_original = jsonpickle.loads(original_string)
+	elif json_format=='json_extended':
+		d_original = convert_json_string_to_dict(original_string)
 	else:
-		raise Exception(f"ERROR: json_format='{json_format}' must be in ['json', 'jsonpickle'].")
+		raise Exception(f"ERROR: json_format='{json_format}' must be in ['json', 'json_extended'].")
 	# Return the result
 	return d_original
 

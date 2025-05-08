@@ -5,7 +5,7 @@
 * `File Name`:     insightsolver.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-04-23
+* `Last Updated`:  2025-05-08
 * `First Created`: 2024-09-09
 
 Description
@@ -825,17 +825,17 @@ class InsightSolver:
 			self.rule_mining_results = dict()
 	def ingest_json_string(
 		self,
-		json_string: str,      # JSON string to ingest (encoded using jsonpickle)
+		json_string: str,      # JSON string to ingest
 		verbose: bool = False, # Verbosity
 	)->None:
 		"""
 		This method aims to ingest a JSON string in the solver.
 		"""
 		# Convert the json_string to a dict
-		import jsonpickle
-		d = jsonpickle.decode(json_string)
+		from .api_utilities import convert_json_string_to_dict
+		d = convert_json_string_to_dict(json_string)
 		self.ingest_dict(d)
-		# The keys of the rules are given by jsonpickle as string, we need to convert them to integers
+		# The keys of the rules are given as string, we need to convert them to integers
 		self.rule_mining_results = {int(k):self.rule_mining_results[k] for k in self.rule_mining_results.keys()}
 	def fit(
 		self,
@@ -1625,8 +1625,8 @@ class InsightSolver:
 		# Export the InsightSolver object to a dict
 		d = self.to_dict()
 		# Convert the dict to a JSON string
-		import jsonpickle # pip install jsonpickle
-		json_string = jsonpickle.encode(d)
+		from .api_utilities import convert_dict_to_json_string
+		json_string = convert_dict_to_json_string(d)
 		# Return the result
 		return json_string
 	def to_dataframe(
@@ -2068,7 +2068,7 @@ def search_best_ruleset_from_API_public(
 	columns_names_to_descr: dict
 		A dict that specifies the descriptions of the columns.
 	threshold_M_max: int
-		Threshold on the maximum number of points to use during the rule mining (default 10000 points, maximum 40000 points in the server side of the API).
+		Threshold on the maximum number of points to use during the rule mining (max. 10000 pts in the public API).
 	specified_constraints: dict
 		A dict that specifies contraints to be used during the rule mining.
 	top_N_rules: int
@@ -2104,7 +2104,7 @@ def search_best_ruleset_from_API_public(
 	# Manage where the computation is executed
 	if computing_source=='auto':
 		computing_source='remote_cloud_function'
-		# If the computation is in a local server, the local server will not have the service key and so will not use the remote LLM
+	# If the computation is in a local server, the local server will not have the service key and so will not use the remote LLM
 	if do_llm_readable_rules&(computing_source=='local_cloud_function'):
 		if verbose:
 			print("WARNING (search_best_ruleset_from_API_public): do_llm_readable_rules is True but the computing source is a local server, so do_llm_readable_rules is set to False.")

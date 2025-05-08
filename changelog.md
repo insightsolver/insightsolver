@@ -1,6 +1,16 @@
 # Changelog
 
+## 0.1.21 (2025-05-08)
+
+*Improvements:*
+
+- The serialization `jsonpickle` has been completely removed both from the API client and server for security purposes.
+- There are four new functions `encode_obj`, `convert_dict_to_json_string`, `decode_obj` and `convert_json_string_to_dict` in `api_utilities.py`. These functions are used as a safe substitute to `jsonpickle`.
+- The key `'requested_action'` is now mandatory in the dict sent to the server.
+
 ## 0.1.20 (2025-05-06)
+
+*Improvements:*
 
 - The function `request_cloud_credits_infos` in `api_utilities` is now independent of the function `untransform_dict`. This update is meant to simplify the architecture of the API.
 
