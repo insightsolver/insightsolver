@@ -150,7 +150,6 @@ def compute_columns_names_to_admissible_btypes(
 	return columns_names_to_admissible_btypes
 
 def validate_class_integrity(
-	verbose: bool,                         # Verbosity
 	df: Optional[pd.DataFrame],            # DataFrame that'll be used to fit the solver
 	target_name: Optional[Union[str,int]], # Target variable (must be a column of df)
 	target_goal: Optional[Union[str,numbers.Real,np.uint8]], # Target goal
@@ -163,9 +162,44 @@ def validate_class_integrity(
 	n_benchmark_original: int,             # To benchmark against random permutations (must be at least 2)
 	n_benchmark_shuffle: int,              # To benchmark against random permutations (must be at least 2)
 	do_strict_types: bool = False,         # If we want a strict evaluation of types
+	verbose: bool = False,                 # Verbosity
 )->dict:
 	"""
 	This function aims to validate the integrity of the InsightSolver class.
+
+	Parameters
+	----------
+	df: DataFrame
+		The DataFrame that contains the data to analyse (a target column and various feature columns).
+	target_name: str
+		Name of the column of the target variable.
+	target_goal: str (or other modality of the target variable)
+		Target goal.
+	columns_types: dict
+		Types of the columns.
+	columns_descr: dict
+		Descriptions of the columns.
+	threshold_M_max: int
+		Threshold on the maximum number of observations to consider, above which we sample observations.
+	specified_constraints: dict
+		Dictionary of the specified constraints on m_min, m_max, coverage_min, coverage_max.
+	top_N_rules: int
+		An integer that specifies the maximum number of rules to get from the rule mining.
+	filtering_score: str
+		A string that specifies the filtering score to be used when selecting rules.
+	n_benchmark_original: int
+		An integer that specifies the number of benchmarking runs to execute where the target is not shuffled.
+	n_benchmark_shuffle: int
+		An integer that specifies the number of benchmarking runs to execute where the target is shuffled.
+	do_strict_types: bool (default False)
+		A boolean that specifies if we want a strict evaluation of types.
+	verbose: bool (default False)
+		Verbosity.
+
+	Returns
+	-------
+	columns_types: dict
+		A dict of the columns types after adjusting the types.
 	"""
 	if verbose:
 		print("Validating the integrity of the class...")
@@ -728,7 +762,6 @@ class InsightSolver:
 			print('Initializing an instance of the class InsightSolver...')
 		# Validate the integrity of the class
 		columns_types = validate_class_integrity(
-			verbose               = verbose,
 			df                    = df,
 			target_name           = target_name,
 			target_goal           = target_goal,
@@ -740,6 +773,8 @@ class InsightSolver:
 			filtering_score       = filtering_score,
 			n_benchmark_original  = n_benchmark_original,
 			n_benchmark_shuffle   = n_benchmark_shuffle,
+			do_strict_types       = False,
+			verbose               = verbose,
 		)
 		# Handling threshold_M_max
 		if threshold_M_max==None:

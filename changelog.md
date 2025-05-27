@@ -4,7 +4,8 @@
 
 *Improvements:*
 
-- Fixed a bug in the docstring of the class `InsightSolver`.
+- Updated the docstring of the class `InsightSolver`.
+- Updated the docstring of the function `validate_class_integrity`.
 - The function `validate_class_integrity` now has a new boolean parameter `do_strict_types` that determines the behaviour regarding specified types that are not admissible.
 - The function `validate_class_integrity` now returns a dict of adjusted columns types.
 
