@@ -162,7 +162,8 @@ def validate_class_integrity(
 	filtering_score: str,                  # The filtering score (must be a legit string)
 	n_benchmark_original: int,             # To benchmark against random permutations (must be at least 2)
 	n_benchmark_shuffle: int,              # To benchmark against random permutations (must be at least 2)
-)->None:
+	do_strict_types: bool = False,         # If we want a strict evaluation of types
+)->dict:
 	"""
 	This function aims to validate the integrity of the InsightSolver class.
 	"""
@@ -173,6 +174,18 @@ def validate_class_integrity(
 	if target_name not in df.columns:
 		raise Exception(f"ERROR (target_name invalid): target_name='{target_name}' not in df.columns.")
 
+	# Compute the admissible btypes per column
+	columns_names_to_admissible_btypes = compute_columns_names_to_admissible_btypes(
+		df = df,
+	)
+	
+	# Make sure we have a dict of types
+	if columns_types==None:
+		# Create a dict
+		columns_types = dict()
+	else:
+		# Make a copy to avoid editing it in-place
+		columns_types = columns_types.copy()
 	# Validate the columns types
 	if columns_types!=None:
 		# First, we make sure that the keys are legit
@@ -184,21 +197,28 @@ def validate_class_integrity(
 		keys_illegal = keys_present-keys_valid
 		# If some keys are illegal
 		if len(keys_illegal)>0:
-			raise Exception(f"ERROR (columns_types): some keys are illegal: {keys_illegal}.")
-		# Then we make sure that the values are legit
-		columns_names_to_admissible_btypes = compute_columns_names_to_admissible_btypes(
-			df = df,
-		)
+			raise Exception(f"ERROR (columns_types invalid): some keys are illegal: {keys_illegal}.")
+		# Loop over the dict of specified types
 		for column_name,column_type in columns_types.items():
+			# Make sure that the column_name is in df
+			if column_name not in df.columns:
+				raise Exception(f"ERROR (columns_types invalid): the dict 'columns_types' contains the column_name='{column_name}' but it is not a column of df.")
+			# Make sure that the column_type is legit
+			legit_btypes = ['binary','multiclass','continuous','ignore']
+			if column_type not in legit_btypes:
+				raise Exception(f"ERROR (columns_types invalid): the column='{column_name}' cannot be of type='{column_type}' because it must be in ['binary','multiclass','continuous','ignore'].")
+			# Make sure that the column_type is admissible
 			admissible_btypes = columns_names_to_admissible_btypes[column_name]
 			if column_type not in admissible_btypes:
-				raise Exception(f"ERROR (columns_types): the column_name='{column_name}' is specified as a column_type='{column_type}' but it is not a valid value in {admissible_btypes}.")
-
-	for column_name in columns_types.keys():
-		if column_name not in df.columns:
-			raise Exception(f"ERROR (columns_types invalid): the dict 'columns_types' contains the column_name='{column_name}' but it is not a column of df.")
-		if columns_types[column_name] not in ['binary','multiclass','continuous','ignore']:
-			raise Exception(f"ERROR (columns_types invalid): the column='{column_name}' cannot be of type='{columns_types[column_name]}' because it must be in ['binary','multiclass','continuous','ignore'].")
+				if do_strict_types:
+					# If we are strict about the types, raise an exception
+					raise Exception(f"ERROR (columns_types invalid): the column_name='{column_name}' is specified as a column_type='{column_type}' but it is not a valid value in {admissible_btypes}.")
+				else:
+					# If we are not strict about the types, substitute the type to 'ignore'
+					columns_types[column_name] = 'ignore'
+			else:
+				# Keep the provided type
+				columns_types[column_name] = column_type
 
 	# Validate that the target is not ignored
 	if target_name in columns_types.keys():
@@ -274,6 +294,9 @@ def validate_class_integrity(
 	# Validate n_benchmark_original
 	if n_benchmark_shuffle<2:
 		raise Exception(f"ERROR (n_benchmark_shuffle): The parameter n_benchmark_shuffle must be an integer >= 2.")
+
+	# Return the modified types
+	return columns_types
 
 def format_value(
 	value,
@@ -540,8 +563,6 @@ class InsightSolver:
 
 	Methods
 	-------
-	validate_class_integrity: None
-		Validates the integrity of the class.
 	ingest_dict: None
 		Ingests a Python dict.
 	ingest_json_string: None
@@ -706,7 +727,7 @@ class InsightSolver:
 		if verbose:
 			print('Initializing an instance of the class InsightSolver...')
 		# Validate the integrity of the class
-		validate_class_integrity(
+		columns_types = validate_class_integrity(
 			verbose               = verbose,
 			df                    = df,
 			target_name           = target_name,

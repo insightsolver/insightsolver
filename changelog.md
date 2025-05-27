@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.22 (2025-05-27)
+
+*Improvements:*
+
+- Fixed a bug in the docstring of the class `InsightSolver`.
+- The function `validate_class_integrity` now has a new boolean parameter `do_strict_types` that determines the behaviour regarding specified types that are not admissible.
+- The function `validate_class_integrity` now returns a dict of adjusted columns types.
+
 ## 0.1.21 (2025-05-08)
 
 *Improvements:*
