@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.23 (2025-06-03)
+
+*Improvements:*
+
+- Updated the readme: specifications about credits consumption.
+- Updated the pdf documentation: specifications about credits consumption.
+- Fixed a bug occuring in the `pip install .` of the module.
+
 ## 0.1.22 (2025-05-27)
 
 *Improvements:*

@@ -8,8 +8,9 @@ This repository hosts the Python-based *InsightSolver API client*.
 
 To get started, you need the following:
 
-1. A service key.
-2. The `insightsolver` Python module installed.
+1. The `insightsolver` Python module installed.
+2. A service key.
+3. Credits to use the API.
 
 ## 🛠️ Installation
 
@@ -31,6 +32,7 @@ pip install .
 ```
 4. *100% CLI*. *(coming soon)* From PyPi: `pip install insightsolver`.
 
+Because the current GitHub repo is private, the first two methods need a github account with an active [personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
 
 ## ⚡ Quick start
 
@@ -54,6 +56,43 @@ solver.print()
 ```
 A demo can also be found in [here](https://github.com/insightsolver/insightsolver/blob/main/demo/demo_insightsolver.py)
 
+## 💳 Credit Consumption
+
+The API charges usage based on the **size of the dataset** you submit.
+The number of credits is calculated as:
+
+```python
+credits = ceil(m * n / 10_000)
+```
+
+where:
+
+- `m` is the number of rows,
+- `n` is the number of columns,
+- `ceil` is the mathematical ceiling function (rounds up to the next integer).
+
+Here are some examples:
+
+| Rows (`m`) | Columns (`n`)  | Computation          | Credits Charged  |
+|------------|----------------|----------------------|------------------|
+| 1,000      | 10             | ceil(10,000 / 10k)   | 1                |
+| 10,000     | 25             | ceil(250,000 / 10k)  | 25               |
+| 20,000     | 100            | ceil(2,000,000 / 10k)| 200              |
+
+> For reference, the Titanic training dataset from [Kaggle](https://www.kaggle.com/competitions/titanic) has **891 rows** and **10 columns** (excluding `PassengerId`), which results in:
+>
+> ```python
+> ceil(891 * 10 / 10_000) = 1 credit
+> ```
+>
+> So you can think of **1 credit as roughly "one Titanic"** in size.
+
+*Tips to reduce credit usage:*
+
+- Remove unused or irrelevant columns,
+- Filter the dataset before sending it,
+- Work with samples when appropriate.
+
 ## 📚 Documentation
 
 Comprehensive technical documentation for the `insightsolver` module is available here:
@@ -76,9 +115,9 @@ Here you'll find the [LICENSE](./LICENSE).
 
 ## 🤝 Contact
 
-- Email: [support@insightsolver.com](mailto:support@insightsolver.com)
-- Official website *(coming soon)*: [www.insightsolver.com](https://www.insightsolver.com).
-- LinkedIn: *(coming soon)*
+- Email [support@insightsolver.com](mailto:support@insightsolver.com)
+- Official website: [www.insightsolver.com](https://www.insightsolver.com)
+- [LinkedIn](https://www.linkedin.com/company/insightsolver/)
 
 
 

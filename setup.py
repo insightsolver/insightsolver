@@ -4,11 +4,17 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
 	long_description = fh.read()
 
-from insightsolver.version import __version__
+def read_version():
+	import re
+	with open("insightsolver/version.py", encoding="utf-8") as f:
+		match = re.search(r'^__version__ = ["\']([^"\']+)["\']', f.read())
+		if match:
+			return match.group(1)
+		raise RuntimeError("Unable to find version string.")
 
 setup(
 	name="insightsolver",                   # Nom du package (doit être unique sur PyPI)
-	version=__version__,                    # Version du package
+	version=read_version(),                 # Version du package
 	packages=find_packages(),               # Trouver tous les sous-packages automatiquement
 	install_requires=[                      # Dépendances du package
 		"pandas",
