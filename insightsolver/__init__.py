@@ -24,15 +24,19 @@ Exclusive Use License - see `LICENSE <license.html>`_ for details.
 from .version import __version__
 
 __all__ = [
-	"InsightSolver", # On ne rend accessible que la classe InsightSolver
+	"InsightSolver",
+	"get_credits_available",
 ]
 
 def __getattr__(name):
 	"""
-	This function is meant to make a differed import of the class InsightSolver after the pip install.
+	Deferred imports to avoid triggering dependencies during the pip install.
 	Without it, the pip install tries to import Pandas earlier than it is installed.
 	"""
 	if name == "InsightSolver":
 		from .insightsolver import InsightSolver
 		return InsightSolver
+	elif name == "get_credits_available":
+		from .insightsolver import get_credits_available
+		return get_credits_available
 	raise AttributeError(f"module {__name__} has no attribute {name}")

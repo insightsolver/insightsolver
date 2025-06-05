@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.25 (2025-06-05)
+
+*Improvements:*
+
+- New function `get_credits_available` which is both independent of the solver and accessible via `from insightsolver import get_credits_available`.
+
 ## 0.1.24 (2025-06-05)
 
 *Improvements:*

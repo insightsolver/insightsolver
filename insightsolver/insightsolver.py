@@ -686,6 +686,39 @@ def search_best_ruleset_from_API_public(
 
 ################################################################################
 ################################################################################
+# Credits
+
+def get_credits_available(
+	computing_source:str      = 'auto', # Where to compute the rule mining
+	service_key:Optional[str] = None,   # Path+name of the service key
+	user_email:Optional[str]  = None,   # User email
+):
+	"""
+	This function is meant to retrieve from the server the amount of credits available.
+	"""
+	# Manage where the computation is executed
+	if computing_source=='auto':
+		computing_source='remote_cloud_function'
+	# Create the outgoing dict
+	d_out_credits_infos = {
+		'do_compute_credits_available' : True,
+		'do_compute_df_credits_infos'  : False,
+	}
+	# Send the dict to the API server and receive a new dict
+	from .api_utilities import request_cloud_credits_infos
+	d_in_credits_infos = request_cloud_credits_infos(
+		computing_source       = computing_source,
+		d_out_credits_infos    = d_out_credits_infos,
+		input_file_service_key = service_key,
+		user_email             = user_email,
+	)
+	# Extract the credits available
+	credits_available = d_in_credits_infos['credits_available']
+	# Return the result
+	return credits_available
+
+################################################################################
+################################################################################
 # Defining the solver class
 
 class InsightSolver:
@@ -2068,25 +2101,13 @@ class InsightSolver:
 		"""
 		This method is meant to retrieve from the server the amount of credits available.
 		"""
-		# Manage where the computation is executed
-		if computing_source=='auto':
-			computing_source='remote_cloud_function'
-		# Create the outgoing dict
-		d_out_credits_infos = {
-			'do_compute_credits_available' : True,
-			'do_compute_df_credits_infos'  : False,
-		}
-		# Send the dict to the API server and receive a new dict
-		from .api_utilities import request_cloud_credits_infos
-		d_in_credits_infos = request_cloud_credits_infos(
-			computing_source       = computing_source,
-			d_out_credits_infos    = d_out_credits_infos,
-			input_file_service_key = service_key,
-			user_email             = user_email,
+		# Get the credits available
+		credits_available = get_credits_available(
+			computing_source = computing_source,
+			service_key      = service_key,
+			user_email       = user_email,
 		)
-		# Extract the credits available
-		credits_available = d_in_credits_infos['credits_available']
-		# Return the result
+		# Return the credits available
 		return credits_available
 	def convert_target_to_binary(
 		self,
