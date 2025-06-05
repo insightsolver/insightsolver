@@ -15,6 +15,7 @@ This file contains some visualization functions, some of which are integrated as
 Functions provided
 ------------------
 
+- show_all_mutual_information
 - classify_variable_as_continuous_or_categorical
 - compute_feature_label
 - show_feature_distributions_of_S
@@ -45,6 +46,49 @@ from typing import Optional, Union, Dict, Sequence
 ################################################################################
 ################################################################################
 # Defining some visualization functions
+
+def show_all_mutual_information(
+	solver,
+	n_samples:Optional[int] = 1000,
+	n_cols:Optional[int]    = 20,
+):
+	"""
+	This function generates a bar plot of the mutual information between the features and the target variable.	
+
+	Parameters
+	----------
+	n_samples: int
+		An integer that specifies the number of data rows to use in the computation of the mutual information.
+	n_cols: int
+		An integer that specifies the maximum number of features to show
+	"""
+	# Compute the mutual information
+	s_mi = solver.compute_mutual_information(
+		n_samples = n_samples,
+	)
+	# Keep only the top variables
+	if n_cols and len(s_mi)>n_cols:
+		s_mi = s_mi.head(n_cols)
+	# Generate the figure
+	import matplotlib.pyplot as plt
+	plt.figure(figsize=(12, 6))
+	ax = s_mi.plot(kind='bar', edgecolor='black')
+	plt.title('Mutual Information between the features and the target variable')
+	plt.ylabel('Mutual Information')
+	plt.xlabel('Feature')
+	plt.xticks(rotation=45, ha='right')
+	for idx, value in enumerate(s_mi):
+		ax.text(
+			x=idx, 
+			y=value + max(s_mi) * 0.01,  # small offset
+			s=f"{value:.4f}", 
+			ha='center', 
+			va='bottom', 
+			fontsize=8
+		)
+	plt.tight_layout()
+	# Show the figure
+	plt.show()
 
 def classify_variable_as_continuous_or_categorical(
 	s:pd.Series,

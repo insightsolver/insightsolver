@@ -11,7 +11,7 @@
 Description
 -----------
 This file contains the ``InsightSolver`` class.
-It is meant to make rule mining API calls.
+This class is meant to ingest data, specify rule mining parameters and make rule mining API calls.
 
 Note
 ----
@@ -77,13 +77,13 @@ def compute_admissible_btypes(
 	nunique:int,
 )->list[str]:
 	"""
-	This function computes the admissible btypes a column can take.
+	This function computes the admissible `btypes` a column can take.
+	The `btypes`:
 
-	The btypes:
-	- 'binary'
-	- 'multiclass'
-	- 'continuous'
-	- 'ignore'
+	- ``'binary'``
+	- ``'multiclass'``
+	- ``'continuous'``
+	- ``'ignore'``
 	"""
 	if dtype in ['uint8','int32','int64','float32','float64']:
 		if nunique<=2:
@@ -134,7 +134,7 @@ def compute_columns_names_to_admissible_btypes(
 	df: pd.DataFrame,
 )->dict[str,list[str]]:
 	"""
-	This function computes a dict that maps the columns names of df to lists of admissible btypes.
+	This function computes a dict that maps the column names of ``df`` to lists of admissible btypes.
 	"""
 	# Take the dtype and nunique per column:
 	s_dtype        = df.dtypes       # Pandas Series that maps column_name -> dtype
@@ -165,7 +165,7 @@ def validate_class_integrity(
 	verbose: bool = False,                 # Verbosity
 )->dict:
 	"""
-	This function aims to validate the integrity of the InsightSolver class.
+	This function validates the integrity of the parameter values passed during the instantiation of the InsightSolver class.
 
 	Parameters
 	----------
@@ -339,10 +339,11 @@ def format_value(
 	verbose     = False,
 ):
 	"""
-	This function formats values depending on the type of values (float or mpmath) and the type of the format to show:
-	- 'percentage' : shows the values as percentage (default)
-	- 'scientific' : shows the values in scientific notation with 4 decimals
-	- 'scientific_no_decimals' : shows the values in scientific notation without decimals
+	This function formats values depending on the type of values (``float`` or ``mpmath``) and the type of the format to show:
+
+	- ``'percentage'``: shows the values as percentage (default).
+	- ``'scientific'``: shows the values in scientific notation with 4 decimals.
+	- ``'scientific_no_decimals'``: shows the values in scientific notation without decimals.
 	"""
 	if pd.isna(value):
 		return ''
@@ -381,7 +382,7 @@ def S_to_index_points_in_rule(
 	df:Optional[pd.DataFrame] = None,
 )->pd.Index:
 	"""
-	This function takes a rule S and returns the index of the points inside the rule of a DataFrame.
+	This function takes a rule ``S`` and returns the index of the points inside the rule of a DataFrame.
 	If no DataFrame is provided, the one used to train the solver is used.
 	"""
 	if verbose:
@@ -430,6 +431,7 @@ def S_to_index_points_in_rule(
 			print('•- feature_type :',feature_type)
 		"""
 		The types :
+
 		- binary
 		- multiclass
 		- continuous
@@ -544,6 +546,146 @@ def S_to_index_points_in_rule(
 
 ################################################################################
 ################################################################################
+# Defining the API Client
+
+def search_best_ruleset_from_API_public(
+	df                      : pd.DataFrame,                                        # The Pandas DataFrame that contains the data to analyse.
+	computing_source        : str                                        = 'auto', # Specify if the execution is local or remote
+	input_file_service_key  : Optional[str]                              = None,   # For a remote execution from outside GCP, a service key file is necessary
+	user_email              : Optional[str]                              = None,   # For a remote execution from inside GCP, a user email is necessary
+	target_name             : Optional[Union[str,int]]                   = None,   # Name of the target variable
+	target_goal             : Optional[Union[str,numbers.Real,np.uint8]] = None,   # Target goal
+	columns_names_to_btypes : Optional[Dict]                             = dict(), # Specify the btypes of the variables
+	columns_names_to_descr  : Optional[Dict]                             = dict(), # Specify the descriptions of the variables
+	threshold_M_max         : Optional[int]                              = None,   # Specify the maximum number of rows to use in the rule mining
+	specified_constraints   : Optional[Dict]                             = dict(), # Specify some constraints on the rules
+	top_N_rules             : Optional[int]                              = 10,     # Maximum number of rules to keep
+	verbose                 : bool                                       = False,  # Verbosity
+	filtering_score         : str                                        = 'auto', # Filtering score
+	api_source              : str                                        = 'auto', # Source of the API call
+	do_compress_data        : bool                                       = True,   # If we want to compress the communications (slower to compress but faster to transmit)
+	do_compute_memory_usage : bool                                       = True,   # If we want to compute the memory usage of the API (this significantly slows down computation time but is good for monitoring purposes)
+	n_benchmark_original    : int                                        = 5,      # Number of benchmarking runs to execute where the target is not shuffled.
+	n_benchmark_shuffle     : int                                        = 20,     # Number of benchmarking runs to execute where the target is shuffled.
+	do_llm_readable_rules   : bool                                       = False,  # If we want to convert the rules to a readable format using a LLM.
+	llm_source              : str                                        = 'remote_gemini', # Source where the LLM is running.
+	llm_language            : str                                        = 'auto', # Language of the LLM.
+	do_store_llm_cache      : bool                                       = True,   # If we want to store the result of the LLM in the cache (makes futur LLM calls faster).
+	do_check_llm_cache      : bool                                       = True,   # If we want to check if the results of the prompt are found in the cache (makes LLM calls faster).
+)->dict:
+	"""
+	This function is meant to make a rule mining API call.
+
+	Parameters
+	----------
+	df: DataFrame
+		The DataFrame that contains the data to analyse (a target column and various feature columns).
+	computing_source: str
+		If the rule mining should be computed locally or remotely.
+	input_file_service_key: str
+		The string that specifies the path to the service key (necessary to use the remote Cloud Function from outside GCP).
+	user_email: str
+		The email of the user (necessary to use the remote Cloud Function from inside GCP).
+	target_name: str
+		Name of the column of the target variable.
+	target_goal: str (or other modality of the target variable)
+		Target goal.
+	columns_names_to_btypes: dict
+		A dict that specifies the btypes of the columns.
+	columns_names_to_descr: dict
+		A dict that specifies the descriptions of the columns.
+	threshold_M_max: int
+		Threshold on the maximum number of points to use during the rule mining (max. 10000 pts in the public API).
+	specified_constraints: dict
+		A dict that specifies contraints to be used during the rule mining.
+	top_N_rules: int
+		An integer that specifies the maximum number of rules to get from the rule mining.
+	verbose: bool
+		Verbosity.
+	filtering_score: str
+		A string that specifies the filtering score to be used when selecting rules.
+	api_source: str
+		A string used to identify the source of the API call.
+	do_compress_data: bool
+		A boolean that specifies if we want to compress the data.
+	do_compute_memory_usage: bool
+		A bool that specifies if we want to get the memory usage of the computation.
+	n_benchmark_original: int
+		Number of benchmarking runs to execute where the target is not shuffled.
+	n_benchmark_shuffle: int
+		Number of benchmarking runs to execute where the target is shuffled.
+	do_llm_readable_rules: bool
+		If we want to convert the rules to a readable format using a LLM.
+	llm_source: str
+		Source where the LLM is running
+	do_store_llm_cache: bool
+		If we want to store the result of the LLM in the cache (makes futur LLM calls faster).
+	do_check_llm_cache: bool
+		If we want to check if the results of the prompt are found in the cache (makes LLM calls faster).
+
+	Returns
+	-------
+	response: requests.models.Response
+		A response object obtained from the API call that contains the rule mining results.
+	"""
+	# Manage where the computation is executed
+	if computing_source=='auto':
+		computing_source='remote_cloud_function'
+	# If the computation is in a local server, the local server will not have the service key and so will not use the remote LLM
+	if do_llm_readable_rules&(computing_source=='local_cloud_function'):
+		if verbose:
+			print("WARNING (search_best_ruleset_from_API_public): do_llm_readable_rules is True but the computing source is a local server, so do_llm_readable_rules is set to False.")
+		do_llm_readable_rules = False
+	# Taking the global variables
+	if api_source=='auto':
+		api_source = API_SOURCE_PUBLIC
+	# Manage the btypes
+	if columns_names_to_btypes==None:
+		columns_names_to_btypes = dict()
+	# Manage the specified constraints
+	if specified_constraints==None:
+		specified_constraints = dict()
+	# Manage top_N_rules
+	if top_N_rules==None:
+		top_N_rules = 10
+	# Convert the Pandas DataFrame to JSON
+	df_to_dict = df.to_json()
+	# Create a dict that contains relevant informations for rule mining
+	d_out_original = {
+		'df_to_dict'              : df_to_dict,
+		'target_name'             : target_name,
+		'target_goal'             : target_goal,
+		'columns_names_to_btypes' : columns_names_to_btypes,
+		'columns_names_to_descr'  : columns_names_to_descr,
+		'threshold_M_max'         : threshold_M_max,
+		'specified_constraints'   : specified_constraints,
+		'top_N_rules'             : top_N_rules,
+		'filtering_score'         : filtering_score,
+		'api_source'              : api_source,
+		'n_benchmark_original'    : n_benchmark_original,
+		'n_benchmark_shuffle'     : n_benchmark_shuffle,
+		'do_llm_readable_rules'   : do_llm_readable_rules,
+		'llm_source'              : llm_source,
+		'llm_language'            : llm_language,
+		'do_store_llm_cache'      : do_store_llm_cache,
+		'do_check_llm_cache'      : do_check_llm_cache,
+	}
+	# Make the API call
+	from .api_utilities import search_best_ruleset_from_API_dict
+	d_in_original = search_best_ruleset_from_API_dict(
+		d_out_original          = d_out_original,
+		input_file_service_key  = input_file_service_key,
+		user_email              = user_email,
+		computing_source        = computing_source,
+		do_compress_data        = do_compress_data,
+		do_compute_memory_usage = do_compute_memory_usage,
+		verbose                 = verbose,
+	)
+	# Return the result
+	return d_in_original
+
+################################################################################
+################################################################################
 # Defining the solver class
 
 class InsightSolver:
@@ -649,6 +791,12 @@ class InsightSolver:
 		Get a DataFrame of the transactions involving credits.
 	get_credits_available: int
 		Get the number of credits available.
+	convert_target_to_binary: pd.Series
+		Converts the target variable to a binary {0,1}-valued Pandas Series.
+	compute_mutual_information: pd.Series
+		Computes a Pandas Series of the mutual information between features and the target variable.
+	show_all_mutual_information: None
+		Generates a bar plot of the mutual information between the features and the target variable.
 	show_feature_distributions_of_S: None
 		Generates bar plots of the distributions of the points in the specified rule S.
 	show_feature_contributions_of_i: None
@@ -969,7 +1117,7 @@ class InsightSolver:
 		df:Optional[pd.DataFrame] = None,
 	)->pd.Index:
 		"""
-		This method returns the index of the points inside a rule S.
+		This method returns the index of the points inside a rule ``S``.
 		"""
 		# Convert the rule S to an index
 		index_points_in_rule = S_to_index_points_in_rule(
@@ -987,7 +1135,7 @@ class InsightSolver:
 		df:Optional[pd.DataFrame] = None,
 	)->pd.Series:
 		"""
-		This method returns a boolean Series that tells if the points are in the rule S or not.
+		This method returns a boolean Series that tells if the points are in the rule ``S`` or not.
 		"""
 		# Take a look at if df is provided
 		if not isinstance(df,pd.DataFrame):
@@ -1019,7 +1167,7 @@ class InsightSolver:
 		df:Optional[pd.DataFrame] = None,
 	):
 		"""
-		This method returns the DataFrame of rows of df that lie inside a rule S.
+		This method returns the DataFrame of rows of ``df`` that lie inside a rule ``S``.
 		"""
 		# Take a look at if df is provided
 		if not isinstance(df,pd.DataFrame):
@@ -1039,7 +1187,7 @@ class InsightSolver:
 		self,
 	)->int:
 		"""
-		This method returns the number of rules held in the InsightSolver.
+		This method returns the number of rules held in an instance of the solver.
 		"""
 		return len(self.rule_mining_results)
 	def i_to_rule(
@@ -1053,7 +1201,7 @@ class InsightSolver:
 		i,
 	):
 		"""
-		This method returns the rule S at position i.
+		This method returns the rule ``S`` at position ``i``.
 		"""
 		# Take the rule at position i
 		rule_i = self.i_to_rule(i=i)
@@ -1066,7 +1214,7 @@ class InsightSolver:
 		i:int = 0,  # Number of the rule in the InsightSolver
 	)->pd.DataFrame:
 		"""
-		This method returns a DataFrame which contains the informations about the subrules of the rule i.
+		This method returns a DataFrame which contains the informations about the subrules of the rule ``i``.
 		"""
 
 		# Take the rule at position i
@@ -1162,7 +1310,7 @@ class InsightSolver:
 		do_ignore_col_rule_S: bool = True, # Of we want to ignore some columns
 	)->pd.DataFrame:
 		"""
-		This method returns a DataFrame of the feature contributions of the variables in the rule S at position i.
+		This method returns a DataFrame of the feature contributions of the variables in the rule ``S`` at position ``i``.
 		"""
 		df_feature_contributions_S = pd.DataFrame.from_dict(
 			data   = self.i_to_rule(i)['feature_contributions_S'],
@@ -1181,7 +1329,7 @@ class InsightSolver:
 		i,
 	)->Optional[str]:
 		"""
-		Returns the readable text of the rule i if it is available.
+		Returns the readable text of the rule ``i`` if it is available.
 		"""
 		# Take the rule i
 		rule_i = self.i_to_rule(i=i)
@@ -1210,7 +1358,7 @@ class InsightSolver:
 		do_print_feature_contributions_S: bool = True,
 	)->None:
 		"""
-		This method prints the content of the rule i in the InsightSolver.
+		This method prints the content of the rule ``i`` in the solver.
 		"""
 		# Take the rule i
 		rule_i = self.i_to_rule(i=i)
@@ -1344,8 +1492,8 @@ class InsightSolver:
 		complexity_max: Optional[int] = None,
 	)->list:
 		"""
-		This method gives the range of i in the InsightSolver.
-		If the integer complexity_max is specified, return only this number of elements.
+		This method gives the range of ``i`` in the solver.
+		If the integer ``complexity_max`` is specified, return only this number of elements.
 		"""
 		range_i = sorted(self.rule_mining_results.keys())
 		if complexity_max:
@@ -1370,7 +1518,7 @@ class InsightSolver:
 		mode: str                                     = 'full', # The printing mode.
 	)->None:
 		"""
-		This method prints the content of the InsightSolver.
+		This method prints the content of the solver.
 		"""
 		if verbose:
 			print('Printing the content of the class InsightSolver...')
@@ -1463,11 +1611,12 @@ class InsightSolver:
 		print_format:str = 'list', # 'list' or 'compact'
 	)->None:
 		"""
-		This method does a 'light' print of the InsightSolver.
+		This method does a 'light' print of the solver.
 	
 		Two formats:
-		- 'list': shows the rules via a loop of prints.
-		- 'compact': shows the rules in a single DataFrame.
+
+		- ``'list'``: shows the rules via a loop of prints.
+		- ``'compact'``: shows the rules in a single DataFrame.
 		"""
 		with pd.option_context('display.max_columns', None, 'display.max_colwidth', 50, 'display.width', 1000):
 			# Take the list of rules keys in the InsightSolver
@@ -1540,7 +1689,7 @@ class InsightSolver:
 		self,
 	)->None:
 		"""
-		This method is aimed at printing a 'dense' version of the InsightSolver object.
+		This method is aimed at printing a 'dense' version of the solver.
 		"""
 		with pd.option_context('display.max_columns', 10, 'display.max_colwidth', 100, 'display.width', 1000):
 			# Take the list of rules keys in the InsightSolver object.
@@ -1650,7 +1799,7 @@ class InsightSolver:
 		self,
 	)->dict:
 		"""
-		This method aims to export the content of the InsightSolver object to a dictionary.
+		This method aims to export the content of the solver to a dictionary.
 		"""
 		from copy import deepcopy
 		# Declare a Python dictionary
@@ -1676,9 +1825,9 @@ class InsightSolver:
 		verbose      = False,
 	)->str:
 		"""
-		This method aims to export the content of the InsightSolver object to a JSON string.
+		This method aims to export the content of the solver to a JSON string.
 		"""
-		# Export the InsightSolver object to a dict
+		# Export the solver object to a dict
 		d = self.to_dict()
 		# Convert the dict to a JSON string
 		from .api_utilities import convert_dict_to_json_string
@@ -1692,7 +1841,7 @@ class InsightSolver:
 		do_rename_cols     = False,
 	)->pd.DataFrame:
 		"""
-		This method aims to export the content of the InsightSolver object to a DataFrame.
+		This method aims to export the content of the solver to a DataFrame.
 		"""
 		# Handling the rules
 		if verbose:
@@ -1773,6 +1922,7 @@ class InsightSolver:
 		if do_rename_cols:
 			"""
 			This renaming is useful for BigQuery:
+
 			- Forbidden to have '/' in a column name
 			- Columns names are not case sensitive, so it cannot distinguish between M and m, M0 and m0, M1 and m1.
 			"""
@@ -1798,7 +1948,7 @@ class InsightSolver:
 		do_rename_cols = False,
 	)->str:
 		"""
-		This method is meant to export the content of the InsightSolver object to a CSV file.
+		This method is meant to export the content of the solver to a CSV file.
 		"""
 		# Avoid to generate a string containing np.float64 and np.int64 everywhere
 		if np.__version__>='2.0.0':
@@ -1822,7 +1972,7 @@ class InsightSolver:
 		do_rename_cols = False,
 	)->None:
 		"""
-		This method is meant to export the RuleSet to a Excel file.
+		This method is meant to export the solver to a Excel file.
 		"""
 		df = self.to_dataframe(
 			do_rename_cols = do_rename_cols,
@@ -1842,7 +1992,7 @@ class InsightSolver:
 		do_rename_cols = False,
 	)->str:
 		"""
-		This method is meant to export the RuleSet to a Excel string.
+		This method is meant to export the solver to a Excel string.
 		"""
 		df = self.to_dataframe(
 			do_rename_cols = do_rename_cols,
@@ -1938,6 +2088,225 @@ class InsightSolver:
 		credits_available = d_in_credits_infos['credits_available']
 		# Return the result
 		return credits_available
+	def convert_target_to_binary(
+		self,
+	):
+		"""
+		This method converts the target variable to a binary {0,1}-valued Pandas Series.
+
+		To use this method, the attribute ``solver.target_goal`` must be populated because it specifies how to convert the target variable to binary.
+		As a reminder, the target goal must be one of the following:
+		
+		- A modality of the target variable in the case of a categorical (i.e. ``'binary'`` or ``'multiclass'``) target variable.
+		- ``'min'``, ``'min_q0'``, ``'min_q1'``, ``'min_q2'``, ``'min_q3'``, ``'min_c00'``, ``'min_c01'``, ..., ``'min_c98'``, ``'min_c99'``.
+		- ``'max'``, ``'max_q1'``, ``',max_q2'``, ``'max_q3'``, ``'max_q4'``, ``'max_c01'``, ``'max_c02'``, ..., ``'max_c99'``, ``'max_c100'``.
+
+		Returns
+		-------
+		s_target: pd.Series
+			A {0,1}-valued Pandas Series representing the target variable.
+		"""
+		# Take the target goal
+		target_goal = self.target_goal
+		if target_goal==None:
+			raise Exception("ERROR: the target goal must be specified when converting a target variable to binary.")
+		# Take the name of the target variable
+		target_name = self.target_name
+		# If the target variable's type is 'ignore', raise an Exception
+		if target_name in self.columns_types and self.columns_types[target_name]=='ignore':
+			raise Exception(f"ERROR: the type of the target variable '{target_name}' is 'ignore'.")
+		# Take the Series of the target variable
+		s = self.df[target_name].copy()
+		# Create an output Pandas Series
+		s_out = pd.Series(
+			data  = False,
+			index = s.index,
+			name  = s.name,
+		)
+		# Handle the case where we are looking for NaNs
+		if pd.isna(target_goal):
+			# If we are looking for NaNs
+			s_out &= s.isna()
+		else:
+			# If we are not looking for NaNs
+			# Drop de NaNs to simplify the computation
+			s.dropna(inplace=True)
+			# Take the list of target modalities
+			target_modalities = sorted(s.unique())
+			# Look at if the target goal is in the target modalities
+			if target_goal in target_modalities:
+				# If the target goal is in the target modalities, we assume that the target goal is the target modality and that the target type is categorical (i.e. 'binary' or 'multiclass')
+				target_modality = target_goal
+				# Look at a boolean Series which indicates for which points the target value equals the target modality
+				s_temp = s==target_modality
+			else:
+				# If the target goal is not in the target modalities, we assume that the target type is 'continuous'
+				# We make sure that the target_goal is legit for a continuous target variable
+				import re
+				if not isinstance(target_goal,str) or (target_goal[:3] not in ['min','max']):
+					raise Exception(f"ERROR: target_goal='{target_goal}' not legitimate.")
+				if target_goal[:3]=='min':
+					if target_goal=='min':
+						# If 'min' it's legit
+						# By default 'min'='min_q1'='min_c25'
+						target_threshold = np.percentile(s,25)
+					elif re.match(r"^min_q[0-3]{1}$", target_goal)!=None:
+						# If it's 'min' with a quartile 0, 1, 2, 3, it's ok (but 4 is not).
+						int_temp = int(target_goal.split('_q')[1])
+						print("\nint_temp =",int_temp)
+						if int_temp==0:
+							target_threshold = np.percentile(s,0)
+						elif int_temp==1:
+							target_threshold = np.percentile(s,25)
+						elif int_temp==2:
+							target_threshold = np.percentile(s,50)
+						elif int_temp==3:
+							target_threshold = np.percentile(s,75)
+					elif re.match(r"^min_c[0-9]{2}$", target_goal)!=None:
+						# If it's 'min' with a centile 00, 01, 02, ..., 98, 99.
+						# If 00 it's equivalent to seek for points where the target is <= the minimum of the values.
+						target_threshold = np.percentile(s,int(target_goal.split('_c')[1]))
+					else:
+						raise Exception(f"ERROR: target_goal='{target_goal}' not legitimate.")
+					# Look at which point satisfies the target threshold
+					s_temp = s.apply(lambda x:x<=target_threshold)
+				elif target_goal[:3]=='max':
+					if target_goal=='max':
+						# If 'max' it's legit
+						# By default 'max'='max_q3'='max_c75'.
+						target_threshold = np.percentile(s,75)
+					elif re.match(r"^max_q[1-4]{1}$", target_goal)!=None:
+						# If it's 'max' with a quartile 1, 2, 3, 4, it's ok (but 0 is not).
+						int_temp = int(target_goal.split('_q')[1])
+						if int_temp==1:
+							target_threshold = np.percentile(s,25)
+						elif int_temp==2:
+							target_threshold = np.percentile(s,50)
+						elif int_temp==3:
+							target_threshold = np.percentile(s,75)
+						elif int_temp==4:
+							target_threshold = np.percentile(s,100)
+					elif re.match(r"^max_c[0-9]{2}$", target_goal)!=None:
+						# If it's 'max' with a 00, 01, 02, ..., 98, 99.
+						# We exclude the case where we search for values >= c00 because it's all the values.
+						if target_goal=='max_c00':
+							raise Exception(f"ERROR: target_goal='{target_goal}' not legitimate.")
+						target_threshold = np.percentile(s,int(target_goal.split('_c')[1]))
+					elif re.match(r"^max_c100$",      target_goal)!=None:
+						# If it's 'max' with a centile 100.
+						# This is equivalent to seek for points where the target variable is >= the maximum of the values.
+						target_threshold = np.percentile(s,int(target_goal.split('_c')[1]))
+					else:
+						raise Exception(f"ERROR: target_goal='{target_goal}' not legitimate.")
+					# Look at which point satisfies the target threshold
+					s_temp = s.apply(lambda x:x>=target_threshold)
+				else:
+					raise Exception(f"ERROR: target_goal='{target_goal}' not legitimate.")
+			# Keep only the rows where it's True
+			s_temp = s_temp[s_temp]
+			# Update the outgoing Pandas Series
+			s_out.loc[s_temp.index] = True
+		# Convert from boolean to integer
+		s_out = s_out.astype(int)
+		# Return the Pandas Series
+		return s_out
+	def compute_mutual_information(
+		self,
+		n_samples = 1000, # If we want to speed up the computation
+	):
+		"""
+		This method computes the mutual information between the features and the target variable.
+
+		Parameters
+		----------
+		n_samples: int
+			An integer that specifies the number of data rows to use in the computation of the mutual information.
+
+		Returns
+		-------
+		s_mi: pd.Series
+			A Pandas Series that contains the mutual information of the features with the target variable.
+		"""
+		# Take the DataFrame
+		df = self.df
+		# Take the name of the target variable
+		target_name = self.target_name
+		# Sample the data if needed to speed up the computation
+		if n_samples:
+			if n_samples<len(df):
+				df = df.sample(
+					n            = n_samples,
+					random_state = 0,
+				)
+		# Take all the columns of df
+		cols = df.columns.to_list()
+		# Remove the target column
+		cols.remove(target_name)
+		# Split the columns in continuous and categorical according to what is known
+		columns_types    = self.columns_types
+		cols_continuous  = [col for col in cols if col in columns_types and columns_types[col]=='continuous']              # Columns specified as 'continuous'
+		cols_categorical = [col for col in cols if col in columns_types and columns_types[col] in ['binary','multiclass']] # Columns specified as 'binary' or 'multiclass'
+		cols_ignore      = [col for col in cols if col in columns_types and columns_types[col]=='ignore']                  # Columns specified as 'ignore'
+		cols_unspecified = [col for col in cols if col not in cols_continuous+cols_categorical+cols_ignore]                # Columns whose type is unspecified
+		# By default, any unspecified column will be considered as continuous (so that strings will be considered alphabetically)
+		cols_continuous += cols_unspecified
+		# Create a DataFrame of features
+		df_X = df[cols_continuous+cols_categorical].copy()
+		# Create a binary Pandas Series of the target variable
+		s_y = self.convert_target_to_binary().loc[df_X.index]
+		# Convert continuous non numeric columns to ranks
+		cols_continuous_non_numeric = df_X[cols_continuous].select_dtypes(exclude='number').columns.to_list()
+		for col in cols_continuous_non_numeric:
+			df_X[col] = df_X[col].astype(str).rank(method='average')
+		# Convert categorical non numeric columns to numbers (it is not needed to sort alphabetically)
+		cols_categorical_non_numeric = df_X[cols_categorical].select_dtypes(exclude='number').columns.to_list()
+		for col in cols_categorical_non_numeric:
+			df_X[col] = pd.factorize(df_X[col].astype(str))[0]
+		# Handle the missing values in the continuous numerical columns
+		cols_continuous_numeric = [col for col in cols_continuous if col not in cols_continuous_non_numeric]
+		for col in cols_continuous_numeric:
+			if df_X[col].isna().any():
+				# Fill the missing values by the median
+				df_X[col] = df_X[col].fillna(df_X[col].median())
+		# Determine the discrete features
+		discrete_features = df_X.columns.isin(cols_categorical)
+		# Compute the mutual information
+		from sklearn.feature_selection import mutual_info_classif
+		mi_scores = mutual_info_classif(
+			X                 = df_X,              # The features
+			y                 = s_y,               # The target variable
+			discrete_features = discrete_features, # Specify the categorical variables
+			random_state      = 0,                 # For reproductibility
+			n_jobs            = -1,                # Use all CPU
+			n_neighbors       = 4,
+		)
+		# Convert the result to a Pandas Series
+		s_mi = pd.Series(
+			data  = mi_scores,
+			index = df_X.columns,
+			name  = 'mutual_info',
+		).sort_values(ascending=False)
+		# Return the mutual information
+		return s_mi
+	def show_all_mutual_information(
+		self,
+		n_samples:Optional[int] = 1000,
+		n_cols:Optional[int]    = 20,		
+	)->None:
+		"""
+		This method generates a bar plot of the mutual information between the features and the target variable.	
+
+		Parameters
+		----------
+		n_samples: int
+			An integer that specifies the number of data rows to use in the computation of the mutual information.
+		n_cols: int
+			An integer that specifies the maximum number of features to show
+		"""
+		from .visualization import show_all_mutual_information
+		show_all_mutual_information(
+			solver = self,
+		)
 	def show_feature_distributions_of_S(
 		self,
 		S:dict,
@@ -1946,7 +2315,7 @@ class InsightSolver:
 		do_show_vertical_lines:bool = False,
 	)->None:
 		"""
-		This method generates bar plots of the distributions of the points in the specified rule S.
+		This method generates bar plots of the distributions of the points in the specified rule ``S``.
 
 		Parameters
 		----------
@@ -1978,7 +2347,7 @@ class InsightSolver:
 		loss:Optional[float] = None,  # If we want to show a loss
 	)->None:
 		"""
-		This method returns a horizontal bar plots of the feature constributions of a specified rule S.
+		This method returns a horizontal bar plots of the feature constributions of a specified rule ``S``.
 		
 		Parameters
 		----------
@@ -2072,146 +2441,6 @@ class InsightSolver:
 			solver    = self,
 			do_banner = do_banner, # If we want to show the banner
 		)
-
-################################################################################
-################################################################################
-# Defining the API Client
-
-def search_best_ruleset_from_API_public(
-	df                      : pd.DataFrame,                                        # The Pandas DataFrame that contains the data to analyse.
-	computing_source        : str                                        = 'auto', # Specify if the execution is local or remote
-	input_file_service_key  : Optional[str]                              = None,   # For a remote execution from outside GCP, a service key file is necessary
-	user_email              : Optional[str]                              = None,   # For a remote execution from inside GCP, a user email is necessary
-	target_name             : Optional[Union[str,int]]                   = None,   # Name of the target variable
-	target_goal             : Optional[Union[str,numbers.Real,np.uint8]] = None,   # Target goal
-	columns_names_to_btypes : Optional[Dict]                             = dict(), # Specify the btypes of the variables
-	columns_names_to_descr  : Optional[Dict]                             = dict(), # Specify the descriptions of the variables
-	threshold_M_max         : Optional[int]                              = None,   # Specify the maximum number of rows to use in the rule mining
-	specified_constraints   : Optional[Dict]                             = dict(), # Specify some constraints on the rules
-	top_N_rules             : Optional[int]                              = 10,     # Maximum number of rules to keep
-	verbose                 : bool                                       = False,  # Verbosity
-	filtering_score         : str                                        = 'auto', # Filtering score
-	api_source              : str                                        = 'auto', # Source of the API call
-	do_compress_data        : bool                                       = True,   # If we want to compress the communications (slower to compress but faster to transmit)
-	do_compute_memory_usage : bool                                       = True,   # If we want to compute the memory usage of the API (this significantly slows down computation time but is good for monitoring purposes)
-	n_benchmark_original    : int                                        = 5,      # Number of benchmarking runs to execute where the target is not shuffled.
-	n_benchmark_shuffle     : int                                        = 20,     # Number of benchmarking runs to execute where the target is shuffled.
-	do_llm_readable_rules   : bool                                       = False,  # If we want to convert the rules to a readable format using a LLM.
-	llm_source              : str                                        = 'remote_gemini', # Source where the LLM is running.
-	llm_language            : str                                        = 'auto', # Language of the LLM.
-	do_store_llm_cache      : bool                                       = True,   # If we want to store the result of the LLM in the cache (makes futur LLM calls faster).
-	do_check_llm_cache      : bool                                       = True,   # If we want to check if the results of the prompt are found in the cache (makes LLM calls faster).
-)->dict:
-	"""
-	This function is meant to make a rule mining API call.
-
-	Parameters
-	----------
-	df: DataFrame
-		The DataFrame that contains the data to analyse (a target column and various feature columns).
-	computing_source: str
-		If the rule mining should be computed locally or remotely.
-	input_file_service_key: str
-		The string that specifies the path to the service key (necessary to use the remote Cloud Function from outside GCP).
-	user_email: str
-		The email of the user (necessary to use the remote Cloud Function from inside GCP).
-	target_name: str
-		Name of the column of the target variable.
-	target_goal: str (or other modality of the target variable)
-		Target goal.
-	columns_names_to_btypes: dict
-		A dict that specifies the btypes of the columns.
-	columns_names_to_descr: dict
-		A dict that specifies the descriptions of the columns.
-	threshold_M_max: int
-		Threshold on the maximum number of points to use during the rule mining (max. 10000 pts in the public API).
-	specified_constraints: dict
-		A dict that specifies contraints to be used during the rule mining.
-	top_N_rules: int
-		An integer that specifies the maximum number of rules to get from the rule mining.
-	verbose: bool
-		Verbosity.
-	filtering_score: str
-		A string that specifies the filtering score to be used when selecting rules.
-	api_source: str
-		A string used to identify the source of the API call.
-	do_compress_data: bool
-		A boolean that specifies if we want to compress the data.
-	do_compute_memory_usage: bool
-		A bool that specifies if we want to get the memory usage of the computation.
-	n_benchmark_original: int
-		Number of benchmarking runs to execute where the target is not shuffled.
-	n_benchmark_shuffle: int
-		Number of benchmarking runs to execute where the target is shuffled.
-	do_llm_readable_rules: bool
-		If we want to convert the rules to a readable format using a LLM.
-	llm_source: str
-		Source where the LLM is running
-	do_store_llm_cache: bool
-		If we want to store the result of the LLM in the cache (makes futur LLM calls faster).
-	do_check_llm_cache: bool
-		If we want to check if the results of the prompt are found in the cache (makes LLM calls faster).
-
-	Returns
-	-------
-	response: requests.models.Response
-		A response object obtained from the API call that contains the rule mining results.
-	"""
-	# Manage where the computation is executed
-	if computing_source=='auto':
-		computing_source='remote_cloud_function'
-	# If the computation is in a local server, the local server will not have the service key and so will not use the remote LLM
-	if do_llm_readable_rules&(computing_source=='local_cloud_function'):
-		if verbose:
-			print("WARNING (search_best_ruleset_from_API_public): do_llm_readable_rules is True but the computing source is a local server, so do_llm_readable_rules is set to False.")
-		do_llm_readable_rules = False
-	# Taking the global variables
-	if api_source=='auto':
-		api_source = API_SOURCE_PUBLIC
-	# Manage the btypes
-	if columns_names_to_btypes==None:
-		columns_names_to_btypes = dict()
-	# Manage the specified constraints
-	if specified_constraints==None:
-		specified_constraints = dict()
-	# Manage top_N_rules
-	if top_N_rules==None:
-		top_N_rules = 10
-	# Convert the Pandas DataFrame to JSON
-	df_to_dict = df.to_json()
-	# Create a dict that contains relevant informations for rule mining
-	d_out_original = {
-		'df_to_dict'              : df_to_dict,
-		'target_name'             : target_name,
-		'target_goal'             : target_goal,
-		'columns_names_to_btypes' : columns_names_to_btypes,
-		'columns_names_to_descr'  : columns_names_to_descr,
-		'threshold_M_max'         : threshold_M_max,
-		'specified_constraints'   : specified_constraints,
-		'top_N_rules'             : top_N_rules,
-		'filtering_score'         : filtering_score,
-		'api_source'              : api_source,
-		'n_benchmark_original'    : n_benchmark_original,
-		'n_benchmark_shuffle'     : n_benchmark_shuffle,
-		'do_llm_readable_rules'   : do_llm_readable_rules,
-		'llm_source'              : llm_source,
-		'llm_language'            : llm_language,
-		'do_store_llm_cache'      : do_store_llm_cache,
-		'do_check_llm_cache'      : do_check_llm_cache,
-	}
-	# Make the API call
-	from .api_utilities import search_best_ruleset_from_API_dict
-	d_in_original = search_best_ruleset_from_API_dict(
-		d_out_original          = d_out_original,
-		input_file_service_key  = input_file_service_key,
-		user_email              = user_email,
-		computing_source        = computing_source,
-		do_compress_data        = do_compress_data,
-		do_compute_memory_usage = do_compute_memory_usage,
-		verbose                 = verbose,
-	)
-	# Return the result
-	return d_in_original
 
 ################################################################################
 ################################################################################

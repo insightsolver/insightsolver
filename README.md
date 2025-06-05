@@ -62,7 +62,7 @@ The API charges usage based on the **size of the dataset** you submit.
 The number of credits is calculated as:
 
 ```python
-credits = ceil(m * n / 10_000)
+credits = ceil(m * n / 10000)
 ```
 
 where:
@@ -73,16 +73,16 @@ where:
 
 Here are some examples:
 
-| Rows (`m`) | Columns (`n`)  | Computation          | Credits Charged  |
-|------------|----------------|----------------------|------------------|
-| 1,000      | 10             | ceil(10,000 / 10k)   | 1                |
-| 10,000     | 25             | ceil(250,000 / 10k)  | 25               |
-| 20,000     | 100            | ceil(2,000,000 / 10k)| 200              |
+| Rows (`m`) | Columns (`n`)  | Computation           | Credits Charged  |
+|------------|----------------|-----------------------|------------------|
+| 1000       | 10             | ceil(1000*10/10000)   | 1                |
+| 10000      | 25             | ceil(10000*25/10000)  | 25               |
+| 20000      | 100            | ceil(20000*100/10000) | 200              |
 
 > For reference, the Titanic training dataset from [Kaggle](https://www.kaggle.com/competitions/titanic) has **891 rows** and **10 columns** (excluding `PassengerId`), which results in:
 >
 > ```python
-> ceil(891 * 10 / 10_000) = 1 credit
+> ceil(891 * 10 / 10000) = 1 credit
 > ```
 >
 > So you can think of **1 credit as roughly "one Titanic"** in size.

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.24 (2025-06-05)
+
+*Improvements:*
+
+- New method `solver.convert_target_to_binary` to convert the target variable to a binary-valued Pandas Series.
+- New method `solver.compute_mutual_information` to compute the mutual information between the features and the target variable. This can help the user decide which features to use.
+- New method `solver.show_all_mutual_information` to show a bar plot of the mutual information between the features and the target variable.
+- New function `show_all_mutual_information` in the file `visualization.py`.
+- Fixed a bug in the file `requirements.txt` where `PIL` is now `Pillow`.
+- Improved the docstrings and the pdf documentation.
+
 ## 0.1.23 (2025-06-03)
 
 *Improvements:*
