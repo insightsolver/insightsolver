@@ -113,6 +113,22 @@ Here you'll find the [changelog](./changelog.md).
 
 Here you'll find the [LICENSE](./LICENSE).
 
+### 🗃️ Third-Party Licenses
+
+This project relies on third-party open-source Python packages, used in:
+
+- the **client-side API module** (installable via `pip`),
+- the **server-side API backend**, and
+- the **web application frontend**.
+
+To ensure transparency and fulfill licensing obligations, we provide a full list of dependencies along with their license information in the file [`THIRD_PARTY_LICENSES.csv`](./THIRD_PARTY_LICENSES.csv).  
+It includes:
+- the package name and version,
+- the license type, and
+- a link to the package’s source or home page.
+
+All third-party libraries are used unmodified and installed from [PyPI](https://pypi.org).
+
 ## 🤝 Contact
 
 - Email [support@insightsolver.com](mailto:support@insightsolver.com)

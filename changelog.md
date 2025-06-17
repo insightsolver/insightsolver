@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.26 (2025-06-17)
+
+*Improvements:*
+
+- Completed the docstring of the method `solver.fit()`.
+- Added a file `THIRD_PARTY_LICENSES.csv` to the repo.
+- Updated the `README.md` file to mention the new file `THIRD_PARTY_LICENSES.csv`.
+
 ## 0.1.25 (2025-06-05)
 
 *Improvements:*

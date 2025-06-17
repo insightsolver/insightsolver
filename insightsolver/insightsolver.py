@@ -1092,6 +1092,35 @@ class InsightSolver:
 	)->None:
 		"""
 		This method aims to fit the solver.
+
+		Parameters
+		----------
+		verbose: bool (default False)
+			If we want the fitting to be verbose.
+		computing_source: str (default 'auto')
+			Specify where the rule mining computation is done ('local_cloud_function' or 'remote_cloud_function').
+		service_key: str (default None)
+			Path+name of the service key.
+		user_email: str (default None)
+			User email.
+		api_source: str (default 'auto')
+			Source of the API call.
+		do_compress_data: bool (default True)
+			If we want to compress the data for the communications with the server.
+		do_compute_memory_usage: bool (default True)
+			If we want to monitor the first thread memory usage on the server side.
+		do_check_enough_credits: bool (default False)
+			Check if there are enough credits to fit the solver.
+		do_llm_readable_rules: bool (default True)
+			If we want to convert the rules to a readable format using a LLM.
+		llm_source: str (default 'auto')
+			Source where the LLM is running.
+		llm_language: str (default 'auto')
+			Language of the LLM.
+		do_store_llm_cache: bool (default True)
+			If we want to store the result of the LLM in the cache (makes futur LLM calls faster).
+		do_check_llm_cache: bool (default True)
+			If we want to check if the results of the prompt are found in the cache (makes LLM calls faster).
 		"""
 		if verbose:
 			print('Fitting the InsightSolver...')
