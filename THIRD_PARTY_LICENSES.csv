@@ -227,6 +227,13 @@ langchain-ollama,0.3.1,MIT,https://github.com/langchain-ai/langchain
 openai-whisper,20240930,MIT,https://github.com/openai/whisper
 rpds-py,0.24.0,MIT,https://github.com/crate-py/rpds
 skops,0.10.0,MIT,http://github.com/skops-dev/skops
+attrs,25.3.0,MIT,https://www.attrs.org/en/stable/changelog.html
+colorlover,0.3.0,MIT,https://github.com/jackparmer/colorlover
+ollama-python,0.1.2,MIT,UNKNOWN
+referencing,0.36.2,MIT,https://github.com/python-jsonschema/referencing
+streamlit-oauth,0.1.14,MIT,https://github.com/dnplus/streamlit-oauth
+streamlit-option-menu,0.4.0,MIT,https://github.com/victoryhb/streamlit-option-menu
+urllib3,2.4.0,MIT,https://github.com/urllib3/urllib3/blob/main/CHANGES.rst
 Deprecated,1.2.18,MIT License,https://github.com/laurent-laporte-pro/deprecated
 PyJWT,2.9.0,MIT License,https://github.com/jpadilla/pyjwt
 PyWavelets,1.8.0,MIT License,https://github.com/PyWavelets/pywt
@@ -353,22 +360,7 @@ insightsolver,0.1.24,Other/Proprietary License,https://github.com/insightsolver/
 aiohappyeyeballs,2.4.3,Other/Proprietary License; Python Software Foundation License,https://github.com/aio-libs/aiohappyeyeballs
 defusedxml,0.7.1,Python Software Foundation License,https://github.com/tiran/defusedxml
 matplotlib,3.9.2,Python Software Foundation License,https://matplotlib.org
+typing_extensions,4.13.2,Python Software License,https://github.com/python/typing_extensions
 filelock,3.16.1,The Unlicense (Unlicense),https://github.com/tox-dev/py-filelock
 pytube,15.0.0,The Unlicense (Unlicense),https://github.com/pytube/pytube
-attrs,25.3.0,UNKNOWN,https://www.attrs.org/en/stable/changelog.html
-colorlover,0.3.0,UNKNOWN,https://github.com/jackparmer/colorlover
 lmstudio,1.2.0,UNKNOWN,https://github.com/lmstudio-ai/lmstudio-sdk-python
-ollama-python,0.1.2,UNKNOWN,UNKNOWN
-referencing,0.36.2,UNKNOWN,https://github.com/python-jsonschema/referencing
-streamlit-oauth,0.1.14,UNKNOWN,https://github.com/dnplus/streamlit-oauth
-streamlit-option-menu,0.4.0,UNKNOWN,https://github.com/victoryhb/streamlit-option-menu
-typing_extensions,4.13.2,UNKNOWN,https://github.com/python/typing_extensions
-urllib3,2.4.0,UNKNOWN,https://github.com/urllib3/urllib3/blob/main/CHANGES.rst
-attrs,25.3.0,MIT,https://www.attrs.org/en/stable/changelog.html
-colorlover,0.3.0,MIT,https://github.com/jackparmer/colorlover
-ollama-python,0.1.2,MIT,UNKNOWN
-referencing,0.36.2,MIT,https://github.com/python-jsonschema/referencing
-streamlit-oauth,0.1.14,MIT,https://github.com/dnplus/streamlit-oauth
-streamlit-option-menu,0.4.0,MIT,https://github.com/victoryhb/streamlit-option-menu
-typing_extensions,4.13.2,Python Software License,https://github.com/python/typing_extensions
-urllib3,2.4.0,MIT,https://github.com/urllib3/urllib3/blob/main/CHANGES.rst
