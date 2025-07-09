@@ -1,16 +1,15 @@
 """
+* `Organization`:  InsightSolver Solutions Inc.
 * `Project Name`:  InsightSolver
 * `Module Name`:   demo_insightsolver
 * `Author`:        Noé Aubin-Cadot
-* `Organization`:  InsightSolver
 * `Email`:         noe.aubin-cadot@datascienceinstitute.ca
-* `Last Updated`:  2024-11-12
+* `Last Updated`:  2025-06-20
 * `First Created`: 2024-09-09
 
 Description
 -----------
-This module contains the ``InsightSolver`` class.
-It is meant to make rule mining API calls.
+This module contains a demo to use the ``InsightSolver`` class.
 
 Note
 ----

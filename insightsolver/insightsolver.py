@@ -1,11 +1,11 @@
 """
-* `Organization`:  InsightSolver
+* `Organization`:  InsightSolver Solutions Inc.
 * `Project Name`:  InsightSolver
 * `Module Name`:   insightsolver
 * `File Name`:     insightsolver.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-05-08
+* `Last Updated`:  2025-07-09
 * `First Created`: 2024-09-09
 
 Description
@@ -719,7 +719,7 @@ def get_credits_available(
 
 ################################################################################
 ################################################################################
-# Defining the solver class
+# Defining the InsightSolver class
 
 class InsightSolver:
 	"""
@@ -769,6 +769,8 @@ class InsightSolver:
 		Dictionary of the benchmarking scores against shuffled data.
 	rule_mining_results: dict
 		Dictionary that contains the results of the rule mining.
+	_is_fitted: bool
+		Boolean that tells if the solver is fitted.
 
 	Methods
 	-------
@@ -776,6 +778,8 @@ class InsightSolver:
 		Ingests a Python dict.
 	ingest_json_string: None
 		Ingests a JSON string.
+	is_fitted: Bool
+		Returns a boolean that tells if the solver is fitted.
 	fit: None
 		Fits the solver.
 	S_to_index_points_in_rule: Pandas Index
@@ -994,6 +998,8 @@ class InsightSolver:
 		self.benchmark_scores        = dict()
 		# Rule mining results
 		self.rule_mining_results     = dict()
+		# Boolean that tells if the solver is fitted
+		self._is_fitted              = False
 	def ingest_dict(
 		self,
 		d: dict,               # The dict to ingest
@@ -1074,6 +1080,13 @@ class InsightSolver:
 		self.ingest_dict(d)
 		# The keys of the rules are given as string, we need to convert them to integers
 		self.rule_mining_results = {int(k):self.rule_mining_results[k] for k in self.rule_mining_results.keys()}
+	def is_fitted(
+		self,
+	):
+		"""
+		This method returns a boolean that tells if the solver is fitted.
+		"""
+		return self._is_fitted
 	def fit(
 		self,
 		verbose:bool                 = False,  # Verbosity
@@ -1172,6 +1185,8 @@ class InsightSolver:
 		self.ingest_dict(
 			d = d_in_original,
 		)
+		# Set the solver as fitted
+		self._is_fitted = True
 	def S_to_index_points_in_rule(
 		self,
 		S:dict,
@@ -1580,7 +1595,7 @@ class InsightSolver:
 		mode: str                                     = 'full', # The printing mode.
 	)->None:
 		"""
-		This method prints the content of the solver.
+		This method prints the content of the ``InsightSolver` solver.
 		"""
 		if verbose:
 			print('Printing the content of the class InsightSolver...')

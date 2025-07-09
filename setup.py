@@ -29,7 +29,7 @@ setup(
 	author="Noé Aubin-Cadot",
 	author_email="noe.aubin-cadot@insightsolver.com",
 	# Organisation responsable de la maintenance du projet
-	maintainer="InsightSolver",
+	maintainer="InsightSolver Solutions Inc.",
 	maintainer_email="support@insightsolver.com",
 	description="InsightSolver offers rule-based insights generation for actionable data-driven decisions.",
 	long_description=long_description,

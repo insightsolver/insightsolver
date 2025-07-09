@@ -1,5 +1,5 @@
 """
-* `Organization`:  InsightSolver
+* `Organization`:  InsightSolver Solutions Inc.
 * `Project Name`:  InsightSolver
 * `Module Name`:   insightsolver
 * `File Name`:     api_utilities.py

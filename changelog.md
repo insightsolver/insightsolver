@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.27 (2025-??-??)
+
+*Improvements:*
+
+- Updated the file `THIRD_PARTY_LICENSES.csv`.
+- The class `InsightSolver` has a new boolean attribute `_is_fitted` that tells if the solver is fitted. By default it is set to `False`. When the fitting is done it is set to `True`.
+- The class `InsightSolver` has a new callable method `.is_fitted()` that tells if the solver is fitted.
+
 ## 0.1.26 (2025-06-17)
 
 *Improvements:*

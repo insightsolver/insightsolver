@@ -1,45 +1,50 @@
 Name,Version,License,URL
 ImageHash,4.3.1,2-clause BSD License,https://github.com/JohannesBuchner/imagehash
-protobuf,5.28.3,3-Clause BSD License,https://developers.google.com/protocol-buffers/
+protobuf,5.29.5,3-Clause BSD License,https://developers.google.com/protocol-buffers/
 asttokens,3.0.0,Apache 2.0,https://github.com/gristlabs/asttokens
-google-cloud-aiplatform,1.88.0,Apache 2.0,https://github.com/googleapis/python-aiplatform
+google-cloud-aiplatform,1.101.0,Apache 2.0,https://github.com/googleapis/python-aiplatform
+google-crc32c,1.7.1,Apache 2.0,https://github.com/googleapis/python-crc32c
+msgpack,1.1.1,Apache 2.0,https://msgpack.org/
 responses,0.24.1,Apache 2.0,https://github.com/getsentry/responses
+multidict,6.6.3,Apache License 2.0,https://github.com/aio-libs/multidict
 pydeck,0.9.1,Apache License 2.0,https://github.com/visgl/deck.gl/tree/master/bindings/pydeck
 overrides,7.7.0,"Apache License, Version 2.0",https://github.com/mkorpela/overrides
-CacheControl,0.14.1,Apache Software License,https://pypi.org/project/CacheControl/
-Pympler,1.1,Apache Software License,https://github.com/pympler/pympler
 aiohttp,3.11.2,Apache Software License,https://github.com/aio-libs/aiohttp
-aiosignal,1.3.1,Apache Software License,https://github.com/aio-libs/aiosignal
+aiosignal,1.4.0,Apache Software License,https://github.com/aio-libs/aiosignal
 arrow,1.3.0,Apache Software License,https://github.com/arrow-py/arrow
 bigquery-magics,0.9.0,Apache Software License,https://github.com/googleapis/python-bigquery-magics
 bleach,6.2.0,Apache Software License,https://github.com/mozilla/bleach
-cloudevents,1.11.0,Apache Software License,https://github.com/cloudevents/sdk-python
+CacheControl,0.14.1,Apache Software License,https://pypi.org/project/CacheControl/
+cloudevents,1.12.0,Apache Software License,https://github.com/cloudevents/sdk-python
 dash-bootstrap-components,1.7.1,Apache Software License,https://dash-bootstrap-components.opensource.faculty.ai/
-db-dtypes,1.3.1,Apache Software License,https://github.com/googleapis/python-db-dtypes-pandas
+db-dtypes,1.4.3,Apache Software License,https://github.com/googleapis/python-db-dtypes-pandas
 deprecation,2.1.0,Apache Software License,http://deprecation.readthedocs.io/
 diskcache,5.6.3,Apache Software License,http://www.grantjenks.com/docs/diskcache/
 firebase-admin,6.6.0,Apache Software License,https://firebase.google.com/docs/admin/setup/
 flatbuffers,24.3.25,Apache Software License,https://google.github.io/flatbuffers/
 frozenlist,1.5.0,Apache Software License,https://github.com/aio-libs/frozenlist
 functions-framework,3.8.1,Apache Software License,https://github.com/googlecloudplatform/functions-framework-python
-google-api-core,2.23.0,Apache Software License,https://github.com/googleapis/python-api-core
-google-api-python-client,2.151.0,Apache Software License,https://github.com/googleapis/google-api-python-client/
-google-auth,2.36.0,Apache Software License,https://github.com/googleapis/google-auth-library-python
+google-api-core,2.25.1,Apache Software License,https://github.com/googleapis/python-api-core
+google-api-python-client,2.175.0,Apache Software License,https://github.com/googleapis/google-api-python-client/
+google-auth,2.40.3,Apache Software License,https://github.com/googleapis/google-auth-library-python
 google-auth-httplib2,0.2.0,Apache Software License,https://github.com/GoogleCloudPlatform/google-auth-library-python-httplib2
-google-auth-oauthlib,1.2.1,Apache Software License,https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib
-google-cloud-bigquery,3.27.0,Apache Software License,https://github.com/googleapis/python-bigquery
+google-auth-oauthlib,1.2.2,Apache Software License,https://github.com/GoogleCloudPlatform/google-auth-library-python-oauthlib
+google-cloud-bigquery,3.25.0,Apache Software License,https://github.com/googleapis/python-bigquery
 google-cloud-bigquery-storage,2.30.0,Apache Software License,https://github.com/googleapis/python-bigquery-storage
-google-cloud-core,2.4.1,Apache Software License,https://github.com/googleapis/python-cloud-core
-google-cloud-firestore,2.19.0,Apache Software License,https://github.com/googleapis/python-firestore
-google-cloud-resource-manager,1.13.1,Apache Software License,https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-resource-manager
+google-cloud-core,2.4.3,Apache Software License,https://github.com/googleapis/python-cloud-core
+google-cloud-firestore,2.21.0,Apache Software License,https://github.com/googleapis/python-firestore
+google-cloud-resource-manager,1.14.2,Apache Software License,https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-resource-manager
 google-cloud-secret-manager,2.21.0,Apache Software License,https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-secret-manager
-google-cloud-storage,2.18.2,Apache Software License,https://github.com/googleapis/python-storage
+google-cloud-storage,2.19.0,Apache Software License,https://github.com/googleapis/python-storage
 google-crc32c,1.6.0,Apache Software License,https://github.com/googleapis/python-crc32c
+google-genai,1.24.0,Apache Software License,https://github.com/googleapis/python-genai
 google-resumable-media,2.7.2,Apache Software License,https://github.com/googleapis/google-resumable-media-python
 googleapis-common-protos,1.65.0,Apache Software License,https://github.com/googleapis/python-api-common-protos
+googleapis-common-protos,1.70.0,Apache Software License,https://github.com/googleapis/google-cloud-python/tree/main/packages/googleapis-common-protos
 grpc-google-iam-v1,0.13.1,Apache Software License,https://github.com/googleapis/python-grpc-google-iam-v1
-grpcio,1.68.0,Apache Software License,https://grpc.io
-grpcio-status,1.68.0,Apache Software License,https://grpc.io
+grpc-google-iam-v1,0.14.2,Apache Software License,https://github.com/googleapis/google-cloud-python
+grpcio,1.73.1,Apache Software License,https://grpc.io
+grpcio-status,1.71.2,Apache Software License,https://grpc.io
 huggingface-hub,0.26.2,Apache Software License,https://github.com/huggingface/huggingface_hub
 importlib_metadata,8.5.0,Apache Software License,https://github.com/python/importlib_metadata
 importlib_resources,6.4.5,Apache Software License,https://github.com/python/importlib_resources
@@ -52,85 +57,86 @@ opentelemetry-instrumentation,0.52b1,Apache Software License,https://github.com/
 opentelemetry-sdk,1.31.1,Apache Software License,https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-sdk
 opentelemetry-semantic-conventions,0.52b1,Apache Software License,https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-semantic-conventions
 prometheus_client,0.21.1,Apache Software License,https://github.com/prometheus/client_python
-propcache,0.2.0,Apache Software License,https://github.com/aio-libs/propcache
+propcache,0.3.2,Apache Software License,https://github.com/aio-libs/propcache
 proto-plus,1.25.0,Apache Software License,https://github.com/googleapis/proto-plus-python.git
+proto-plus,1.26.1,Apache Software License,https://github.com/googleapis/proto-plus-python
+pyarrow,20.0.0,Apache Software License,https://arrow.apache.org/
+Pympler,1.1,Apache Software License,https://github.com/pympler/pympler
 pyOpenSSL,24.3.0,Apache Software License,https://pyopenssl.org/
-pyarrow,18.0.0,Apache Software License,https://arrow.apache.org/
 regex,2024.11.6,Apache Software License,https://github.com/mrabarnett/mrab-regex
-requests,2.32.3,Apache Software License,https://requests.readthedocs.io
+requests,2.32.4,Apache Software License,https://requests.readthedocs.io
 requests-toolbelt,1.0.0,Apache Software License,https://toolbelt.readthedocs.io/
 retrying,1.3.4,Apache Software License,https://github.com/groodt/retrying
-rsa,4.9,Apache Software License,https://stuvel.eu/rsa
+rsa,4.9.1,Apache Software License,https://stuvel.eu/rsa
 safetensors,0.4.5,Apache Software License,https://github.com/huggingface/safetensors
 sentence-transformers,3.3.1,Apache Software License,https://www.SBERT.net
 skl2onnx,1.17.0,Apache Software License,https://github.com/onnx/sklearn-onnx
 streamlit,1.40.1,Apache Software License,https://streamlit.io
-tenacity,9.0.0,Apache Software License,https://github.com/jd/tenacity
+tenacity,8.5.0,Apache Software License,https://github.com/jd/tenacity
 tokenizers,0.20.3,Apache Software License,https://github.com/huggingface/tokenizers
-tornado,6.4.2,Apache Software License,http://www.tornadoweb.org/
+tornado,6.5.1,Apache Software License,http://www.tornadoweb.org/
 transformers,4.46.3,Apache Software License,https://github.com/huggingface/transformers
 types-python-dateutil,2.9.0.20241206,Apache Software License,https://github.com/python/typeshed
-tzdata,2024.2,Apache Software License,https://github.com/python/tzdata
+tzdata,2025.2,Apache Software License,https://github.com/python/tzdata
 vosk,0.3.44,Apache Software License,https://github.com/alphacep/vosk-api
 watchdog,6.0.0,Apache Software License,https://github.com/gorakhargosh/watchdog
 websocket-client,1.8.0,Apache Software License,https://github.com/websocket-client/websocket-client.git
-xgboost,2.1.2,Apache Software License,https://github.com/dmlc/xgboost
-yarl,1.17.1,Apache Software License,https://github.com/aio-libs/yarl
+xgboost,2.0.3,Apache Software License,https://github.com/dmlc/xgboost
+yarl,1.20.1,Apache Software License,https://github.com/aio-libs/yarl
 whisper,1.1.10,Apache Software License 2.0,http://graphiteapp.org/
-cryptography,43.0.3,Apache Software License; BSD License,https://github.com/pyca/cryptography
-packaging,24.2,Apache Software License; BSD License,https://github.com/pypa/packaging
+cryptography,43.0.0,Apache Software License; BSD License,https://github.com/pyca/cryptography
+packaging,25.0,Apache Software License; BSD License,https://github.com/pypa/packaging
 python-dateutil,2.9.0.post0,Apache Software License; BSD License,https://github.com/dateutil/dateutil
 uritemplate,4.1.1,Apache Software License; BSD License,https://uritemplate.readthedocs.org
 orjson,3.10.16,Apache Software License; MIT License,https://github.com/ijl/orjson
 sniffio,1.3.1,Apache Software License; MIT License,https://github.com/python-trio/sniffio
+aiohttp,3.12.13,Apache-2.0,https://github.com/aio-libs/aiohttp
+frozenlist,1.7.0,Apache-2.0,https://github.com/aio-libs/frozenlist
+functions-framework,3.8.3,Apache-2.0,https://github.com/googlecloudplatform/functions-framework-python
+cryptography,45.0.4,Apache-2.0 OR BSD-3-Clause,https://github.com/pyca/cryptography
 cligj,0.7.2,BSD,https://github.com/mapbox/cligj
 llvmlite,0.43.0,BSD,http://llvmlite.readthedocs.io
 pynndescent,0.5.13,BSD,http://github.com/lmcinnes/pynndescent
 torchvision,0.22.0.dev20250113,BSD,https://github.com/pytorch/vision
 umap-learn,0.5.7,BSD,http://github.com/lmcinnes/umap
-Authlib,1.3.2,BSD License,https://github.com/lepture/authlib
-ExifRead,3.0.0,BSD License,https://github.com/ianare/exif-py
-Flask,3.0.3,BSD License,https://github.com/pallets/flask/
-GitPython,3.1.43,BSD License,https://github.com/gitpython-developers/GitPython
-Jinja2,3.1.6,BSD License,https://github.com/pallets/jinja/
-MarkupSafe,3.0.2,BSD License,https://github.com/pallets/markupsafe/
-Pygments,2.19.1,BSD License,https://pygments.org
-Send2Trash,1.8.3,BSD License,https://github.com/arsenetar/send2trash
-SpeechRecognition,3.13.0,BSD License,https://github.com/Uberi/speech_recognition#readme
-Sphinx,8.1.3,BSD License,https://www.sphinx-doc.org/
-Werkzeug,3.0.6,BSD License,UNKNOWN
+uritemplate,4.2.0,BSD 3-Clause OR Apache-2.0,https://uritemplate.readthedocs.org
 accessible-pygments,0.0.5,BSD License,https://github.com/Quansight-Labs/accessible-pygments
 aioice,0.9.0,BSD License,https://github.com/aiortc/aioice
 aiortc,1.9.0,BSD License,https://github.com/aiortc/aiortc
 alabaster,1.0.0,BSD License,https://alabaster.readthedocs.io/
 altair,4.2.2,BSD License,http://altair-viz.github.io
 appnope,0.1.4,BSD License,http://github.com/minrk/appnope
+Authlib,1.3.2,BSD License,https://github.com/lepture/authlib
 av,12.3.0,BSD License,https://github.com/PyAV-Org/PyAV
 babel,2.17.0,BSD License,https://babel.pocoo.org/
 click,8.1.7,BSD License,https://palletsprojects.com/p/click/
 click-plugins,1.1.1,BSD License,https://github.com/click-contrib/click-plugins
 cloudpickle,3.1.1,BSD License,https://github.com/cloudpipe/cloudpickle
 comm,0.2.2,BSD License,https://github.com/ipython/comm
-contourpy,1.3.1,BSD License,https://github.com/contourpy/contourpy
+contourpy,1.3.2,BSD License,https://github.com/contourpy/contourpy
 cycler,0.12.1,BSD License,https://matplotlib.org/cycler/
 decorator,5.2.1,BSD License,UNKNOWN
+ExifRead,3.0.0,BSD License,https://github.com/ianare/exif-py
 fastjsonschema,2.21.1,BSD License,https://github.com/horejsek/python-fastjsonschema
 feature-engine,1.8.2,BSD License,http://github.com/feature-engine/feature_engine
 fiona,1.10.1,BSD License,https://github.com/Toblerity/Fiona
-fsspec,2024.10.0,BSD License,https://github.com/fsspec/filesystem_spec
-gcsfs,2024.10.0,BSD License,https://github.com/fsspec/gcsfs
+Flask,3.0.3,BSD License,https://github.com/pallets/flask/
+fsspec,2024.6.0,BSD License,https://github.com/fsspec/filesystem_spec
+gcsfs,2024.6.0,BSD License,https://github.com/fsspec/gcsfs
 geopandas,0.14.4,BSD License,https://github.com/geopandas/geopandas
 gitdb,4.0.11,BSD License,https://github.com/gitpython-developers/gitdb
+GitPython,3.1.43,BSD License,https://github.com/gitpython-developers/GitPython
 htmlmin,0.1.12,BSD License,https://htmlmin.readthedocs.io/en/latest/
-httpcore,1.0.8,BSD License,https://www.encode.io/httpcore/
+httpcore,1.0.9,BSD License,https://www.encode.io/httpcore/
 httpx,0.28.1,BSD License,https://github.com/encode/httpx
 idna,3.10,BSD License,https://github.com/kjd/idna
 ipykernel,6.29.5,BSD License,https://ipython.org
-ipython,9.1.0,BSD License,https://ipython.org
+ipython,9.4.0,BSD License,https://ipython.org
 ipython_pygments_lexers,1.1.1,BSD License,https://github.com/ipython/ipython-pygments-lexers
 ipywidgets,8.1.5,BSD License,http://jupyter.org
 itsdangerous,2.2.0,BSD License,https://github.com/pallets/itsdangerous/
-joblib,1.4.2,BSD License,https://joblib.readthedocs.io
+Jinja2,3.1.6,BSD License,https://github.com/pallets/jinja/
+joblib,1.5.1,BSD License,https://joblib.readthedocs.io
 jsonpatch,1.33,BSD License,https://github.com/stefankoegl/python-json-patch
 jsonpickle,3.4.2,BSD License,https://jsonpickle.readthedocs.io/
 jsonpointer,3.0.0,BSD License,https://github.com/stefankoegl/python-json-pointer
@@ -138,14 +144,15 @@ jupyter-events,0.12.0,BSD License,http://jupyter.org
 jupyter-lsp,2.2.5,BSD License,https://github.com/jupyter-lsp/jupyterlab-lsp/issues
 jupyter_client,8.6.3,BSD License,https://jupyter.org
 jupyter_core,5.7.2,BSD License,https://jupyter.org
-jupyter_server,2.15.0,BSD License,https://jupyter-server.readthedocs.io
+jupyter_server,2.16.0,BSD License,https://jupyter-server.readthedocs.io
 jupyter_server_terminals,0.5.3,BSD License,https://jupyter.org
-jupyterlab,4.4.1,BSD License,https://jupyter.org
+jupyterlab,4.4.4,BSD License,https://jupyter.org
 jupyterlab_pygments,0.3.0,BSD License,https://github.com/jupyterlab/jupyterlab_pygments
 jupyterlab_server,2.27.3,BSD License,https://jupyterlab-server.readthedocs.io
-kiwisolver,1.4.7,BSD License,https://github.com/nucleic/kiwi
+kiwisolver,1.4.8,BSD License,https://github.com/nucleic/kiwi
 loky,3.5.2,BSD License,http://loky.readthedocs.io
 lxml,5.3.1,BSD License,https://lxml.de/
+MarkupSafe,3.0.2,BSD License,https://github.com/pallets/markupsafe/
 matplotlib-inline,0.1.7,BSD License,https://github.com/ipython/matplotlib-inline
 memory-profiler,0.61.0,BSD License,https://github.com/pythonprofilers/memory_profiler
 mistune,3.1.3,BSD License,https://github.com/lepture/mistune
@@ -156,33 +163,38 @@ nbconvert,7.16.6,BSD License,https://jupyter.org
 nbformat,5.10.4,BSD License,https://jupyter.org
 nest-asyncio,1.6.0,BSD License,https://github.com/erdewit/nest_asyncio
 networkx,3.4.2,BSD License,https://networkx.org/
-notebook,7.4.1,BSD License,https://github.com/jupyter/notebook
+notebook,7.4.4,BSD License,https://github.com/jupyter/notebook
 notebook_shim,0.2.4,BSD License,UNKNOWN
 numba,0.60.0,BSD License,https://numba.pydata.org
-numpy,2.2.1,BSD License,https://numpy.org
+numpy,2.0.0,BSD License,https://numpy.org
 oauthlib,3.2.2,BSD License,https://github.com/oauthlib/oauthlib
-pandas,2.2.3,BSD License,https://pandas.pydata.org
+pandas,2.2.2,BSD License,https://pandas.pydata.org
 pandas-gbq,0.24.0,BSD License,https://github.com/googleapis/python-bigquery-pandas
 pandocfilters,1.5.1,BSD License,http://github.com/jgm/pandocfilters
 patsy,1.0.1,BSD License,https://github.com/pydata/patsy
 prompt_toolkit,3.0.50,BSD License,https://github.com/prompt-toolkit/python-prompt-toolkit
+prompt_toolkit,3.0.51,BSD License,UNKNOWN
 psutil,7.0.0,BSD License,https://github.com/giampaolo/psutil
 pyasn1,0.6.1,BSD License,https://github.com/pyasn1/pyasn1
-pyasn1_modules,0.4.1,BSD License,https://github.com/pyasn1/pyasn1-modules
+pyasn1_modules,0.4.2,BSD License,https://github.com/pyasn1/pyasn1-modules
 pycparser,2.22,BSD License,https://github.com/eliben/pycparser
 pydata-google-auth,1.8.2,BSD License,https://github.com/pydata/pydata-google-auth
 pydata-sphinx-theme,0.16.0,BSD License,https://github.com/pydata/pydata-sphinx-theme
+Pygments,2.19.2,BSD License,https://pygments.org
 pylibsrtp,0.10.0,BSD License,https://github.com/aiortc/pylibsrtp
 python-dotenv,1.0.1,BSD License,https://github.com/theskumar/python-dotenv
 python-json-logger,3.3.0,BSD License,https://nhairs.github.io/python-json-logger
-pyzmq,26.4.0,BSD License,https://pyzmq.readthedocs.org
+pyzmq,27.0.0,BSD License,https://pyzmq.readthedocs.org
 requests-oauthlib,2.0.0,BSD License,https://github.com/requests/requests-oauthlib
-scikit-learn,1.5.2,BSD License,https://scikit-learn.org
-scipy,1.14.1,BSD License,https://scipy.org/
+scikit-learn,1.5.0,BSD License,https://scikit-learn.org
+scipy,1.13.1,BSD License,https://scipy.org/
 seaborn,0.13.2,BSD License,https://github.com/mwaskom/seaborn
-shapely,2.0.6,BSD License,https://github.com/shapely/shapely
+Send2Trash,1.8.3,BSD License,https://github.com/arsenetar/send2trash
+shapely,2.1.1,BSD License,https://github.com/shapely/shapely
 smmap,5.0.1,BSD License,https://github.com/gitpython-developers/smmap
 snowballstemmer,2.2.0,BSD License,https://github.com/snowballstem/snowball
+SpeechRecognition,3.13.0,BSD License,https://github.com/Uberi/speech_recognition#readme
+Sphinx,8.1.3,BSD License,https://www.sphinx-doc.org/
 sphinx-book-theme,1.1.3,BSD License,https://github.com/executablebooks/sphinx-book-theme
 sphinxcontrib-applehelp,2.0.0,BSD License,https://www.sphinx-doc.org/
 sphinxcontrib-devhelp,2.0.0,BSD License,https://www.sphinx-doc.org/
@@ -195,7 +207,7 @@ starlette,0.41.3,BSD License,https://github.com/encode/starlette
 statsmodels,0.14.4,BSD License,https://www.statsmodels.org/
 sympy,1.13.1,BSD License,https://sympy.org
 terminado,0.18.1,BSD License,https://github.com/jupyter/terminado
-threadpoolctl,3.5.0,BSD License,https://github.com/joblib/threadpoolctl
+threadpoolctl,3.6.0,BSD License,https://github.com/joblib/threadpoolctl
 tinycss2,1.4.0,BSD License,https://www.courtbouillon.org/tinycss2
 toolz,1.0.0,BSD License,https://github.com/pytoolz/toolz/
 torch,2.7.0.dev20250113,BSD License,https://pytorch.org/
@@ -205,12 +217,15 @@ uvicorn,0.34.0,BSD License,https://www.uvicorn.org/
 visions,0.7.6,BSD License,https://github.com/dylan-profiler/visions
 webcolors,24.11.1,BSD License,UNKNOWN
 webencodings,0.5.1,BSD License,https://github.com/SimonSapin/python-webencodings
-websockets,14.1,BSD License,https://github.com/python-websockets/websockets
+websockets,15.0.1,BSD License,https://github.com/python-websockets/websockets
+Werkzeug,3.0.3,BSD License,UNKNOWN
 widgetsnbextension,4.0.13,BSD License,http://jupyter.org
 wrapt,1.17.2,BSD License,https://github.com/GrahamDumpleton/wrapt
 zstandard,0.23.0,BSD License,https://github.com/indygreg/python-zstandard
 docutils,0.21.2,BSD License; GNU General Public License (GPL); Public Domain; Python Software Foundation License,https://docutils.sourceforge.io
 PyExifTool,0.5.6,BSD License; GNU General Public License v3 or later (GPLv3+),http://github.com/sylikc/pyexiftool
+jsonpickle,4.1.1,BSD-3-Clause,https://jsonpickle.readthedocs.io/
+oauthlib,3.3.1,BSD-3-Clause,https://github.com/oauthlib/oauthlib
 pillow,11.0.0,CMU License (MIT-CMU),https://python-pillow.org
 img2pdf,0.5.1,GNU Lesser General Public License v3 (LGPLv3),https://gitlab.mister-muffin.de/josch/img2pdf
 pi_heif,0.21.0,GNU Lesser General Public License v3 (LGPLv3),https://github.com/bigcat88/pillow_heif
@@ -218,41 +233,39 @@ dnspython,2.7.0,ISC License (ISCL),https://www.dnspython.org
 isoduration,20.11.0,ISC License (ISCL),https://github.com/bolsote/isoduration
 pexpect,4.9.0,ISC License (ISCL),https://pexpect.readthedocs.io/
 ptyprocess,0.7.0,ISC License (ISCL),https://github.com/pexpect/ptyprocess
+attrs,25.3.0,MIT,https://www.attrs.org/en/stable/changelog.html
+colorlover,0.3.0,MIT,https://github.com/jackparmer/colorlover
 dash-core-components,2.0.0,MIT,UNKNOWN
 dash-html-components,2.0.0,MIT,https://github.com/plotly/dash-html-components
 dash-table,5.0.0,MIT,UNKNOWN
 dash_mantine_components,1.0.0,MIT,https://github.com/snehilvj/dash-mantine-components
+fonttools,4.58.4,MIT,http://github.com/fonttools/fonttools
 langchain-core,0.3.51,MIT,https://github.com/langchain-ai/langchain
 langchain-ollama,0.3.1,MIT,https://github.com/langchain-ai/langchain
-openai-whisper,20240930,MIT,https://github.com/openai/whisper
-rpds-py,0.24.0,MIT,https://github.com/crate-py/rpds
-skops,0.10.0,MIT,http://github.com/skops-dev/skops
-attrs,25.3.0,MIT,https://www.attrs.org/en/stable/changelog.html
-colorlover,0.3.0,MIT,https://github.com/jackparmer/colorlover
 ollama-python,0.1.2,MIT,UNKNOWN
+openai-whisper,20240930,MIT,https://github.com/openai/whisper
 referencing,0.36.2,MIT,https://github.com/python-jsonschema/referencing
+rpds-py,0.26.0,MIT,https://github.com/crate-py/rpds
+skops,0.10.0,MIT,http://github.com/skops-dev/skops
 streamlit-oauth,0.1.14,MIT,https://github.com/dnplus/streamlit-oauth
 streamlit-option-menu,0.4.0,MIT,https://github.com/victoryhb/streamlit-option-menu
 urllib3,2.4.0,MIT,https://github.com/urllib3/urllib3/blob/main/CHANGES.rst
-Deprecated,1.2.18,MIT License,https://github.com/laurent-laporte-pro/deprecated
-PyJWT,2.9.0,MIT License,https://github.com/jpadilla/pyjwt
-PyWavelets,1.8.0,MIT License,https://github.com/PyWavelets/pywt
-PyYAML,6.0.2,MIT License,https://pyyaml.org/
 annotated-types,0.7.0,MIT License,https://github.com/annotated-types/annotated-types
 anyio,4.9.0,MIT License,https://anyio.readthedocs.io/en/stable/versionhistory.html
 argon2-cffi,23.1.0,MIT License,https://github.com/hynek/argon2-cffi/blob/main/CHANGELOG.md
 argon2-cffi-bindings,21.2.0,MIT License,https://github.com/hynek/argon2-cffi-bindings
 async-lru,2.0.5,MIT License,https://github.com/aio-libs/async-lru
-beautifulsoup4,4.13.3,MIT License,https://www.crummy.com/software/BeautifulSoup/bs4/
+beautifulsoup4,4.13.4,MIT License,https://www.crummy.com/software/BeautifulSoup/bs4/
 blinker,1.9.0,MIT License,https://github.com/pallets-eco/blinker/
-cachetools,5.5.0,MIT License,https://github.com/tkem/cachetools/
+cachetools,5.5.2,MIT License,https://github.com/tkem/cachetools/
 cffi,1.17.1,MIT License,http://cffi.readthedocs.org
-charset-normalizer,3.4.1,MIT License,https://github.com/jawah/charset_normalizer/blob/master/CHANGELOG.md
+charset-normalizer,3.4.2,MIT License,https://github.com/jawah/charset_normalizer/blob/master/CHANGELOG.md
 coloredlogs,15.0.1,MIT License,https://coloredlogs.readthedocs.io
 dacite,1.8.1,MIT License,https://github.com/konradhalas/dacite
 dash,2.18.2,MIT License,https://plotly.com/dash
 dash_ag_grid,31.3.0,MIT License,https://dash.plotly.com/dash-ag-grid
 debugpy,1.8.14,MIT License,https://aka.ms/debugpy
+Deprecated,1.2.18,MIT License,https://github.com/laurent-laporte-pro/deprecated
 docstring_parser,0.16,MIT License,https://github.com/rr-/docstring_parser
 entrypoints,0.4,MIT License,https://github.com/takluyver/entrypoints
 et_xmlfile,2.0.0,MIT License,https://foss.heptapod.net/openpyxl/et_xmlfile
@@ -266,7 +279,7 @@ gower,0.1.2,MIT License,https://github.com/wwwjk366/gower
 graphviz,0.20.3,MIT License,https://github.com/xflr6/graphviz
 gunicorn,23.0.0,MIT License,https://gunicorn.org
 guppy3,3.1.4.post1,MIT License,https://github.com/zhuyifei1999/guppy3/
-h11,0.14.0,MIT License,https://github.com/python-hyper/h11
+h11,0.16.0,MIT License,https://github.com/python-hyper/h11
 httplib2,0.22.0,MIT License,https://github.com/httplib2/httplib2
 httpx-oauth,0.15.1,MIT License,https://github.com/frankie567/httpx-oauth
 httpx-ws,0.7.2,MIT License,https://github.com/frankie567/httpx-ws
@@ -278,6 +291,7 @@ jedi,0.19.2,MIT License,https://github.com/davidhalter/jedi
 jsonschema,4.23.0,MIT License,https://github.com/python-jsonschema/jsonschema
 jsonschema-specifications,2024.10.1,MIT License,https://github.com/python-jsonschema/jsonschema-specifications
 langsmith,0.3.28,MIT License,https://smith.langchain.com/
+lightgbm,4.4.0,MIT License,https://github.com/microsoft/LightGBM
 markdown-it-py,3.0.0,MIT License,https://github.com/executablebooks/markdown-it-py
 marshmallow,4.0.0,MIT License,https://github.com/marshmallow-code/marshmallow
 mdurl,0.1.2,MIT License,https://github.com/executablebooks/mdurl
@@ -289,27 +303,30 @@ openpyxl,3.1.5,MIT License,https://openpyxl.readthedocs.io
 parso,0.8.4,MIT License,https://github.com/davidhalter/parso
 pdfminer.six,20240706,MIT License,https://github.com/pdfminer/pdfminer.six
 phik,0.12.4,MIT License,UNKNOWN
-platformdirs,4.3.7,MIT License,https://github.com/tox-dev/platformdirs
+platformdirs,4.3.8,MIT License,https://github.com/tox-dev/platformdirs
 plotly,5.24.1,MIT License,https://plotly.com/python/
 pluggy,1.5.0,MIT License,https://github.com/pytest-dev/pluggy
 pure_eval,0.2.3,MIT License,http://github.com/alexmojaki/pure_eval
 py-spy,0.4.0,MIT License,https://github.com/benfred/py-spy
-pydantic,2.10.0,MIT License,https://github.com/pydantic/pydantic
-pydantic_core,2.27.0,MIT License,https://github.com/pydantic/pydantic-core
+pydantic,2.11.7,MIT License,https://github.com/pydantic/pydantic
+pydantic_core,2.33.2,MIT License,https://github.com/pydantic/pydantic-core
 pydub,0.25.1,MIT License,http://pydub.com
 pyee,12.1.1,MIT License,https://github.com/jfhbrook/pyee
-pyparsing,3.2.0,MIT License,https://github.com/pyparsing/pyparsing/
+PyJWT,2.9.0,MIT License,https://github.com/jpadilla/pyjwt
+pyparsing,3.2.3,MIT License,https://github.com/pyparsing/pyparsing/
 pyproj,3.7.1,MIT License,https://github.com/pyproj4/pyproj
 pytest,8.3.4,MIT License,https://docs.pytest.org/en/latest/
 python-decouple,3.8,MIT License,http://github.com/henriquebastos/python-decouple/
-pytz,2024.2,MIT License,http://pythonhosted.org/pytz
+pytz,2024.1,MIT License,http://pythonhosted.org/pytz
+PyWavelets,1.8.0,MIT License,https://github.com/PyWavelets/pywt
+PyYAML,6.0.2,MIT License,https://pyyaml.org/
 rfc3339-validator,0.1.4,MIT License,https://github.com/naimetti/rfc3339-validator
 rfc3986-validator,0.1.1,MIT License,https://github.com/naimetti/rfc3986-validator
 rich,13.9.4,MIT License,https://github.com/Textualize/rich
 scikit-gbm,0.2.1,MIT License,https://github.com/krzjoa/scikit-gbm
 six,1.17.0,MIT License,https://github.com/benjaminp/six
 skore,0.6.1,MIT License,https://probabl.ai
-soupsieve,2.6,MIT License,https://github.com/facelessuser/soupsieve
+soupsieve,2.7,MIT License,https://github.com/facelessuser/soupsieve
 sphinx-basic-ng,1.0.0b2,MIT License,https://github.com/pradyunsg/sphinx-basic-ng
 sphinx-rtd-theme,3.0.1,MIT License,https://github.com/readthedocs/sphinx_rtd_theme
 srt,3.5.3,MIT License,https://github.com/cdown/srt
@@ -350,17 +367,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ",https://github.com/openai/tiktoken
-tqdm,4.67.1,MIT License; Mozilla Public License 2.0 (MPL 2.0),https://tqdm.github.io
-certifi,2025.1.31,Mozilla Public License 2.0 (MPL 2.0),https://github.com/certifi/python-certifi
+tqdm,4.66.4,MIT License; Mozilla Public License 2.0 (MPL 2.0),https://tqdm.github.io
+certifi,2025.6.15,Mozilla Public License 2.0 (MPL 2.0),https://github.com/certifi/python-certifi
 fqdn,1.5.1,Mozilla Public License 2.0 (MPL 2.0),https://github.com/ypcrts/fqdn
 ocrmypdf,16.9.0,Mozilla Public License 2.0 (MPL 2.0),https://github.com/ocrmypdf/OCRmyPDF
 pikepdf,9.5.2,Mozilla Public License 2.0 (MPL 2.0),https://github.com/pikepdf/pikepdf
+MAPIE,0.9.2,new BSD,https://github.com/scikit-learn-contrib/MAPIE
 crossfilter_distribution,0.1.1,Other/Proprietary License,https://github.com/insightsolver/crossfilter_distribution
-insightsolver,0.1.24,Other/Proprietary License,https://github.com/insightsolver/insightsolver
+insightbounds,0.1.0,Other/Proprietary License,https://github.com/insightsolver/insightbounds
+insightsolver,0.1.26,Other/Proprietary License,https://github.com/insightsolver/insightsolver
 aiohappyeyeballs,2.4.3,Other/Proprietary License; Python Software Foundation License,https://github.com/aio-libs/aiohappyeyeballs
+aiohappyeyeballs,2.6.1,Python Software Foundation License,https://github.com/aio-libs/aiohappyeyeballs
 defusedxml,0.7.1,Python Software Foundation License,https://github.com/tiran/defusedxml
-matplotlib,3.9.2,Python Software Foundation License,https://matplotlib.org
+matplotlib,3.10.3,Python Software Foundation License,https://matplotlib.org
 typing_extensions,4.13.2,Python Software License,https://github.com/python/typing_extensions
 filelock,3.16.1,The Unlicense (Unlicense),https://github.com/tox-dev/py-filelock
 pytube,15.0.0,The Unlicense (Unlicense),https://github.com/pytube/pytube
-lmstudio,1.2.0,UNKNOWN,https://github.com/lmstudio-ai/lmstudio-sdk-python

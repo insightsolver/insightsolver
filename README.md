@@ -107,7 +107,7 @@ Here you'll find the [changelog](./changelog.md).
 ## 📦 Dependencies
 
 - Python 3.9 or higher
-- pandas, numpy, requests, jsonpickle, google-auth, cryptography, mpmath.
+- pandas, numpy, requests, google-auth, cryptography, mpmath, etc..
 
 ## ⚖️ License
 
