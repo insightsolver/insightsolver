@@ -1336,6 +1336,7 @@ class InsightSolver:
 				'G_bad_class',
 				'G_information',
 				'G_gini',
+				'KL_divergence',
 			]
 			df_subrules_S = pd.DataFrame(columns=cols)
 
@@ -1463,6 +1464,8 @@ class InsightSolver:
 			print(f'{indentation}G_information   :',rule_i['G_information'])
 		if 'G_gini' in rule_i.keys():
 			print(f'{indentation}G_gini          :',rule_i['G_gini'])
+		if 'KL_divergence' in rule_i.keys():
+			print(f'{indentation}KL_divergence   :',rule_i['KL_divergence'])
 		rule_S = rule_i['rule_S']
 		print(f'{indentation}rule_S          :',rule_S)
 		p_value_ratio_S = {k:v for k,v in rule_i['p_value_ratio_S'].items() if k in rule_i['rule_S'].keys()}
@@ -1501,22 +1504,23 @@ class InsightSolver:
 			# Select the columns to show
 			cols = ['p_value_ratio']
 			cols += [
-					'variable',
-					'rule',
-					'complexity',
-					'p_value',
-					'F_score',
-					'Z_score',
-					#'G_bad_class',
-					'G_information',
-					#'G_gini',
-					'TPR',
-					'PPV',
-					'lift',
-					'coverage',
-					'm',
-					'm1',
-				]
+				'variable',
+				'rule',
+				'complexity',
+				'p_value',
+				'F_score',
+				'Z_score',
+				#'G_bad_class',
+				'G_information',
+				#'G_gini',
+				#'KL_divergence',
+				'TPR',
+				'PPV',
+				'lift',
+				'coverage',
+				'm',
+				'm1',
+			]
 			if do_show_cohen_d&('Z_score_cohen_d' in df_subrules_S.columns):
 				cols += [
 					'cohen_d',
@@ -1540,8 +1544,10 @@ class InsightSolver:
 			if do_compactify_print:
 				df_subrules_S_formatted['p_value_ratio'] = df_subrules_S_formatted['p_value_ratio'].apply(lambda x:format_value(value=x,format_type='scientific',decimals=4))
 				df_subrules_S_formatted['p_value']       = df_subrules_S_formatted['p_value'].map(lambda x:format_value(value=x,format_type='scientific',decimals=4))
-				df_subrules_S_formatted['F_score']       = df_subrules_S_formatted['F_score'].map('{:.4f}'.format)
-				df_subrules_S_formatted['Z_score']       = df_subrules_S_formatted['Z_score'].map('{:.4f}'.format)
+				if 'F_score' in df_subrules_S_formatted.columns:
+					df_subrules_S_formatted['F_score']       = df_subrules_S_formatted['F_score'].map('{:.4f}'.format)
+				if 'Z_score' in df_subrules_S_formatted.columns:
+					df_subrules_S_formatted['Z_score']       = df_subrules_S_formatted['Z_score'].map('{:.4f}'.format)
 				df_subrules_S_formatted['TPR']           = df_subrules_S_formatted['TPR'].map('{:.4f}'.format)
 				df_subrules_S_formatted['PPV']           = df_subrules_S_formatted['PPV'].map('{:.4f}'.format)
 				df_subrules_S_formatted['lift']          = df_subrules_S_formatted['lift'].map('{:.4f}'.format)
@@ -1550,8 +1556,13 @@ class InsightSolver:
 					df_subrules_S_formatted['cohen_d'] = df_subrules_S_formatted['cohen_d'].map('{:.4f}'.format)
 				if 'wy_ratio' in df_subrules_S_formatted.columns:
 					df_subrules_S_formatted['wy_ratio'] = df_subrules_S_formatted['wy_ratio'].map('{:.4f}'.format)
+			d_rename = {
+				'complexity':'c',
+				#'TPR': 'sensitivity',
+				#'PPV': 'purity',
+			}
 			df_subrules_S_str = df_subrules_S_formatted.rename(
-				columns = {'complexity':'c'},
+				columns = d_rename,
 			).to_string(
 				index = False,
 				#float_format = '{:,.4f}'.format
@@ -1982,6 +1993,7 @@ class InsightSolver:
 			'G_bad_class',
 			'G_information',
 			'G_gini',
+			'KL_divergence',
 			'p_value_ratio_S',
 			'F_score_ratio_S',
 			'subrules_S',

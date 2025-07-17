@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.28 (2025-07-17)
+
+*Improvements:*
+
+- The method `i_to_subrules_dataframe` is now compatible with `KL_divergence`.
+- The method `i_to_print` is now compatible with `KL_divergence`.
+- The method `to_dataframe` is now compatible with `KL_divergence`.
+
 ## 0.1.27 (2025-07-09)
 
 *Improvements:*
