@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.30 (2025-07-18)
+
+*Improvements:*
+
+- Now the function `validate_class_integrity` is a little more strict on allowed modalities of the parameter `target_goal`.
+
 ## 0.1.29 (2025-07-18)
 
 *Improvements:*

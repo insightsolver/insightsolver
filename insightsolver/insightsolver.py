@@ -329,6 +329,22 @@ def validate_class_integrity(
 	if n_benchmark_shuffle<2:
 		raise Exception(f"ERROR (n_benchmark_shuffle): The parameter n_benchmark_shuffle must be an integer >= 2.")
 
+	# Validate target_goal
+	if not isinstance(target_goal,str):
+		target_modalities = df[target_name].unique()
+		if target_goal not in target_modalities:
+			target_modalities = sorted(target_modalities)
+			if len(target_modalities)<=10:
+				raise Exception(f"ERROR: target_goal='{target_goal}' is not a string but a '{type(target_goal).__name__}' and it's not a modality of target_modalities='{target_modalities}'.")
+			else:
+				error_message = f"ERROR: target_goal='{target_goal}' is not a string but a '{type(target_goal).__name__}' and it's not a modality of target_modalities:"
+				for modality in target_modalities[:3]:
+					error_message+= f'\n\t{modality}'
+				error_message+= '\n\t...'
+				for modality in target_modalities[-3:]:
+					error_message+= f'\n\t{modality}'
+				raise Exception(error_message)
+
 	# Return the modified types
 	return columns_types
 
