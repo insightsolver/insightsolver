@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.29 (2025-07-18)
+
+*Improvements:*
+
+- The method `ingest_dict` now handles the *btypes* coming from the server. The *btypes* coming from the server overwrite the *btypes* in the solver. If there's a mismatch between both sides a warning is now shown. This new behaviour will help fill the missing *btypes* in the client-side.
+
 ## 0.1.28 (2025-07-17)
 
 *Improvements:*

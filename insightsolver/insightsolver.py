@@ -1032,6 +1032,11 @@ class InsightSolver:
 				self.columns_descr = d['dataset_metadata']['columns_names_to_descr']
 			else:
 				self.columns_descr = None
+			if 'columns_names_to_btypes' in d['dataset_metadata']:
+				for column_name,column_btype in d['dataset_metadata']['columns_names_to_btypes'].items():
+					if (column_name in self.columns_types) and (self.columns_types[column_name]!=column_btype):
+						print(f"WARNING: for column_name='{column_name}', the btype in the solver is '{self.columns_types[column_name]}' but it does not match the btype='{column_btype}' coming from the server. The btype in the solver is overwritten by the btype coming from the server.")
+					self.columns_types[column_name] = column_btype
 			if 'features_names_to_other_modalities' in d['dataset_metadata']:
 				self.other_modalities = d['dataset_metadata']['features_names_to_other_modalities']
 			else:
