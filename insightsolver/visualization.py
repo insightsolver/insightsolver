@@ -424,6 +424,14 @@ def generate_insightsolver_banner(
 	coverage = rule_i['coverage']
 	size     = rule_i['m']
 
+	# Convert the p-value to a string
+	p_value_str = str(p_value)
+	if 'e' in p_value_str:
+	    base, exponent = p_value_str.split('e')
+	    p_text = base[:4] + 'e' + exponent
+	else:
+		p_text = f"{p_value:.4f}"
+
 	# Generate the banner
 	if loss==None:
 		# If loss is not specified
@@ -441,7 +449,6 @@ def generate_insightsolver_banner(
 		insight_id_position = (90, 20)
 		draw.text(insight_id_position, insight_id_text, font_size=font_size, fill="black")
 		# Draw the p-value
-		p_text = str(p_value).split('e')[0][0:4] + 'e' + str(p_value).split('e')[1]
 		p_position = (355, 20)
 		draw.text(p_position, p_text, font_size=font_size, fill="black")
 		# Draw the purity
@@ -477,7 +484,6 @@ def generate_insightsolver_banner(
 		insight_id_position = (90, 22)
 		draw.text(insight_id_position, insight_id_text, font_size=font_size, fill="black")
 		# Draw the p-value
-		p_text = str(p_value).split('e')[0][0:4] + 'e' + str(p_value).split('e')[1]
 		p_position = (320, 22)
 		draw.text(p_position, p_text, font_size=font_size, fill="black")
 		# Draw the purity
@@ -514,6 +520,7 @@ def show_feature_contributions_of_i(
 	do_grid:bool         = True,  # If we want to show a vertical grid
 	do_title:bool        = False, # If we want a title automatically generated
 	do_banner:bool       = True,  # If we want to show the banner
+	bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	loss:Optional[float] = None,  # If we want to show a loss
 )->None:
 	"""
@@ -539,6 +546,8 @@ def show_feature_contributions_of_i(
 		If we want to show a title.
 	do_banner: bool
 		If we want to show the banner.
+	bar_annotations: str
+		Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	loss: float
 		If we want to show a loss.
 	"""
@@ -671,32 +680,44 @@ def show_feature_contributions_of_i(
 			else:
 				title += f"\np-value : {p_value:.2e}, lift : {lift:.2f},  coverage : {coverage* 100:.2f}%"
 		ax.set_title(title,size=12)
+
 	# Add annotations
-	for y, (x, value) in enumerate(zip(df_feature_contributions_S['p_value_contribution'], df_feature_contributions_S['p_value_ratio'])):
-		bar_width        = ax.transData.transform((x/100,       0))[0] - ax.transData.transform((0,     0))[0] # Width in pixels of the bar from the origin to x
-		annotation_width = ax.transData.transform((x/100 + 0.1, 0))[0] - ax.transData.transform((x/100, 0))[0] # Width in pixels of the annotation to show (approximation)
-		if bar_width > annotation_width:
-			# If the annotation is larger than the bar, we put the annotation to the right of the tip of the bar
-			color = 'white'
-			ha    = 'right'
-		else:
-			# If the annotation is shorter than the bar, we put the annotation to the left of the tip of the bar
-			color = 'black'
-			ha    = 'left'
-		if precision_p_values=='mpmath':
-			s = ' '+mpmath.nstr(value, 2, strip_zeros=False)+' '
-		else:
-			s = f' {value:.2e} '
-		# Put the text
-		ax.text(
-			x        = x,
-			y        = y,
-			s        = s,
-			color    = color,
-			ha       = ha,
-			va       = 'center',
-			fontsize = 9,
-		)
+	if bar_annotations is not None:
+		valid_bar_annotations = [
+			'p_value_ratio',
+			'p_value_contribution',
+		]
+		if bar_annotations not in valid_bar_annotations:
+			raise Exception(f"ERROR: valid_bar_annotations='{valid_bar_annotations}' is not a valid value. It must be either None or in {valid_bar_annotations}.")
+		for y, (x, value) in enumerate(zip(df_feature_contributions_S['p_value_contribution'], df_feature_contributions_S[bar_annotations])):
+			bar_width        = ax.transData.transform((x/100,       0))[0] - ax.transData.transform((0,     0))[0] # Width in pixels of the bar from the origin to x
+			annotation_width = ax.transData.transform((x/100 + 0.1, 0))[0] - ax.transData.transform((x/100, 0))[0] # Width in pixels of the annotation to show (approximation)
+			if bar_width > annotation_width:
+				# If the annotation is larger than the bar, we put the annotation to the right of the tip of the bar
+				color = 'white'
+				ha    = 'right'
+			else:
+				# If the annotation is shorter than the bar, we put the annotation to the left of the tip of the bar
+				color = 'black'
+				ha    = 'left'
+			if bar_annotations=='p_value_ratio':
+				if precision_p_values=='mpmath':
+					s = ' '+mpmath.nstr(value, 2, strip_zeros=False)+' '
+				else:
+					s = f' {value:.2e} '
+			elif bar_annotations=='p_value_contribution':
+				s = f' {value:.2f} % '
+
+			# Put the text
+			ax.text(
+				x        = x,
+				y        = y,
+				s        = s,
+				color    = color,
+				ha       = ha,
+				va       = 'center',
+				fontsize = 9,
+			)
 	# Tight layout
 	plt.tight_layout()
 	# Show the figure

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.31 (2025-07-21)
+
+*Improvements:*
+
+- The function `show_feature_contributions_of_i` now has a new parameter `bar_annotations` which lets the user choose the kind of number at the end of the bars (it can be `p_value_ratio` or `p_value_contribution` or `None`).
+- The method `show_feature_contributions_of_i` now has a new parameter `bar_annotations`.
+- Fixed a bug in the function `generate_insightsolver_banner`.
+
 ## 0.1.30 (2025-07-18)
 
 *Improvements:*

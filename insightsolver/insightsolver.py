@@ -2442,6 +2442,7 @@ class InsightSolver:
 		do_grid:bool         = True,  # If we want to show a vertical grid
 		do_title:bool        = False, # If we want a title automatically generated
 		do_banner:bool       = True,  # If we want to show the banner
+		bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 		loss:Optional[float] = None,  # If we want to show a loss
 	)->None:
 		"""
@@ -2465,6 +2466,8 @@ class InsightSolver:
 			If we want to show a title.
 		do_banner: bool
 			If we want to show the banner.
+		bar_annotations: str
+			Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 		loss: float
 			If we want to show a loss.
 		"""
@@ -2479,6 +2482,7 @@ class InsightSolver:
 			do_grid   = do_grid,   # If we want to show a vertical grid
 			do_title  = do_title,  # If we want a title automatically generated
 			do_banner = do_banner, # If we want to show the banner
+			bar_annotations = bar_annotations, # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 			loss      = loss,      # If we want to show a loss
 		)
 	def show_all_feature_contributions(
