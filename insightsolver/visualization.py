@@ -424,13 +424,10 @@ def generate_insightsolver_banner(
 	coverage = rule_i['coverage']
 	size     = rule_i['m']
 
-	# Convert the p-value to a string
-	p_value_str = str(p_value)
-	if 'e' in p_value_str:
-	    base, exponent = p_value_str.split('e')
-	    p_text = base[:4] + 'e' + exponent
+	if abs(p_value) >= 0.001: # If the p_value is big
+		p_text = f"{p_value:.4f}"  # normal decimals
 	else:
-		p_text = f"{p_value:.4f}"
+		p_text = f"{p_value:.2e}"  # scientific notation
 
 	# Generate the banner
 	if loss==None:
@@ -725,13 +722,14 @@ def show_feature_contributions_of_i(
 
 def show_all_feature_contributions(
 	solver,
-	a:float         = 0.5,   # Height per bar
-	b:float         = 1,     # Height for the margin and other elements
-	fig_width:float = 12,    # Width of the figure
-	language:str    = 'en',  # Language of the figure
-	do_grid:bool    = True,  # If we want to show a grid
-	do_title:bool   = False, # If we want to show a title which is automatically generated
-	do_banner:bool  = True,  # If we want to show the banner
+	a:float             = 0.5,   # Height per bar
+	b:float             = 1,     # Height for the margin and other elements
+	fig_width:float     = 12,    # Width of the figure
+	language:str        = 'en',  # Language of the figure
+	do_grid:bool        = True,  # If we want to show a grid
+	do_title:bool       = False, # If we want to show a title which is automatically generated
+	do_banner:bool      = True,  # If we want to show the banner
+	bar_annotations:str = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 )->None:
 	"""
 	This function generates a horizontal bar plot of the feature contributions for each rule found in a solver.
@@ -754,6 +752,8 @@ def show_all_feature_contributions(
 		If we want to show a title.
 	do_banner: bool
 		If we want to show the banner.
+	bar_annotations: str
+		Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	"""
 	# Take the list of rule index available in the solver
 	range_i = solver.get_range_i()
@@ -770,6 +770,7 @@ def show_all_feature_contributions(
 			do_grid   = do_grid,
 			do_title  = do_title,
 			do_banner = do_banner,
+			bar_annotations = bar_annotations,
 		)
 
 def show_feature_contributions_and_distributions_of_i(
@@ -777,6 +778,7 @@ def show_feature_contributions_and_distributions_of_i(
 	i:int,
 	do_banner:bool       = True, # If we want to show the banner
 	loss:Optional[float] = None, # Some loss number
+	bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 )->None:
 	"""
 	This function returns a bar plot of the feature contributions and a distribution of the points in the rule i.
@@ -791,13 +793,16 @@ def show_feature_contributions_and_distributions_of_i(
 		If we want to show the banner.
 	loss: float
 		If we want to show a loss.
+	bar_annotations: str
+		Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	"""
 	# Generate the feature contributions figure
 	show_feature_contributions_of_i(
-		solver    = solver,
-		i         = i,
-		do_banner = do_banner,
-		loss      = loss,
+		solver          = solver,
+		i               = i,
+		do_banner       = do_banner,
+		loss            = loss,
+		bar_annotations = bar_annotations,
 	)
 	# Take the rule S at position i
 	S = solver.i_to_S(i=i)
@@ -810,6 +815,7 @@ def show_feature_contributions_and_distributions_of_i(
 def show_all_feature_contributions_and_distributions(
 	solver,
 	do_banner:bool = True, # If we want to show the banner
+	bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 )->None:
 	"""
 	This function generates the feature contributions and feature distributions for all rules found in a fitted solver.
@@ -820,6 +826,8 @@ def show_all_feature_contributions_and_distributions(
 		The fitted solver that contains the identified rules.
 	do_banner: bool
 		If we want to show the banner.
+	bar_annotations: str
+		Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	"""
 	# Take the list of rule index available in the solver
 	range_i = solver.get_range_i()
@@ -830,6 +838,7 @@ def show_all_feature_contributions_and_distributions(
 			solver    = solver,
 			i         = i,
 			do_banner = do_banner,
+			bar_annotations = bar_annotations,
 		)
 
 ################################################################################

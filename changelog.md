@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.32 (2025-07-21)
+
+*Improvements:*
+
+- The function `show_all_feature_contributions` has a new parameter `bar_annotations`.
+- The method `show_all_feature_contributions` has a new parameter `bar_annotations`.
+- The function `show_feature_contributions_and_distributions_of_i` has a new parameter `bar_annotations`.
+- The function `show_all_feature_contributions_and_distributions` has a new parameter `bar_annotations`.
+- The method `show_all_feature_contributions_and_distributions` has a new parameter `bar_annotations`.
+- Fixed another bug in the function `generate_insightsolver_banner`.
+
 ## 0.1.31 (2025-07-21)
 
 *Improvements:*

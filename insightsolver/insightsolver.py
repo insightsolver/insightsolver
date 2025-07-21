@@ -2487,13 +2487,14 @@ class InsightSolver:
 		)
 	def show_all_feature_contributions(
 		self,
-		a:float         = 0.5,   # Height per bar
-		b:float         = 1,     # Height for the margin and other elements
-		fig_width:float = 12,    # Width of the figure
-		language:str    = 'en',  # Language of the figure
-		do_grid:bool    = True,  # If we want to show a grid
-		do_title:bool   = False, # If we want to show a title which is automatically generated
-		do_banner:bool  = True,  # If we want to show the banner
+		a:float             = 0.5,   # Height per bar
+		b:float             = 1,     # Height for the margin and other elements
+		fig_width:float     = 12,    # Width of the figure
+		language:str        = 'en',  # Language of the figure
+		do_grid:bool        = True,  # If we want to show a grid
+		do_title:bool       = False, # If we want to show a title which is automatically generated
+		do_banner:bool      = True,  # If we want to show the banner
+		bar_annotations:str = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	)->None:
 		"""
 		This method generates a horizontal bar plot of the feature contributions for each rule found in a solver.
@@ -2514,21 +2515,25 @@ class InsightSolver:
 			If we want to show a title.
 		do_banner: bool
 			If we want to show the banner.
+		bar_annotations: str
+			Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 		"""
 		from .visualization import show_all_feature_contributions
 		show_all_feature_contributions(
-			solver    = self,
-			a         = a,         # Height per bar
-			b         = b,         # Height for the margin and other elements
-			fig_width = fig_width, # Width of the figure
-			language  = language,  # Language of the figure
-			do_grid   = do_grid,   # If we want to show a grid
-			do_title  = do_title,  # If we want to show a title which is automatically generated
-			do_banner = do_banner, # If we want to show the banner
+			solver          = self,
+			a               = a,         # Height per bar
+			b               = b,         # Height for the margin and other elements
+			fig_width       = fig_width, # Width of the figure
+			language        = language,  # Language of the figure
+			do_grid         = do_grid,   # If we want to show a grid
+			do_title        = do_title,  # If we want to show a title which is automatically generated
+			do_banner       = do_banner, # If we want to show the banner
+			bar_annotations = bar_annotations, # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 		)
 	def show_all_feature_contributions_and_distributions(
 		self,
 		do_banner:bool = True, # If we want to show the banner
+		bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	)->None:
 		"""
 		This method generates the feature contributions and feature distributions for all rules found in a fitted solver.
@@ -2537,11 +2542,14 @@ class InsightSolver:
 		----------
 		do_banner: bool
 			If we want to show the banner.
+		bar_annotations: str
+			Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 		"""
 		from .visualization import show_all_feature_contributions_and_distributions
 		show_all_feature_contributions_and_distributions(
-			solver    = self,
-			do_banner = do_banner, # If we want to show the banner
+			solver          = self,
+			do_banner       = do_banner, # If we want to show the banner
+			bar_annotations = bar_annotations,
 		)
 
 ################################################################################
