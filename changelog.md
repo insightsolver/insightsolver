@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.33 (2025-07-23)
+
+*Improvements:*
+
+- Now the function `ingest_dict` does not overwrites the *btype* of the target variable by the one coming from the server. This fixes the problem where the target is continuous but the server converts it to a binary variable.
+
 ## 0.1.32 (2025-07-21)
 
 *Improvements:*
