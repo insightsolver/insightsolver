@@ -323,8 +323,8 @@ def show_feature_distributions_of_S(
 
 			# If the data seems to be integers formatted as floats with useless .0, remove the .0 to improve the figure
 			if pd.api.types.is_float_dtype(s) and np.all(s.dropna() == s.dropna().astype(int)):
-				s = s.astype(int)
-				s_filtered = s_filtered.astype(int)
+				s          = s.dropna().astype(int)
+				s_filtered = s_filtered.dropna().astype(int)
 			
 			# First countplot for the distribution of the original variable
 			sns.countplot(
