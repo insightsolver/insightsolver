@@ -258,7 +258,7 @@ def show_feature_distributions_of_S(
 			)
 		else:
 			raise Exception(f"ERROR: column_name='{column_name}' has a btype='{column_btype}' which is illegal.")
-		
+	
 		# Look at the type of feature
 		if categorical_or_continuous=='continuous':
 			# If the feature is continuous
@@ -317,10 +317,18 @@ def show_feature_distributions_of_S(
 
 		else:
 
+			# Take the Pandas Series to show in the countplot
+			s          = df[column_name].copy()
+			s_filtered = df_filtered[column_name].copy()
+
+			# If the data seems to be integers formatted as floats with useless .0, remove the .0 to improve the figure
+			if pd.api.types.is_float_dtype(s) and np.all(s.dropna() == s.dropna().astype(int)):
+				s = s.astype(int)
+				s_filtered = s_filtered.astype(int)
+			
 			# First countplot for the distribution of the original variable
 			sns.countplot(
-				data  = df,
-				x     = column_name,
+				x     = s,
 				color = 'grey',
 				alpha = 0.6,
 				label = "Unfiltered"
@@ -328,8 +336,7 @@ def show_feature_distributions_of_S(
 			
 			# Second plot for the distribution of the filtered variable by the rule
 			sns.countplot(
-				data  = df_filtered,
-				x     = column_name,
+				x     = s_filtered,
 				color = 'green',
 				alpha = 0.6,
 				label = "Filtered",
@@ -338,7 +345,7 @@ def show_feature_distributions_of_S(
 			# Adjust the ylim
 			most_frequent_count = df[column_name].value_counts().iloc[0]
 			plt.ylim(0, most_frequent_count + padding_y)
-
+		
 		# Generate the feature label and the feature relationship
 		feature_label,feature_relationship = compute_feature_label(
 			solver       = solver,

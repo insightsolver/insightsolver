@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.35 (2025-07-24)
+
+*Improvements:*
+
+- Now the function `visualization/show_feature_distributions_of_S` handles better the situation where the feature is made of integers formatted as floats with useless `.0`.
+
 ## 0.1.34 (2025-07-24)
 
 *Improvements:*
