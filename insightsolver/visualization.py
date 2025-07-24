@@ -521,7 +521,7 @@ def show_feature_contributions_of_i(
 	loss:Optional[float] = None,  # If we want to show a loss
 )->None:
 	"""
-	This function returns a horizontal bar plots of the feature constributions of a specified rule S.
+	This function generates a horizontal bar plots of the feature constributions of a specified rule ``S``.
 	
 	Parameters
 	----------
@@ -814,8 +814,8 @@ def show_feature_contributions_and_distributions_of_i(
 
 def show_all_feature_contributions_and_distributions(
 	solver,
-	do_banner:bool = True, # If we want to show the banner
-	bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
+	do_banner:bool      = True,            # If we want to show the banner
+	bar_annotations:str = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 )->None:
 	"""
 	This function generates the feature contributions and feature distributions for all rules found in a fitted solver.

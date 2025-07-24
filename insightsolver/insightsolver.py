@@ -560,6 +560,35 @@ def S_to_index_points_in_rule(
 	# Return the index
 	return index
 
+def resolve_language(
+	language: str         = 'auto',
+	default_language: str = 'english',
+)->str:
+	# Make sure the string is not too long (otherwise it's suspicious)
+	if len(language)>100:
+		raise Exception(f"ERROR (resolve_language): invalid llm language because it has more than 100 characters: '{resolve_language}'.")
+	# Handle the default option
+	if language=='auto':
+		language = default_language
+	# Handle various options
+	if language=='fr':
+		language = 'français'
+	elif language=='en':
+		language = 'anglais'
+	elif language=='french':
+		language = 'français'
+	elif language=='english':
+		language = 'anglais'
+	# Make sure the language is valid
+	valid_languages = [
+		'français',
+		'anglais',
+	]
+	if language not in valid_languages:
+		raise Exception(f"ERROR (resolve_language): invalid llm language='{language}', it must be in {valid_languages}.")
+	# Return the result
+	return language
+
 ################################################################################
 ################################################################################
 # Defining the API Client
@@ -853,7 +882,7 @@ class InsightSolver:
 	show_feature_distributions_of_S: None
 		Generates bar plots of the distributions of the points in the specified rule S.
 	show_feature_contributions_of_i: None
-		Generates a horizontal bar plot of the feature contributions for each rule found in the solver.
+		Generates a horizontal bar plot of the feature contributions of the rule at position ``i``.
 	show_all_feature_contributions: None
 		Generates the feature contributions and feature distributions for all rules found in the solver.
 	show_all_feature_contributions_and_distributions: None
@@ -1165,6 +1194,10 @@ class InsightSolver:
 		# Taking the global variables
 		if api_source=='auto':
 			api_source = API_SOURCE_PUBLIC
+		# Resolve the language
+		llm_language = resolve_language(
+			language         = llm_language,
+		)
 		# Check if there are enough credits to fit the solver
 		if do_check_enough_credits:
 			if computing_source!='local_cloud_function':
@@ -2450,7 +2483,7 @@ class InsightSolver:
 		loss:Optional[float] = None,  # If we want to show a loss
 	)->None:
 		"""
-		This method returns a horizontal bar plots of the feature constributions of a specified rule ``S``.
+		This method generates a horizontal bar plots of the feature constributions of the rule at position ``i``.
 		
 		Parameters
 		----------

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.34 (2025-07-24)
+
+*Improvements:*
+
+- New function `resolve_language` that validates the language provided by the user.
+- Now the method `.fit` resolve the LLM language provided by the user.
+
 ## 0.1.33 (2025-07-23)
 
 *Improvements:*
