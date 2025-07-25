@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.36 (2025-07-25)
+
+*Improvements:*
+
+- The method `print` has a new boolean parameter `do_print_last_separator`.
+- The method `print_light` has a new boolean parameter `do_print_last_separator`.
+
 ## 0.1.35 (2025-07-24)
 
 *Improvements:*

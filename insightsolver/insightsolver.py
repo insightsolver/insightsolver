@@ -1661,6 +1661,7 @@ class InsightSolver:
 		do_show_coverage_diff: bool                   = False,  # If we want to show the column 'coverage_diff' of the DataFrame of subrules.
 		do_print_feature_contributions_S: bool        = True,   # If we want to show the DataFrame of feature importances of the rules S.
 		separation_width_between_rules: Optional[int] = 79,     # If we want to show a line between the different rules.
+		do_print_last_separator: bool = True,                   # If we want to print the last separator.
 		mode: str                                     = 'full', # The printing mode.
 	)->None:
 		"""
@@ -1675,7 +1676,9 @@ class InsightSolver:
 			self.print_dense()
 		elif mode=='light':
 			# If we want to do a light print
-			self.print_light()
+			self.print_light(
+				do_print_last_separator = do_print_last_separator,
+			)
 		elif mode=='full':
 			if r!=None:
 				do_print_dataset_metadata=False
@@ -1754,7 +1757,8 @@ class InsightSolver:
 					print('No rule to show.')
 	def print_light(
 		self,
-		print_format:str = 'list', # 'list' or 'compact'
+		print_format:str    = 'list', # 'list' or 'compact'
+		do_print_last_separator:bool = True, # If we want to print the last horizontal separator
 	)->None:
 		"""
 		This method does a 'light' print of the solver.
@@ -1771,7 +1775,7 @@ class InsightSolver:
 			if len(range_i)==0:
 				print("There are no rules in the InsightSolver.")
 			else:
-				print("----- Rules performance -----\n")
+				print("----- Rule performances -----\n")
 				# Handle the rules performance.
 				d_i_scores = {
 					'i' : range_i,
@@ -1799,7 +1803,7 @@ class InsightSolver:
 				# Show the result
 				print(df_i_scores)
 
-				print("\n------- Rules details -------\n")
+				print("\n-------- Rule details --------\n")
 				# Handle the rules details
 				if print_format=='compact':
 					l_df = []
@@ -1830,7 +1834,8 @@ class InsightSolver:
 					)
 					df = df[['i','feature_name','description','rule','contribution']]
 					print(df)
-				print("\n-----------------------------")
+				if do_print_last_separator:
+					print("\n-----------------------------")
 	def print_dense(
 		self,
 	)->None:
