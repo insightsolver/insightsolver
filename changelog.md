@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.37 (2025-07-30)
+
+*Improvements:*
+
+- The method `i_to_print` has a new boolean parameter `do_print_shuffling_scores` to show a DataFrame of the shuffling scores of the rule at position `i`.
+- The method `print` has a new boolean parameter `do_print_shuffling_scores`.
+- The method `print_light` has a new boolean parameter `do_print_shuffling_scores`.
+- The method `print_dense` has a new boolean parameter `do_print_shuffling_scores`.
+- Simplified the implementation of the method `print_dense`.
+- New method `plot` which is an alias for the method `show_all_feature_contributions_and_distributions`.
+- Added the new `solver.plot()` method in the quick start of the `README.txt`.
+- Updated the pdf documentation to include the new `print_dense` result with the `cohen_d`.
+
 ## 0.1.36 (2025-07-25)
 
 *Improvements:*

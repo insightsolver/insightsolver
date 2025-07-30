@@ -5,7 +5,7 @@
 * `File Name`:     insightsolver.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-07-09
+* `Last Updated`:  2025-07-30
 * `First Created`: 2024-09-09
 
 Description
@@ -1484,17 +1484,39 @@ class InsightSolver:
 		return readable_text
 	def i_to_print(
 		self,
-		i: int,
-		indentation: str                       = '',
-		do_print_rule_DataFrame: bool          = False,
-		do_print_subrules_S: bool              = True,
-		do_show_coverage_diff: bool            = False,
-		do_show_cohen_d: bool                  = True,
-		do_show_wy_ratio: bool                 = True,
-		do_print_feature_contributions_S: bool = True,
+		i: int,                                         # Index of the rule to print
+		indentation: str                       = '',    # Indentation of some printed elements
+		do_print_shuffling_scores: bool        = True,  # If we want to print the shuffling scores
+		do_print_rule_DataFrame: bool          = False, # If we want to print a DataFrame of the rule
+		do_print_subrules_S: bool              = True,  # If we want to print the DataFrame of subrules
+		do_show_coverage_diff: bool            = False, # If we want to show the differences of coverage in the DataFrame of subrules
+		do_show_cohen_d: bool                  = True,  # If we want to show the Cohen d in the DataFrame of subrules
+		do_show_wy_ratio: bool                 = True,  # If we want to show the WY ratio in the DataFrame of subrules
+		do_print_feature_contributions_S: bool = True,  # If we want to print the DataFrame of feature contributions
 	)->None:
 		"""
 		This method prints the content of the rule ``i`` in the solver.
+
+		Parameters
+		----------
+		i: int
+			Index of the rule to print.
+		indentation: str
+			Indentation of some printed elements.
+		do_print_shuffling_scores: bool
+			If we want to print the shuffling scores.
+		do_print_rule_DataFrame: bool
+			If we want to print a DataFrame of the rule.
+		do_print_subrules_S: bool
+			If we want to print the DataFrame of subrules.
+		do_show_coverage_diff: bool
+			If we want to show the differences of coverage in the DataFrame of subrules.
+		do_show_cohen_d: bool
+			If we want to show the Cohen d in the DataFrame of subrules.
+		do_show_wy_ratio: bool
+			If we want to show the WY ratio in the DataFrame of subrules.
+		do_print_feature_contributions_S: bool
+			If we want to print the DataFrame of feature contributions.
 		"""
 		# Take the rule i
 		rule_i = self.i_to_rule(i=i)
@@ -1532,6 +1554,22 @@ class InsightSolver:
 		readable_text = self.i_to_readable_text(i=i)
 		if readable_text:
 			print(f'{indentation}text            :',readable_text)
+		# Show the shuffling scores
+		if do_print_shuffling_scores:
+			print('\nShuffling scores :')
+			if 'shuffling_scores' in rule_i.keys():
+				# Convert the dict of shuffling scores to a Pandas DataFrame
+				df_shuffling_scores = pd.DataFrame.from_dict(rule_i['shuffling_scores'], orient='index')
+				# Drop the effect_size and the F_score
+				df_shuffling_scores.drop(
+					columns = ['effect_size'],
+					index   = ['F_score'],
+					inplace = True,
+				)
+				# Print the DataFrame
+				print(df_shuffling_scores)
+			else:
+				print("WARNING: 'shuffling_scores' is not in the keys of rule_i.")
 		# Show the DataFrame of the rule
 		if do_print_rule_DataFrame:
 			# Compute the DataFrame of the rule
@@ -1652,7 +1690,8 @@ class InsightSolver:
 		r: Optional[int]                              = None,   # Number of rules to print. "None" will print all of them. "1" will print only the first one, "2" will print the 1st and 2nd rule, etc.
 		do_print_dataset_metadata: bool               = True,   # If we want to print the dataset metadata.
 		do_print_monitoring_metadata: bool            = False,  # If we want to print the monitoring metadata.
-		do_print_benchmark_scores:bool                = True,   # If we want to print the benchmarking scores.
+		do_print_benchmark_scores: bool               = True,   # If we want to print the benchmarking scores.
+		do_print_shuffling_scores: bool               = True,   # If we want to print the shuffling scores of the individual rules.
 		do_show_cohen_d: bool                         = True,   # If we want to print the d of Cohen of the subrules.
 		do_show_wy_ratio: bool                        = True,   # If we want to print the WY ratio of the subrules.
 		do_print_rule_mining_results: bool            = True,   # If we want to print the rule mining results.
@@ -1661,11 +1700,11 @@ class InsightSolver:
 		do_show_coverage_diff: bool                   = False,  # If we want to show the column 'coverage_diff' of the DataFrame of subrules.
 		do_print_feature_contributions_S: bool        = True,   # If we want to show the DataFrame of feature importances of the rules S.
 		separation_width_between_rules: Optional[int] = 79,     # If we want to show a line between the different rules.
-		do_print_last_separator: bool = True,                   # If we want to print the last separator.
+		do_print_last_separator: bool                 = True,   # If we want to print the last separator.
 		mode: str                                     = 'full', # The printing mode.
 	)->None:
 		"""
-		This method prints the content of the ``InsightSolver` solver.
+		This method prints the content of the ``InsightSolver`` solver.
 		"""
 		if verbose:
 			print('Printing the content of the class InsightSolver...')
@@ -1677,7 +1716,8 @@ class InsightSolver:
 		elif mode=='light':
 			# If we want to do a light print
 			self.print_light(
-				do_print_last_separator = do_print_last_separator,
+				do_print_shuffling_scores = do_print_shuffling_scores,
+				do_print_last_separator   = do_print_last_separator,
 			)
 		elif mode=='full':
 			if r!=None:
@@ -1744,6 +1784,7 @@ class InsightSolver:
 						self.i_to_print(
 							i                                = i,
 							indentation                      = indentation,
+							do_print_shuffling_scores        = do_print_shuffling_scores,
 							do_print_rule_DataFrame          = do_print_rule_DataFrame,
 							do_print_subrules_S              = do_print_subrules_S,
 							do_show_cohen_d                  = do_show_cohen_d,
@@ -1757,8 +1798,9 @@ class InsightSolver:
 					print('No rule to show.')
 	def print_light(
 		self,
-		print_format:str    = 'list', # 'list' or 'compact'
-		do_print_last_separator:bool = True, # If we want to print the last horizontal separator
+		print_format: str               = 'list', # 'list' or 'compact'
+		do_print_shuffling_scores: bool = True,   # If we want to show the shuffling scores
+		do_print_last_separator: bool   = True,   # If we want to print the last horizontal separator
 	)->None:
 		"""
 		This method does a 'light' print of the solver.
@@ -1792,6 +1834,10 @@ class InsightSolver:
 				]
 				for key in keys:
 					d_i_scores[key] = [self.rule_mining_results[i][key] for i in range_i]
+				# If we want to add some shuffling scores
+				if do_print_shuffling_scores:
+					d_i_scores['cohen_d'] = [self.rule_mining_results[i]['shuffling_scores']['p_value']['cohen_d'] for i in range_i]
+					d_i_scores['message'] = [self.rule_mining_results[i]['shuffling_scores']['p_value']['cohen_d_message'] for i in range_i]
 				# Convert the dict to a DataFrame
 				df_i_scores = pd.DataFrame(d_i_scores)
 				# Limit the number of digits shown for the p-value
@@ -1838,6 +1884,7 @@ class InsightSolver:
 					print("\n-----------------------------")
 	def print_dense(
 		self,
+		do_print_shuffling_scores: bool = True, # If we want to show the shuffling scores
 	)->None:
 		"""
 		This method is aimed at printing a 'dense' version of the solver.
@@ -1849,21 +1896,12 @@ class InsightSolver:
 			if len(range_i)==0:
 				print("There are no rules in the InsightSolver.")
 			else:
-				# Take the performance scores of the rules.
-				d_i_scores = {
-					'i' : range_i,
-				}
-				for key in [
-					'p_value',
-					'coverage',
-					'lift',
-					'rule_S',
-				]:
-					d_i_scores[key] = [self.rule_mining_results[i][key] for i in range_i]
-				df_i_scores = pd.DataFrame(d_i_scores)
+				# Create a list of temporary DataFrame
 				l_df_temp = []
+				# Loop over the rules
 				for i in range_i:
-					rule_S = df_i_scores.loc[i,'rule_S']
+					# Take the rule S
+					rule_S = self.i_to_S(i=i)
 					s_temp = pd.Series(rule_S,name='rule')
 					s_temp.index.name = 'variable'
 					# Add an empty row to make the view cleaner
@@ -1879,13 +1917,16 @@ class InsightSolver:
 					df_temp['p_value']  = self.rule_mining_results[i]['p_value']
 					df_temp['coverage'] = self.rule_mining_results[i]['coverage']
 					df_temp['lift']     = self.rule_mining_results[i]['lift']
+					# If we want to add the shuffling scores
+					if do_print_shuffling_scores:
+						df_temp['cohen_d'] = self.rule_mining_results[i]['shuffling_scores']['p_value']['cohen_d']
 					df_temp['']         = ''
 					l_df_temp.append(df_temp)
 				# Concatenate the DataFrames
 				df_concat = pd.concat(l_df_temp,axis=0,ignore_index=True)
 				# Add a column "contribution"
 				for i in range_i:
-					rule_S = df_i_scores.loc[i,'rule_S']
+					rule_S = self.i_to_S(i=i)
 					for variable in rule_S.keys():
 						contribution = self.rule_mining_results[i]['feature_contributions_S']['p_value_contribution'][variable]
 						mask  = df_concat['i'] == i
@@ -1899,7 +1940,7 @@ class InsightSolver:
 				# Handle the rule's behaviour for NaNS
 				df_concat['nans'] = ''
 				for i in range_i:
-					rule_S = df_i_scores.loc[i,'rule_S']
+					rule_S = self.i_to_S(i=i)
 					for variable in rule_S.keys():
 						rule = rule_S[variable]
 						if isinstance(rule,list):
@@ -1910,9 +1951,9 @@ class InsightSolver:
 									rule,nan = rule
 									df_concat.loc[mask, 'nans'] = nan.split('_')[0]
 									df_concat.loc[mask, 'rule'] = pd.Series([rule], index=df_concat.index[mask])
-				# Hangle the column 'lift'
+				# Handle the column 'lift'
 				df_concat['lift'] = df_concat['lift'].round(2)
-				# Hangle the column 'coverage'
+				# Handle the column 'coverage'
 				#df_concat['coverage'] = df_concat['coverage'].round(3)
 				#df_concat['coverage'] = df_concat['coverage'].apply(
 				#	lambda x: '' if pd.isna(x) else f"{x * 100:.1f}%"
@@ -1925,14 +1966,27 @@ class InsightSolver:
 				#df_concat['p_value'] = df_concat['p_value'].apply(lambda x: f"{x:.2e}")
 				#df_concat['p_value'] = df_concat['p_value'].apply(lambda x: f"{x:.0e}")
 				df_concat['p_value'] = df_concat['p_value'].apply(lambda x: format_value(value=x,format_type='scientific_no_decimals'))
+				# Handle the column 'cohen_d'
+				if do_print_shuffling_scores:
+					df_concat['cohen_d'] = df_concat['cohen_d'].round(2)
 				# Put certain columns in the index
-				cols_index = [
-					'i',
-					'p_value',
-					'coverage',
-					'lift',
-					''
-				]
+				if do_print_shuffling_scores:
+					cols_index = [
+						'i',
+						'p_value',
+						'coverage',
+						'lift',
+						'cohen_d',
+						''
+					]
+				else:
+					cols_index = [
+						'i',
+						'p_value',
+						'coverage',
+						'lift',
+						''
+					]
 				df_concat.set_index(cols_index,inplace=True)
 				# Reorder some columns
 				cols = ['contribution','variable','rule','nans']
@@ -2574,7 +2628,7 @@ class InsightSolver:
 		)
 	def show_all_feature_contributions_and_distributions(
 		self,
-		do_banner:bool = True, # If we want to show the banner
+		do_banner:bool       = True,            # If we want to show the banner
 		bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	)->None:
 		"""
@@ -2592,6 +2646,25 @@ class InsightSolver:
 			solver          = self,
 			do_banner       = do_banner, # If we want to show the banner
 			bar_annotations = bar_annotations,
+		)
+	def plot(
+		self,
+		do_banner:bool       = True,            # If we want to show the banner
+		bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
+	)->None:
+		"""
+		This method is an alias for the method .show_all_feature_contributions_and_distributions()
+		
+		Parameters
+		----------
+		do_banner: bool
+			If we want to show the banner.
+		bar_annotations: str
+			Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
+		"""
+		self.show_all_feature_contributions_and_distributions(
+			do_banner                     = do_banner,
+			bar_annotations               = bar_annotations,
 		)
 
 ################################################################################

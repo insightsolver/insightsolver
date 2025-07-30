@@ -53,6 +53,8 @@ solver.fit(
 )
 # Print the result
 solver.print()
+# Plot the result
+solver.plot()
 ```
 A demo can also be found in [here](https://github.com/insightsolver/insightsolver/blob/main/demo/demo_insightsolver.py)
 
