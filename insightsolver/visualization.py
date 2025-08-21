@@ -396,6 +396,44 @@ def show_feature_distributions_of_S(
 		# Show the figure
 		plt.show()
 
+def p_value_to_p_text(
+	p_value,
+	precision_p_values: str,
+)->str:
+	"""
+	This function converts the p-value to a string.
+
+	Parameters
+	----------
+	p_value: float or mpmath.mpf
+		The p-value to convert.
+	precision_p_values: str
+		The precision of the p-values.
+
+	Returns
+	-------
+	p_text: str
+		The p_value formatted as a string.
+	"""
+	import mpmath
+	if precision_p_values=='float64':
+		# If the precision is float64
+		if abs(p_value) >= 0.001: # If the p_value is big
+			p_text = f"{p_value:.4f}"  # normal decimals
+		else:
+			p_text = f"{p_value:.2e}"  # scientific notation
+	elif precision_p_values=='mpmath':
+		# If the precision is mpmath
+		if abs(p_value) >= 0.001: # If the p_value is big
+			p_text = mpmath.nstr(p_value, n=5, strip_zeros=True)
+		else:
+			# Scientific notation : 2 significant numbers
+			p_text = mpmath.nstr(p_value, n=2, min_fixed=0, max_fixed=0)
+	else:
+		raise Exception(f"ERROR: precision_p_values='{precision_p_values}' is invalid. It must be either 'float64' or 'mpmath'.")
+	# Return the result
+	return p_text
+
 def generate_insightsolver_banner(
 	solver,
 	i:int,
@@ -431,10 +469,19 @@ def generate_insightsolver_banner(
 	coverage = rule_i['coverage']
 	size     = rule_i['m']
 
-	if abs(p_value) >= 0.001: # If the p_value is big
-		p_text = f"{p_value:.4f}"  # normal decimals
+	# Take the precision of the p-values
+	if 'precision_p_values' in solver.monitoring_metadata.keys():
+		precision_p_values = solver.monitoring_metadata['precision_p_values']
 	else:
-		p_text = f"{p_value:.2e}"  # scientific notation
+		precision_p_values = 'float64'
+	if precision_p_values=='mpmath':
+		import mpmath
+
+	# Convert the p-value to a string
+	p_text = p_value_to_p_text(
+		p_value            = p_value,
+		precision_p_values = precision_p_values,
+	)
 
 	# Generate the banner
 	if loss==None:

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.38 (2025-08-21)
+
+*Improvements:*
+
+- New function `p_value_to_p_text` in the viz script.
+- The function `p_value_to_p_text` is now used in the function `generate_insightsolver_banner`. This fixes a problem where the p-value is mpmath and not float64.
+
 ## 0.1.37 (2025-07-30)
 
 *Improvements:*
