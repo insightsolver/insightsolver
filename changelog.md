@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.39 (2025-08-22)
+
+*Improvements:*
+
+- Improved the function `compute_admissible_btypes` so that it handles the dtype `bool` and gives a warning when the dtype is unknown.
+- Improved the function `compute_columns_names_to_admissible_btypes` so that it uses the last version of the function `compute_admissible_btypes`.
+
 ## 0.1.38 (2025-08-21)
 
 *Improvements:*

@@ -75,6 +75,7 @@ def compute_admissible_btypes(
 	M:int,
 	dtype:str,
 	nunique:int,
+	name:str,
 )->list[str]:
 	"""
 	This function computes the admissible `btypes` a column can take.
@@ -85,7 +86,11 @@ def compute_admissible_btypes(
 	- ``'continuous'``
 	- ``'ignore'``
 	"""
-	if dtype in ['uint8','int32','int64','float32','float64']:
+	if dtype=='bool':
+		return [
+			'binary',
+		]
+	elif dtype in ['uint8','int32','int64','float32','float64']:
 		if nunique<=2:
 			return [
 				'binary',
@@ -123,6 +128,7 @@ def compute_admissible_btypes(
 				'ignore',
 			]
 	else: # other dtypes are not handled
+		print(f"WARNING: The variable='{name}' has a dtype='{dtype}' which is not handled yet. This variable is set to ignore.")
 		return [
 			#'binary',
 			#'multiclass',
@@ -145,7 +151,7 @@ def compute_columns_names_to_admissible_btypes(
 	list_of_Series = (s_dtype,s_nunique,s_contains_nan)
 	df_dtype_nunique = pd.concat(list_of_Series,axis=1).rename(columns={0:'dtype',1:'nunique',2:'contains_nan'})
 	# Compute a dict that maps column_name -> btype
-	columns_names_to_admissible_btypes = df_dtype_nunique.apply(lambda x:compute_admissible_btypes(M=M,dtype=x['dtype'],nunique=x['nunique']),axis=1).to_dict()
+	columns_names_to_admissible_btypes = df_dtype_nunique.apply(lambda x:compute_admissible_btypes(M=M,dtype=x['dtype'],nunique=x['nunique'],name=x.name),axis=1).to_dict()
 	# Return the result
 	return columns_names_to_admissible_btypes
 
