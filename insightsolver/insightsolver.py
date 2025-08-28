@@ -336,20 +336,73 @@ def validate_class_integrity(
 		raise Exception(f"ERROR (n_benchmark_shuffle): The parameter n_benchmark_shuffle must be an integer >= 2.")
 
 	# Validate target_goal
-	if not isinstance(target_goal,str):
-		target_modalities = df[target_name].unique()
-		if target_goal not in target_modalities:
+	target_modalities = df[target_name].unique()
+	if target_goal in target_modalities:
+		# If the target goal is in the modalities of the target variable, there is no problem
+		if target_name not in columns_types.keys():
+			if len(target_modalities)==0:
+				raise Exception(f"ERROR: There is no modality in the target variable.")
+			if len(target_modalities)==1:
+				raise Exception(f"ERROR: There is only one modality in the target variable: '{target_modalities[0]}' (of type '{type(target_modalities[0]).__name__}').")
+			elif len(target_modalities)==2:
+				columns_types[target_name] = 'binary'
+			else:
+				columns_types[target_name] = 'multiclass'
+	else:
+		# If the target goal is not in the modalities of the target variable
+		if isinstance(target_goal,str):
+			# If the target goal is not in the target modalities but nevertheless is a string, we assume that the target type is 'continuous'
+			# We make sure that the target_goal is legit for a continuous target variable
+			import re
+			if target_goal in ['min','max']:
+				...
+			elif target_goal[:3] not in ['min','max']:
+				raise Exception(f"ERROR: target_goal='{target_goal}' (of type '{type(target_goal).__name__}') is not a modality of the target variable. Therefore the target_goal string must start either with 'min' or 'max', not '{target_goal[:3]}'.")
+			elif len(target_goal)<6:
+				raise Exception(f"ERROR: target_goal='{target_goal}' (of type '{type(target_goal).__name__}') is not a modality of the target variable. The length of the target_goal string must be at least 6, not {len(target_goal)}.")
+			elif target_goal[3]!='_':
+				raise Exception(f"ERROR: target_goal='{target_goal}' (of type '{type(target_goal).__name__}') is not a modality of the target variable. If the 4th character of the string target_goal is specified it must be '_', not '{target_goal[3]}'.")
+			elif re.match(r"^min_q[0-3]{1}$", target_goal)!=None:
+				# If it's 'min' with a quartile 0, 1, 2, 3, it's ok (but 4 is not).
+				...
+			elif re.match(r"^min_c[0-9]{2}$", target_goal)!=None:
+				# If it's 'min' with a centile 00, 01, 02, ..., 98, 99.
+				...
+			elif re.match(r"^max_q[1-4]{1}$", target_goal)!=None:
+				# If it's 'max' with a quartile 1, 2, 3, 4, it's ok (but 0 is not).
+				...
+			elif re.match(r"^max_c[0-9]{2}$", target_goal)!=None:
+				# If it's 'max' with a 00, 01, 02, ..., 98, 99.
+				if target_goal=='max_c00':
+					raise Exception(f"ERROR: target_goal='{target_goal}' is not a valid string.")
+			elif re.match(r"^max_c100$",      target_goal)!=None:
+				# If it's 'max' with a centile 100.
+				...
+			else:
+				raise Exception(f"ERROR: target_goal='{target_goal}' is not a valid string.")
+			# We make sure that the target type is continuous
+			if target_name in columns_types.keys():
+				if columns_types[target_name]!='continuous':
+					raise Exception(f"ERROR: The target_goal='{target_goal}' indicates that the target variable '{target_name}' is 'continuous' but the specified type is '{columns_types[target_name]}'. Please either choose another type for the target variable or choose another target goal.")
+			else:
+				columns_types[target_name] = 'continuous'
+		else:
+			# If it's not a string, we raise an exception
 			target_modalities = sorted(target_modalities)
 			if len(target_modalities)<=10:
-				raise Exception(f"ERROR: target_goal='{target_goal}' is not a string but a '{type(target_goal).__name__}' and it's not a modality of target_modalities='{target_modalities}'.")
+				error_message = f"ERROR: target_goal='{target_goal}' (of type '{type(target_goal).__name__}') is neither a valid string (like 'min' or 'max' etc.) nor a modality of target_modalities='{target_modalities}'."
 			else:
-				error_message = f"ERROR: target_goal='{target_goal}' is not a string but a '{type(target_goal).__name__}' and it's not a modality of target_modalities:"
+				error_message = f"ERROR: target_goal='{target_goal}' (of type '{type(target_goal).__name__}') is neither a valid string (like 'min' or 'max' etc.) nor a modality of target_modalities:"
 				for modality in target_modalities[:3]:
 					error_message+= f'\n\t{modality}'
 				error_message+= '\n\t...'
 				for modality in target_modalities[-3:]:
 					error_message+= f'\n\t{modality}'
-				raise Exception(error_message)
+			raise Exception(error_message)
+
+	# At this point the type of the target variable should be known
+	if target_name not in columns_types.keys():
+		raise Exception("ERROR: The type of the target variable is not specified.")
 
 	# Return the modified types
 	return columns_types

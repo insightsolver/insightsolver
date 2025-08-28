@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.40 (2025-08-28)
+
+*Improvements:*
+
+- Improved the error message in the function `validate_class_integrity` when the target goal is not valid.
+- Now the function `validate_class_integrity` deduces the type of the target variable based on the specified target goal.
+
 ## 0.1.39 (2025-08-22)
 
 *Improvements:*
