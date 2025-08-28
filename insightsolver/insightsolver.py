@@ -878,6 +878,10 @@ class InsightSolver:
 
 	Methods
 	-------
+	__init__: None
+		Initialization of an instance of the class InsightSolver.
+	__str__: None
+		Converts the solver to a string as provided by the print method.
 	ingest_dict: None
 		Ingests a Python dict.
 	ingest_json_string: None
@@ -1104,6 +1108,20 @@ class InsightSolver:
 		self.rule_mining_results     = dict()
 		# Boolean that tells if the solver is fitted
 		self._is_fitted              = False
+	
+	def __str__(
+		self,
+	)->str:
+		"""
+		Cette méthode permet de convertir un objet hrd en string via str(hrd).
+		Ça permet de faire print(hrd) qui réfère à hrd.print().
+		"""
+		# capture l'affichage de .print() et retourne une string
+		import io, contextlib
+		buf = io.StringIO()
+		with contextlib.redirect_stdout(buf):
+			self.print()
+		return buf.getvalue().strip()
 	def ingest_dict(
 		self,
 		d: dict,               # The dict to ingest

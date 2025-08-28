@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.41 (2025-08-28)
+
+*Improvements:*
+
+- Now `print(solver)` is equivalent to `solver.print()`.
+
 ## 0.1.40 (2025-08-28)
 
 *Improvements:*
