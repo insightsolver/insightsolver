@@ -5,7 +5,7 @@
 * `File Name`:     insightsolver.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-07-30
+* `Last Updated`:  2025-08-28
 * `First Created`: 2024-09-09
 
 Description
@@ -1113,10 +1113,9 @@ class InsightSolver:
 		self,
 	)->str:
 		"""
-		Cette méthode permet de convertir un objet hrd en string via str(hrd).
-		Ça permet de faire print(hrd) qui réfère à hrd.print().
+		This method can convert a solver object to a string via str(solver).
+		This lets print(solver) return solver.print().
 		"""
-		# capture l'affichage de .print() et retourne une string
 		import io, contextlib
 		buf = io.StringIO()
 		with contextlib.redirect_stdout(buf):

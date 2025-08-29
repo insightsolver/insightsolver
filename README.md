@@ -34,6 +34,8 @@ pip install .
 
 Because the current GitHub repo is private, the first two methods need a github account with an active [personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
 
+*Warning for Anaconda users:* When using a virtual environment managed by [Anaconda](http://anaconda.org), the installation of the `insightsolver` library as specified above could install dependencies (specified in the file `requirements.txt`) via pip that are not handled by Anaconda. There are two options available. The first option is to do as specified above, which lets pip install dependencies, but risk that the virtual environment is no longer handled by Anaconda. The second option is to add a `--no-deps` flag to the pip install, e.g. `pip install --no-deps .`. This last command would install the scripts of the `insightsolver` module without installing the dependencies. This prevents breaking the Anaconda environment but could result in `insightsolver` not finding all the required dependencies at runtime. These required dependencies should therefore be installed manually from within the Anaconda application.
+
 ## ⚡ Quick start
 
 ```python

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.42 (2025-08-29)
+
+*Improvements:*
+
+- In the file `README.txt`, a warning is added for Anaconda users when installing the `insightsolver` library.
+- In the pdf documentation, a warning is added for Anaconda users when installing the `insightsolver` library.
+
 ## 0.1.41 (2025-08-28)
 
 *Improvements:*
