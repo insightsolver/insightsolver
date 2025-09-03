@@ -5,7 +5,7 @@
 * `File Name`:     api_utilities.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-05-08
+* `Last Updated`:  2025-09-03
 * `First Created`: 2024-09-16
 
 Description
@@ -1064,10 +1064,10 @@ def request_cloud_computation(
 		# status_code = '400'
 		# reason      = 'BAD REQUEST'
 		try:
-			print('error       :',response.json()['error'])
+			error_message = response.json()['error']
 		except:
-			print('error       :',response.text)
-		raise Exception("ERROR: The API call did not succeed.")
+			error_message = response.text
+		raise Exception(f"ERROR: The API call did not succeed. Here is the error message sent by the server :\n{error_message}")
 	# status_code = '200'
 	# reason      = 'OK'
 

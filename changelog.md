@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.43 (2025-09-03)
+
+*Improvements:*
+
+- Now the function `request_cloud_computation` generates an error which is easier to read when the server refuses to compute the rule mining.
+
 ## 0.1.42 (2025-08-29)
 
 *Improvements:*
