@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.44 (2025-09-08)
+
+*Improvements:*
+
+- Updated the function `api_utilities/compute_credits_from_df` in the API utilities to exclude from the number of columns the target column and the columns set to `'ignore'`.
+- Updated the method `solver.get_credits_needed_for_computation` so that it uses the latest version of the function `compute_credits_from_df`.
+- Updated the README file.
+- Updated the pdf documentation.
+
 ## 0.1.43 (2025-09-03)
 
 *Improvements:*

@@ -5,7 +5,7 @@
 * `File Name`:     api_utilities.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-09-03
+* `Last Updated`:  2025-09-08
 * `First Created`: 2024-09-16
 
 Description
@@ -744,17 +744,25 @@ def generate_url_headers(
 	)
 
 def compute_credits_from_df(
-	df: pd.DataFrame,
+	df: pd.DataFrame,                       # The DataFrame that contains the data.
+	columns_names_to_btypes: dict = dict(), # The dict that specifies how to handle the variables.
 )->int:
 	"""
 	This function computes the number of credits consumed by a rule mining via the API.
 	This number is based on the size of the DataFrame sent to the API.
-
+	
+	Remark:
+	The amount of credits debited is m*n where:
+	- m is the number of rows of df (excluding the header).
+	- n is the number of features to explore (i.e. the number of columns less the index, less the target variable, less the ignored features).
+	
 	Parameters
 	----------
 	df : pd.DataFrame
 		Input DataFrame whose size is used to compute credits.
-
+	columns_names_to_btypes: dict
+		The dict that specifies how to handle the variables.
+	
 	Returns
 	-------
 	int
@@ -762,6 +770,11 @@ def compute_credits_from_df(
 	"""
 	# Take the size of df
 	m,n = df.shape
+	# Remove the target variable
+	n -= 1
+	# Remove the variables that are set to ignore
+	ignored_cols = [column_name for column_name in df.columns if columns_names_to_btypes.get(column_name)=="ignore"]
+	n -= len(ignored_cols)
 	# Compute the amount of credits
 	from math import ceil
 	credits = ceil(m*n/10000)

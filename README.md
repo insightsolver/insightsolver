@@ -71,8 +71,8 @@ credits = ceil(m * n / 10000)
 
 where:
 
-- `m` is the number of rows,
-- `n` is the number of columns,
+- `m` is the number of rows (excluding the header),
+- `n` is the number of feature columns (excluding the index column, the target column and other ignored columns),
 - `ceil` is the mathematical ceiling function (rounds up to the next integer).
 
 Here are some examples:
@@ -83,19 +83,19 @@ Here are some examples:
 | 10000      | 25             | ceil(10000*25/10000)  | 25               |
 | 20000      | 100            | ceil(20000*100/10000) | 200              |
 
-> For reference, the Titanic training dataset from [Kaggle](https://www.kaggle.com/competitions/titanic) has **891 rows** and **10 columns** (excluding `PassengerId`), which results in:
+> For reference, the Titanic training dataset from [Kaggle](https://www.kaggle.com/competitions/titanic) has **m=891 rows** and **n=9 feature columns** (excluding `PassengerId` and `Survived`), which results in:
 >
 > ```python
-> ceil(891 * 10 / 10000) = 1 credit
+> ceil(891 * 9 / 10000) = 1 credit
 > ```
 >
 > So you can think of **1 credit as roughly "one Titanic"** in size.
 
 *Tips to reduce credit usage:*
 
-- Remove unused or irrelevant columns,
-- Filter the dataset before sending it,
-- Work with samples when appropriate.
+- Remove unused or irrelevant columns or set them to `'ignore'`,
+- Filter the rows of the dataset,
+- Samples the rows of the dataset.
 
 ## 📚 Documentation
 

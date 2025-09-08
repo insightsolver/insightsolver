@@ -2308,7 +2308,8 @@ class InsightSolver:
 		# Compute the number of credits needed for computation
 		from .api_utilities import compute_credits_from_df
 		credits_needed = compute_credits_from_df(
-			df = self.df,
+			df                      = self.df,
+			columns_names_to_btypes = self.columns_types,
 		)
 		# Return the result
 		return credits_needed
