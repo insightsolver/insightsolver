@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.45 (2025-09-10)
+
+*Improvements:*
+
+- Updated the `setup.py` file so that `pip install .` install all packages in the `requirements.txt` file.
+- Improved all visualization functions in the `visualization.py` script.
+
 ## 0.1.44 (2025-09-08)
 
 *Improvements:*

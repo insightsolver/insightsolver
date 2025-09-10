@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-# Lire le fichier README en utf-8
+# Read the file README in UTF-8
 with open("README.md", "r", encoding="utf-8") as fh:
 	long_description = fh.read()
 
@@ -12,29 +12,29 @@ def read_version():
 			return match.group(1)
 		raise RuntimeError("Unable to find version string.")
 
+# Read requirements.txt and ignore ignorer the rows that start with git
+with open("requirements.txt") as f:
+	requirements = [
+		line.strip()
+		for line in f
+		if line.strip() and not line.startswith("git+")
+	]
+
 setup(
-	name="insightsolver",                   # Nom du package (doit être unique sur PyPI)
-	version=read_version(),                 # Version du package
-	packages=find_packages(),               # Trouver tous les sous-packages automatiquement
-	install_requires=[                      # Dépendances du package
-		"pandas",
-		"numpy",
-		"requests",
-		"mpmath",
-		"jsonpickle",
-		"cryptography",
-		"google-auth",
-	],
-	# Développeur principal ou équipe qui a créé le projet
+	name="insightsolver",                   # Name of the package (must be unique on PyPI)
+	version=read_version(),                 # Version of the package
+	packages=find_packages(),               # Find all sub-packages automatically
+	install_requires=requirements,
+	# Main dev or team that created the project
 	author="Noé Aubin-Cadot",
 	author_email="noe.aubin-cadot@insightsolver.com",
-	# Organisation responsable de la maintenance du projet
+	# Maintainer of the project
 	maintainer="InsightSolver Solutions Inc.",
 	maintainer_email="support@insightsolver.com",
 	description="InsightSolver offers rule-based insights generation for actionable data-driven decisions.",
 	long_description=long_description,
 	long_description_content_type="text/markdown",
-	url="https://github.com/insightsolver/insightsolver",  # URL du projet
+	url="https://github.com/insightsolver/insightsolver",  # URL of the project
 	classifiers=[
 		"Programming Language :: Python :: 3",
 		"License :: Other/Proprietary License",
