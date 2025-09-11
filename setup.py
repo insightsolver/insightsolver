@@ -1,16 +1,26 @@
 from setuptools import setup, find_packages
+import os
+import re
 
 # Read the file README in UTF-8
 with open("README.md", "r", encoding="utf-8") as fh:
 	long_description = fh.read()
 
 def read_version():
-	import re
-	with open("insightsolver/version.py", encoding="utf-8") as f:
-		match = re.search(r'^__version__ = ["\']([^"\']+)["\']', f.read())
+	version_path = os.path.join(os.path.dirname(__file__), "insightsolver", "version.py")
+	print(f"[*] Trying to open: {version_path}")
+	if not os.path.exists(version_path):
+		raise RuntimeError(f"Version file not found at {version_path}")
+	with open(version_path, encoding="utf-8") as f:
+		content = f.read()
+		print(f"[*] File opened, content:\n{content}")
+		
+		#match = re.search(r'^__version__ = ["\']([^"\']+)["\']', f.read())
+		match = re.search(r'^__version__\s*=\s*["\']([^"\']+)["\']', content, re.M)
 		if match:
+			print(f"[*] Found version: {match.group(1)}")
 			return match.group(1)
-		raise RuntimeError("Unable to find version string.")
+		raise RuntimeError("Unable to find version string in the version file.")
 
 # Read requirements.txt and ignore ignorer the rows that start with git
 with open("requirements.txt") as f:

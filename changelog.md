@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.48 (2025-09-11)
+
+*Improvements:*
+
+- The function `read_version` of the file `setup.py` is now more robuts.
+
 ## 0.1.47 (2025-09-11)
 
 *Improvements:*
