@@ -467,9 +467,13 @@ def S_to_index_points_in_rule(
 	if isinstance(df,pd.DataFrame):
 		# If df is specified, we take it
 		df_features_filtre = df.copy()
+		# Since df is specified there is no reason that it contains all modalities
+		all_modalities_should_be_present = False
 	else:
 		# If df is not specified, we take the DataFrame in the solver
 		df_features_filtre = solver.df.copy()
+		# Since df is from the solver, it should contain all the modalities
+		all_modalities_should_be_present = True
 	# Take the features names in the rule S
 	feature_names = list(S.keys())
 	# Make sure that the names are legit
@@ -575,7 +579,8 @@ def S_to_index_points_in_rule(
 					print("WARNING: 'str(modality)' is in the data but not 'modality'.")
 					mask_temp |= (df_features_filtre[feature_name]==str(modality))
 				else:
-					raise Exception(f"ERROR: the modality='{modality}' is not in the data.")
+					if all_modalities_should_be_present:
+						raise Exception(f"ERROR: the modality='{modality}' is not in the data.")						
 		elif feature_type=='continuous':
 			# If the feature is continuous
 			if isinstance(feature_S[0],list):

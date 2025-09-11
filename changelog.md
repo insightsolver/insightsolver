@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.47 (2025-09-11)
+
+*Improvements:*
+
+- The method `S_to_index_points_in_rule` now does not require modalities of a categorical variable to belong to the data in a specified DataFrame other than the DataFrame in the solver. This fixes an error where the method would raise an Exception if a modality is not present in the specified DataFrame, which was too restrictive.
+
 ## 0.1.46 (2025-09-11)
 
 *Improvements:*
