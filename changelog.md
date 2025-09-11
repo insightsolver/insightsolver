@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.49 (2025-09-11)
+
+*Improvements:*
+
+- Fixed the truncation of the labels of the y-axis labels in the function `show_feature_contributions_of_i`.
+
 ## 0.1.48 (2025-09-11)
 
 *Improvements:*

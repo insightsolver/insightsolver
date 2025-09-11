@@ -974,7 +974,7 @@ def show_feature_contributions_of_i(
 	# Take back the sorted feature labels
 	feature_labels = df_feature_contributions_S['feature_label'].to_list()
 	# Convert the p_value_contribution to percentages
-	df_feature_contributions_S['p_value_contribution'] = df_feature_contributions_S['p_value_contribution']*100
+	df_feature_contributions_S['p_value_contribution'] *= 100
 	# Take the precision of the p-values
 	if 'precision_p_values' in solver.monitoring_metadata.keys():
 		precision_p_values = solver.monitoring_metadata['precision_p_values']
@@ -1029,6 +1029,10 @@ def show_feature_contributions_of_i(
 	ax.set_xlim(0, 100)
 	# Set the xticks
 	ax.set_xticks(range(0, 101, 5))
+	# Truncate the yticks labels
+	locs, labels = plt.yticks() # # Get the current y-axis tick locations and labels
+	truncated_labels = [truncate_label(label.get_text(), max_length=55) for label in labels] # Apply the truncation function to each label
+	plt.yticks(locs, truncated_labels) # Set the new truncated labels and locations on the y-axis
 	# Set the grid
 	if do_grid:
 		ax.grid(
