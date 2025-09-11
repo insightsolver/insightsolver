@@ -43,6 +43,7 @@ from requests.models import Response
 from typing import Optional, Union, Dict, Sequence
 import numbers
 import mpmath # Useful for when the p-values are very small
+from collections.abc import Mapping # To make the InsightSolver behave like a mapping like a dict
 
 ################################################################################
 ################################################################################
@@ -825,7 +826,7 @@ def get_credits_available(
 ################################################################################
 # Defining the InsightSolver class
 
-class InsightSolver:
+class InsightSolver(Mapping):
 	"""
 	The class ``InsightSolver`` is meant to :
 
@@ -1108,7 +1109,6 @@ class InsightSolver:
 		self.rule_mining_results     = dict()
 		# Boolean that tells if the solver is fitted
 		self._is_fitted              = False
-	
 	def __str__(
 		self,
 	)->str:
@@ -1121,6 +1121,35 @@ class InsightSolver:
 		with contextlib.redirect_stdout(buf):
 			self.print()
 		return buf.getvalue().strip()
+	def __getitem__(
+		self,
+		key,
+	):
+		"""
+		This method makes the solver behave like a dict:
+
+		``
+		for i in solver: rule = solver[i]
+		``
+		"""
+		return self.rule_mining_results[key]
+	def __iter__(
+		self,
+	):
+		"""
+		This method makes the solver an iterable.
+		A loop on it will loop over keys of the dict rule_mining_results.
+
+		For example: ``for i in solver: ...``.
+		"""
+		return iter(self.rule_mining_results)
+	def __len__(
+		self,
+	)->int:
+		"""
+		This method lets len(solver) returns the number of rules in the solver.
+		"""
+		return self.ruleset_count()
 	def ingest_dict(
 		self,
 		d: dict,               # The dict to ingest

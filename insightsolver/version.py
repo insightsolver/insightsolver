@@ -1,1 +1,2 @@
-__version__ = "0.1.45"
+# Version of the InsightSolver API client library
+__version__ = "0.1.46"

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.46 (2025-09-11)
+
+*Improvements:*
+
+- The class `InsightSolver` now inherits from `collections.abc.Mapping`, which makes it behave like a read-only dict (supports `len(solver)`, `for key in solver, solver[key]`, `solver.items()`, etc.)
+
 ## 0.1.45 (2025-09-10)
 
 *Improvements:*
