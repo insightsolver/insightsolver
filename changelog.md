@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.50 (2025-09-15)
+
+*Improvements:*
+
+- Complete migration of the packaging system from `setup.py` to `pyproject.toml` with modern `setuptools`. Removed the file `setup.py`. Removed the file `MANIFEST.in`. Moved the package to the folder `src/insightsolver`. Now it is possible to do `pip install -e .` for editable installation. Build and distribution now standardized with `python -m build`. This migration does not affect the code of the package, only how it is packaged and distributed.
+
 ## 0.1.49 (2025-09-11)
 
 *Improvements:*
