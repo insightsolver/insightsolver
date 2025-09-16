@@ -56,6 +56,7 @@ def show_all_mutual_information(
 	solver,
 	n_samples:Optional[int] = 1000,
 	n_cols:Optional[int]    = 20,
+	kind: str               = 'barh',
 ):
 	"""
 	This function generates a bar plot of the mutual information between the features and the target variable.
@@ -66,7 +67,13 @@ def show_all_mutual_information(
 		An integer that specifies the number of data rows to use in the computation of the mutual information.
 	n_cols: int
 		An integer that specifies the maximum number of features to show
+	kind: str
+		Kind of plot ('bar' or 'barh')
 	"""
+	# Make sure the parameter kind is valid
+	if kind not in ['bar','barh']:
+		raise ValueError(f"ERROR (show_all_mutual_information): The parameter kind='{kind}' must be either 'bar' or 'barh'.")
+
 	# Compute the mutual information
 	s_mi = solver.compute_mutual_information(
 		n_samples = n_samples,
@@ -74,21 +81,39 @@ def show_all_mutual_information(
 	# Keep only the top variables
 	if n_cols and len(s_mi)>n_cols:
 		s_mi = s_mi.head(n_cols)
+	# For a horizontal barplot we must sort to have big values on top of the figure
+	if kind=='barh':
+		s_mi.sort_values(ascending=True,inplace=True)
+
 	# Generate the figure
 	import matplotlib.pyplot as plt
 	plt.figure(figsize=(12, 6))
-	ax = s_mi.plot(kind='bar', edgecolor='black')
+	ax = s_mi.plot(
+		kind      = kind,
+		edgecolor = 'black',
+	)
 	plt.title('Mutual Information between the features and the target variable')
 	plt.ylabel('Mutual Information')
 	plt.xlabel('Feature')
 	plt.xticks(rotation=45, ha='right')
 	for idx, value in enumerate(s_mi):
+		# Compute the position
+		if kind=='bar':
+			x = idx
+			y = value + max(s_mi) * 0.01
+			ha = 'center'
+			va = 'bottom'
+		elif kind=='barh':
+			x = value + max(s_mi) * 0.005
+			y = idx
+			ha = 'left'
+			va = 'center'
 		ax.text(
-			x        = idx, 
-			y        = value + max(s_mi) * 0.01,  # small offset
+			x        = x, 
+			y        = y,  # small offset
 			s        = f"{value:.4f}", 
-			ha       = 'center', 
-			va       = 'bottom', 
+			ha       = ha, 
+			va       = va, 
 			fontsize = 8
 		)
 	plt.tight_layout()

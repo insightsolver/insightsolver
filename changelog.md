@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.51 (2025-09-16)
+
+*Improvements:*
+
+- Fixed a bug in the method `solver.show_all_mutual_information`.
+- Now the function `show_all_mutual_information` and the corresponding method `solver.show_all_mutual_information` have a new parameter `kind` to specify the kind of plot (can be `bar` for a vertical barplot or `barh` for a horizontal barplot). The new default is a horizontal barplot.
+- Improved the method `solver.compute_mutual_information` to better handle high cardinality categorical features (e.g. Ticket in the Titanic was shown to be too important compared to Sex and Age and Pclass). Also, a bug was fixed regarding columns that are 100% NaNs.
+
 ## 0.1.50 (2025-09-15)
 
 *Improvements:*

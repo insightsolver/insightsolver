@@ -2517,10 +2517,11 @@ class InsightSolver(Mapping):
 		return s_out
 	def compute_mutual_information(
 		self,
-		n_samples = 1000, # If we want to speed up the computation
-	):
+		n_samples: int = 1000, # If we want to speed up the computation
+	)->pd.Series:
 		"""
 		This method computes the mutual information between the features and the target variable.
+		The result is returned as a Pandas Series.
 
 		Parameters
 		----------
@@ -2549,6 +2550,7 @@ class InsightSolver(Mapping):
 		cols.remove(target_name)
 		# Split the columns in continuous and categorical according to what is known
 		columns_types    = self.columns_types
+		# Split the columns in four categories
 		cols_continuous  = [col for col in cols if col in columns_types and columns_types[col]=='continuous']              # Columns specified as 'continuous'
 		cols_categorical = [col for col in cols if col in columns_types and columns_types[col] in ['binary','multiclass']] # Columns specified as 'binary' or 'multiclass'
 		cols_ignore      = [col for col in cols if col in columns_types and columns_types[col]=='ignore']                  # Columns specified as 'ignore'
@@ -2563,18 +2565,30 @@ class InsightSolver(Mapping):
 		cols_continuous_non_numeric = df_X[cols_continuous].select_dtypes(exclude='number').columns.to_list()
 		for col in cols_continuous_non_numeric:
 			df_X[col] = df_X[col].astype(str).rank(method='average')
-		# Convert categorical non numeric columns to numbers (it is not needed to sort alphabetically)
-		cols_categorical_non_numeric = df_X[cols_categorical].select_dtypes(exclude='number').columns.to_list()
-		for col in cols_categorical_non_numeric:
-			df_X[col] = pd.factorize(df_X[col].astype(str))[0]
-		# Handle the missing values in the continuous numerical columns
+		# Hangle the missing values of the continuous numerical columns
 		cols_continuous_numeric = [col for col in cols_continuous if col not in cols_continuous_non_numeric]
 		for col in cols_continuous_numeric:
 			if df_X[col].isna().any():
 				# Fill the missing values by the median
-				df_X[col] = df_X[col].fillna(df_X[col].median())
+				median = df_X[col].median()
+				if pd.isna(median):  # pathological case: all the column is NaN
+					df_X[col] = 0
+				else:
+					df_X[col] = df_X[col].fillna(median)
+		# Set the categorical columns (numerical or non-numerical) to numbers
+		for col in cols_categorical:
+			df_X[col] = pd.factorize(df_X[col].astype(str))[0]
+		# Take the useful categorical columns
+		def is_useful_categorical_column(
+			s: pd.Series,
+			max_unique_absolute: int = 20,
+			max_unique_ratio: float  = 0.05,
+		)->bool:
+			nunique = s.nunique(dropna=False)
+			return (nunique <= max_unique_absolute) or (nunique / n_samples <= max_unique_ratio)
+		cols_categorical_useful = [col for col in cols_categorical if is_useful_categorical_column(df_X[col])]
 		# Determine the discrete features
-		discrete_features = df_X.columns.isin(cols_categorical)
+		discrete_features = df_X.columns.isin(cols_categorical_useful)
 		# Compute the mutual information
 		from sklearn.feature_selection import mutual_info_classif
 		mi_scores = mutual_info_classif(
@@ -2596,7 +2610,8 @@ class InsightSolver(Mapping):
 	def show_all_mutual_information(
 		self,
 		n_samples:Optional[int] = 1000,
-		n_cols:Optional[int]    = 20,		
+		n_cols:Optional[int]    = 20,
+		kind: str               = 'barh',		
 	)->None:
 		"""
 		This method generates a bar plot of the mutual information between the features and the target variable.	
@@ -2610,13 +2625,16 @@ class InsightSolver(Mapping):
 		"""
 		from .visualization import show_all_mutual_information
 		show_all_mutual_information(
-			solver = self,
+			solver    = self,
+			n_samples = n_samples,
+			n_cols    = n_cols,
+			kind      = kind,
 		)
 	def show_feature_distributions_of_S(
 		self,
 		S:dict,
-		padding_y:int = 5,
-		do_show_kde:bool = False,
+		padding_y:int               = 5,
+		do_show_kde:bool            = False,
 		do_show_vertical_lines:bool = False,
 	)->None:
 		"""
