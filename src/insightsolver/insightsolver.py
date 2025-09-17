@@ -654,6 +654,25 @@ def resolve_language(
 	# Return the result
 	return language
 
+def gain_to_percent(
+	gain: float,
+	decimals: int = 2,
+)->str:
+	"""
+	This function formats the gain to either a positive percentage or a negative percentage.
+
+	Parameters
+	----------
+	gain: float
+		The gain (gain = lift - 1).
+	decimals: int
+		Number of decimals to show.
+	"""
+	if gain>=0:
+		return f"+{round(100*gain,decimals)}%"
+	else:
+		return f"{round(100*gain,decimals)}%"
+
 ################################################################################
 ################################################################################
 # Defining the API Client
@@ -1493,6 +1512,7 @@ class InsightSolver(Mapping):
 				'sigma_pop',
 				'F1_pop',
 				'lift',
+				'gain',
 				'complexity',
 				'subrule_S',
 				'var_name',
@@ -1646,6 +1666,7 @@ class InsightSolver(Mapping):
 		print(f'{indentation}μ_pop           :',rule_i['mu_pop'])    # peut être redondant
 		print(f'{indentation}σ_pop           :',rule_i['sigma_pop']) # peut être redondant
 		print(f'{indentation}lift            :',rule_i['lift'])
+		print(f'{indentation}gain            :',gain_to_percent(gain=rule_i['gain'],decimals=4))
 		print(f'{indentation}complexity_S    :',rule_i['complexity_S'])
 		print(f'{indentation}F1_pop          :',rule_i['F1_pop'])
 		if 'G_bad_class' in rule_i.keys():
@@ -1723,6 +1744,7 @@ class InsightSolver(Mapping):
 				'TPR',
 				'PPV',
 				'lift',
+				'gain',
 				'coverage',
 				'm',
 				'm1',
@@ -1757,6 +1779,7 @@ class InsightSolver(Mapping):
 				df_subrules_S_formatted['TPR']           = df_subrules_S_formatted['TPR'].map('{:.4f}'.format)
 				df_subrules_S_formatted['PPV']           = df_subrules_S_formatted['PPV'].map('{:.4f}'.format)
 				df_subrules_S_formatted['lift']          = df_subrules_S_formatted['lift'].map('{:.4f}'.format)
+				df_subrules_S_formatted['gain']          = df_subrules_S_formatted['gain'].map(gain_to_percent)
 				df_subrules_S_formatted['coverage']      = df_subrules_S_formatted['coverage'].map('{:.4f}'.format)
 				if 'cohen_d' in df_subrules_S_formatted.columns:
 					df_subrules_S_formatted['cohen_d'] = df_subrules_S_formatted['cohen_d'].map('{:.4f}'.format)
@@ -1940,6 +1963,7 @@ class InsightSolver(Mapping):
 					'm1/M1',
 					'mu_rule',
 					'lift',
+					'gain',
 					'complexity_S',
 				]
 				for key in keys:
@@ -1952,6 +1976,8 @@ class InsightSolver(Mapping):
 				df_i_scores = pd.DataFrame(d_i_scores)
 				# Limit the number of digits shown for the p-value
 				df_i_scores['p_value'] = df_i_scores['p_value'].apply(lambda x:format_value(value=x,format_type='scientific',decimals=6))
+				# Format the gain as percentages
+				df_i_scores['gain'] = df_i_scores['gain'].map(gain_to_percent)
 				# Rename the complexity
 				df_i_scores.rename(columns={'complexity_S':'complexity'},inplace=True)
 				# Set 'i' as an index
@@ -1994,10 +2020,18 @@ class InsightSolver(Mapping):
 					print("\n-----------------------------")
 	def print_dense(
 		self,
+		do_print_lifts: bool = False,            # If we want to show the lifts
 		do_print_shuffling_scores: bool = True, # If we want to show the shuffling scores
 	)->None:
 		"""
 		This method is aimed at printing a 'dense' version of the solver.
+	
+		Parameters
+		----------
+		do_print_lifts: bool
+			If we want to show the lifts.
+		do_print_shuffling_scores: bool
+			If we want to show the shuffling scores.
 		"""
 		with pd.option_context('display.max_columns', 10, 'display.max_colwidth', 100, 'display.width', 1000):
 			# Take the list of rules keys in the InsightSolver object.
@@ -2026,9 +2060,12 @@ class InsightSolver(Mapping):
 					df_temp['i']        = i
 					df_temp['p_value']  = self.rule_mining_results[i]['p_value']
 					df_temp['coverage'] = self.rule_mining_results[i]['coverage']
-					df_temp['lift']     = self.rule_mining_results[i]['lift']
-					# If we want to add the shuffling scores
+					if do_print_lifts:
+						# If we want to add the lifts
+						df_temp['lift']     = self.rule_mining_results[i]['lift']
+					df_temp['gain']     = self.rule_mining_results[i]['gain']
 					if do_print_shuffling_scores:
+						# If we want to add the shuffling scores
 						df_temp['cohen_d'] = self.rule_mining_results[i]['shuffling_scores']['p_value']['cohen_d']
 					df_temp['']         = ''
 					l_df_temp.append(df_temp)
@@ -2062,7 +2099,10 @@ class InsightSolver(Mapping):
 									df_concat.loc[mask, 'nans'] = nan.split('_')[0]
 									df_concat.loc[mask, 'rule'] = pd.Series([rule], index=df_concat.index[mask])
 				# Handle the column 'lift'
-				df_concat['lift'] = df_concat['lift'].round(2)
+				if do_print_lifts:
+					df_concat['lift'] = df_concat['lift'].round(2)
+				# Handle the column 'gain'
+				df_concat['gain'] = df_concat['gain'].map(gain_to_percent)
 				# Handle the column 'coverage'
 				#df_concat['coverage'] = df_concat['coverage'].round(3)
 				#df_concat['coverage'] = df_concat['coverage'].apply(
@@ -2080,23 +2120,17 @@ class InsightSolver(Mapping):
 				if do_print_shuffling_scores:
 					df_concat['cohen_d'] = df_concat['cohen_d'].round(2)
 				# Put certain columns in the index
+				cols_index = [
+					'i',
+					'p_value',
+					'coverage',
+				]
+				if do_print_lifts:
+					cols_index.append('lift')
+				cols_index.append('gain')
 				if do_print_shuffling_scores:
-					cols_index = [
-						'i',
-						'p_value',
-						'coverage',
-						'lift',
-						'cohen_d',
-						''
-					]
-				else:
-					cols_index = [
-						'i',
-						'p_value',
-						'coverage',
-						'lift',
-						''
-					]
+					cols_index.append('cohen_d')
+				cols_index.append('')
 				df_concat.set_index(cols_index,inplace=True)
 				# Reorder some columns
 				cols = ['contribution','variable','rule','nans']
@@ -2211,6 +2245,7 @@ class InsightSolver(Mapping):
 			'mu_pop',
 			'sigma_pop',
 			'lift',
+			'gain',
 			'p_value',
 			'F_score',
 			'Z_score',

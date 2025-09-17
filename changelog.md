@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.52 (2025-09-17)
+
+*Improvements:*
+
+- The gain (`gain=lift-1`) is now shown as percentages in the prints of the solver.
+
 ## 0.1.51 (2025-09-16)
 
 *Improvements:*

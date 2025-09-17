@@ -128,12 +128,13 @@ def classify_variable_as_continuous_or_categorical(
 	"""
 	Classify a pandas Series as 'continuous' or 'categorical'.
 
-	Heuristic:
+	Heuristic
+	---------
 	- If dtype is object/string/bool → categorical
 	- If all values are equal → categorical
 	- If all values are integers:
-		- Few unique values (<= max_categories) → categorical
-		- Low unique ratio (<= unique_ratio_threshold) → categorical
+	  - Few unique values (<= max_categories) → categorical
+	  - Low unique ratio (<= unique_ratio_threshold) → categorical
 	- Otherwise → continuous
 
 	Parameters
