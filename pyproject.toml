@@ -16,7 +16,7 @@ maintainers = [
 ]
 urls = { Homepage = "https://github.com/insightsolver/insightsolver" }
 
-# No version here, iit is taken from insightsolver/version.py
+# No version here, it is taken from insightsolver/version.py
 dynamic = ["version", "dependencies"]
 
 classifiers = [

@@ -1,10 +1,15 @@
 # Changelog
 
+## 0.1.53 (2025-11-03)
+
+- Cleanup of the repo.
+
 ## 0.1.52 (2025-09-17)
 
 *Improvements:*
 
 - The gain (`gain=lift-1`) is now shown as percentages in the prints of the solver.
+- The pdf documentation is now updated to show the gain in the dense print of the quick start demo.
 
 ## 0.1.51 (2025-09-16)
 

@@ -1376,9 +1376,9 @@ class InsightSolver(Mapping):
 		self._is_fitted = True
 	def S_to_index_points_in_rule(
 		self,
-		S:dict,
-		verbose:bool              = False,
-		df:Optional[pd.DataFrame] = None,
+		S: dict,
+		verbose: bool              = False,
+		df: Optional[pd.DataFrame] = None,
 	)->pd.Index:
 		"""
 		This method returns the index of the points inside a rule ``S``.
@@ -1540,13 +1540,13 @@ class InsightSolver(Mapping):
 		# Parse the shuffling_scores if they are there
 		if ('shuffling_scores' in df_subrules_S.columns)&(len(df_subrules_S)>0):
 			if 'p_value' in df_subrules_S['shuffling_scores'].iloc[0]:
-				df_subrules_S['p_value_cohen_d'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['p_value']['cohen_d'])
+				df_subrules_S['p_value_cohen_d']  = df_subrules_S['shuffling_scores'].apply(lambda x:x['p_value']['cohen_d'])
 				df_subrules_S['p_value_wy_ratio'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['p_value']['wy_ratio'])
 			if 'Z_score' in df_subrules_S['shuffling_scores'].iloc[0]:
-				df_subrules_S['Z_score_cohen_d'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['Z_score']['cohen_d'])
+				df_subrules_S['Z_score_cohen_d']  = df_subrules_S['shuffling_scores'].apply(lambda x:x['Z_score']['cohen_d'])
 				df_subrules_S['Z_score_wy_ratio'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['Z_score']['wy_ratio'])
 			if 'F_score' in df_subrules_S['shuffling_scores'].iloc[0]:
-				df_subrules_S['F_score_cohen_d'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['F_score']['cohen_d'])
+				df_subrules_S['F_score_cohen_d']  = df_subrules_S['shuffling_scores'].apply(lambda x:x['F_score']['cohen_d'])
 				df_subrules_S['F_score_wy_ratio'] = df_subrules_S['shuffling_scores'].apply(lambda x:x['F_score']['wy_ratio'])
 
 		# Move some columns left
