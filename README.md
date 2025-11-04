@@ -102,7 +102,6 @@ Here are some examples:
 Comprehensive technical documentation for the `insightsolver` module is available here:
 
 - [PDF version](https://github.com/insightsolver/insightsolver/blob/main/doc/insightsolver_api_client.pdf).
-- ReadTheDocs.com *(coming soon)*.
 
 ## 📄 Changelog
 
@@ -115,23 +114,27 @@ Here you'll find the [changelog](./changelog.md).
 
 ## ⚖️ License
 
-Here you'll find the [LICENSE](./LICENSE).
+The **InsightSolver API client** library is licensed under the **Apache License 2.0**:
+- You can use, modify, and redistribute it freely in your projects, including commercial ones.
+- This software is provided ‘as-is’, without warranty of any kind, express or implied, including but not limited to merchantability or fitness for a particular purpose.
+
+See the full [LICENSE](./LICENSE) file for details.
+
+**Note:** The **InsightSolver API server** is proprietary and requires a valid subscription to use. The **InsightSolver API client** library provides a **client** interface only; usage of the **server** is subject to our terms of service.
 
 ### 🗃️ Third-Party Licenses
 
-This project relies on third-party open-source Python packages, used in:
+The **client-side API module** (installable via `pip`) uses third-party open-source Python packages.
 
-- the **client-side API module** (installable via `pip`),
-- the **server-side API backend**, and
-- the **web application frontend**.
+To ensure transparency and comply with licensing requirements, we provide a complete list of these dependencies in [`THIRD_PARTY_LICENSES.csv`](./THIRD_PARTY_LICENSES.csv). The file includes:
 
-To ensure transparency and fulfill licensing obligations, we provide a full list of dependencies along with their license information in the file [`THIRD_PARTY_LICENSES.csv`](./THIRD_PARTY_LICENSES.csv).  
-It includes:
-- the package name and version,
-- the license type, and
-- a link to the package’s source or home page.
+- Package name and version  
+- License type  
+- Link to the package’s source or homepage  
 
-All third-party libraries are used unmodified and installed from [PyPI](https://pypi.org).
+All third-party libraries are used **unmodified** and installed directly from [PyPI](https://pypi.org).
+
+This information is provided to help users and organizations verify compliance with open-source licenses when integrating the client library into their projects.
 
 ## 🤝 Contact
 

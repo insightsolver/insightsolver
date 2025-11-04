@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.55 (2025-11-04)
+
+- Updated the `LICENSE` from a custom license to a `Apache 2.0` license because the repo will now become public.
+- Updated the `README` to be coherent with the license.
+
 ## 0.1.54 (2025-11-04)
 
 - Updated the `THIRD_PARTY_LICENSES.csv` file.
