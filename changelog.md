@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.56 (2025-11-04)
+
+- New folder `.github`.
+- New folder `.github/workflow`.
+- New file `.github/workflow/publish.yml`
+
 ## 0.1.55 (2025-11-04)
 
 - Updated the `LICENSE` from a custom license to a `Apache 2.0` license because the repo will now become public.
