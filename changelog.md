@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.59 (2025-11-04)
+
+- Deactivated the automatic push to PyPI in `publish.yml` to prevent pushing commits with mistakes. Instead the pushing to PyPI will be done manually.
+
 ## 0.1.58 (2025-11-04)
 
 - Fixed a bug in `.github/workflow/publish.yml` that was preventing the publishing to PyPI.
