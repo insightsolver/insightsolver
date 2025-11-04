@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.57 (2025-11-04)
+
+- Creating a new tag so that GitHub pushes the library to PyPI.
+
 ## 0.1.56 (2025-11-04)
 
 - New folder `.github`.
