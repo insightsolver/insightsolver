@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.54 (2025-11-04)
+
+- Updated the `THIRD_PARTY_LICENSES.csv` file.
+
 ## 0.1.53 (2025-11-03)
 
 - Cleanup of the repo.
