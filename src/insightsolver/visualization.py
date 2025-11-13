@@ -46,7 +46,16 @@ import seaborn as sns
 import numpy as np
 import pandas as pd
 
-from typing import Optional, Union, Dict, Sequence
+from typing import Optional, Union, Dict, Sequence, List
+
+################################################################################
+################################################################################
+# Defining some global variables
+
+# Width of the figures
+FIG_WIDTH_IN = 12
+# Dots per inch
+DPI = 300
 
 ################################################################################
 ################################################################################
@@ -57,7 +66,9 @@ def show_all_mutual_information(
 	n_samples:Optional[int] = 1000,
 	n_cols:Optional[int]    = 20,
 	kind: str               = 'barh',
-):
+	do_show: bool           = True,
+	fig_width: float        = FIG_WIDTH_IN, # Width of the figure in inches
+)->Optional["matplotlib.figure.Figure"]:
 	"""
 	This function generates a bar plot of the mutual information between the features and the target variable.
 
@@ -69,7 +80,20 @@ def show_all_mutual_information(
 		An integer that specifies the maximum number of features to show
 	kind: str
 		Kind of plot ('bar' or 'barh')
+	do_show: bool
+		Show the figure if True, return the figure if False.
+	fig_width: float
+		Width of the figure in inches
+
+	Returns
+	-------
+	fig : matplotlib.figure.Figure, optional
+		The matplotlib Figure object if `do_show=False`; otherwise None.
 	"""
+	if not do_show:
+		# Non interactive backend
+		import matplotlib
+		matplotlib.use("Agg")
 	# Make sure the parameter kind is valid
 	if kind not in ['bar','barh']:
 		raise ValueError(f"ERROR (show_all_mutual_information): The parameter kind='{kind}' must be either 'bar' or 'barh'.")
@@ -84,13 +108,15 @@ def show_all_mutual_information(
 	# For a horizontal barplot we must sort to have big values on top of the figure
 	if kind=='barh':
 		s_mi.sort_values(ascending=True,inplace=True)
-
 	# Generate the figure
 	import matplotlib.pyplot as plt
-	plt.figure(figsize=(12, 6))
-	ax = s_mi.plot(
+	fig, ax = plt.subplots(
+		figsize = (fig_width, 6),
+	)
+	s_mi.plot(
 		kind      = kind,
 		edgecolor = 'black',
+		ax        = ax,
 	)
 	plt.title('Mutual Information between the features and the target variable')
 	plt.ylabel('Mutual Information')
@@ -116,9 +142,16 @@ def show_all_mutual_information(
 			va       = va, 
 			fontsize = 8
 		)
+	# Tight layout
 	plt.tight_layout()
-	# Show the figure
-	plt.show()
+	# Return or show the figure
+	if do_show:
+		# Show the figure
+		plt.show()
+		return None
+	else:
+		# Return the figure
+		return fig
 
 def classify_variable_as_continuous_or_categorical(
 	s: pd.Series,
@@ -302,6 +335,7 @@ def show_feature_distributions_of_S_feature(
 	padding_y: int               = 5,
 	do_show_kde: bool            = False,
 	do_show_vertical_lines: bool = False,
+	fig_width: float             = FIG_WIDTH_IN, # Width of the figure in inches
 )->None:
 	"""
 	This function generates bar plots of the distributions of the points in the specified rule S for a given feature.
@@ -328,16 +362,21 @@ def show_feature_distributions_of_S_feature(
 		Boolean to show the KDE of the continuous features.
 	do_show_vertical_lines: bool
 		If we want to show vertical lines.
+	fig_width: float
+		Width of the figure in inches
 	"""
 
 	# Determine if a new figure needs to be created
 	if ax is None:
 		# Take the size of a pixel instead of inches
-		px = 1/plt.rcParams['figure.dpi']
 		if missing_value:
-			fig, ax = plt.subplots(figsize=(200*px, 4)) 
+			fig, ax = plt.subplots(
+				figsize = ((1/6)*fig_width, 4),
+			)
 		else:
-			fig, ax = plt.subplots(figsize=(1000*px, 4))
+			fig, ax = plt.subplots(
+				figsize = (5/6*fig_width, 4),
+			)
 		do_early_show = True
 	else:
 		do_early_show = False
@@ -594,7 +633,9 @@ def show_feature_distributions_of_S(
 	padding_y: int               = 5,
 	do_show_kde: bool            = False,
 	do_show_vertical_lines: bool = False,
-)->None:
+	do_show: bool                = True,
+	fig_width: float             = FIG_WIDTH_IN, # Width of the figure in inches
+)->Optional[List["matplotlib.figure.Figure"]]:
 	"""
 	This function generates bar plots of the distributions of the points in the specified rule S.
 
@@ -612,14 +653,26 @@ def show_feature_distributions_of_S(
 		Boolean to show the KDE of the continuous features.
 	do_show_vertical_lines: bool
 		If we want to show some vertical lines.
-	"""
+	do_show: bool
+		If True, displays the figures. If False, returns a list of matplotlib Figure objects.
+	fig_width: float
+		Width of the figure in inches
 
+	Returns
+	-------
+	figs : list of matplotlib.figure.Figure or None
+		List of figures if `do_show=False`. Otherwise None.
+	"""
+	if not do_show:
+		# Non interactive backend
+		import matplotlib
+		matplotlib.use("Agg")
+	# Create a list of figures
+	figs = []
 	# Take the DataFrame that contains the data
 	df = solver.df
 	# Filter the data to the points that are in the rule S
 	df_filtered = solver.S_to_df_filtered(S=S)
-	# Take the size of a pixel instead of inches
-	px = 1/plt.rcParams['figure.dpi']
 	# Loop over the features in the rule S
 	for feature_name in S.keys():
 		# One figure will be created per feature name
@@ -628,7 +681,7 @@ def show_feature_distributions_of_S(
 			# If the feature contains any missing value
 			# Create two graphs (one for the present values and one for the missing values)
 			fig, axes = plt.subplots(
-				figsize     = (1446*px, 4),
+				figsize     = (fig_width, 4),
 				nrows       = 1,
 				ncols       = 2,
 				gridspec_kw = {
@@ -665,7 +718,7 @@ def show_feature_distributions_of_S(
 			# If the feature does not contain any missing value
 			# Create a single graph for the present values
 			fig, ax = plt.subplots(
-				figsize = (1446*px, 4),
+				figsize = (fig_width, 4),
 			)
 			# Plot the graph for the present values
 			show_feature_distributions_of_S_feature(
@@ -682,8 +735,20 @@ def show_feature_distributions_of_S(
 			)
 		# Tight layout
 		plt.tight_layout()
-		# Show the figure
-		plt.show()
+		# Show or append to the list of figures
+		if do_show:
+			# Show the figure
+			plt.show()
+		else:
+			# Append to the list of figures
+			figs.append(fig)
+	# Return the list of figures if the figures are not shown
+	if not do_show:
+		# Return the list of figures
+		return figs
+	else:
+		# Return nothing
+		return None
 
 def p_value_to_p_text(
 	p_value,
@@ -930,14 +995,15 @@ def show_feature_contributions_of_i(
 	i: int,                        # Index of the rule to show
 	a: float              = 0.5,   # Height per bar
 	b: float              = 1,     # Height for the margins and other elements
-	fig_width: float      = 12,    # Width of the figure
+	fig_width: float      = FIG_WIDTH_IN, # Width of the figure in inches
 	language: str         = 'en',  # Language of the figure
 	do_grid: bool         = True,  # If we want to show a vertical grid
 	do_title: bool        = False, # If we want a title automatically generated
 	do_banner: bool       = True,  # If we want to show the banner
 	bar_annotations: str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	loss: Optional[float] = None,  # If we want to show a loss
-)->None:
+	do_show: bool         = True,  # If we want to show the figure or return it
+)->Optional[List["matplotlib.figure.Figure"]]:
 	"""
 	This function generates a horizontal bar plots of the feature constributions of a specified rule ``S``.
 	
@@ -952,7 +1018,7 @@ def show_feature_contributions_of_i(
 	b: float
 		Added height to the figure.
 	fig_width: float
-		Width of the figure
+		Width of the figure in inches
 	language: str
 		Language of the figure ('fr' or 'en').
 	do_grid: bool
@@ -965,7 +1031,21 @@ def show_feature_contributions_of_i(
 		Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 	loss: float
 		If we want to show a loss.
+	do_show: bool
+		If we want to show the figure or return it
+
+	Returns
+	-------
+	figs : List of matplotlib.figure.Figure or None
+		List of Figure if `do_show=False`. Otherwise None.
 	"""
+	if not do_show:
+		figs = []
+		# Non interactive backend
+		import matplotlib
+		matplotlib.use("Agg")
+	else:
+		figs = None
 	# Take the rule i
 	rule_i = solver.i_to_rule(i=i)
 	# Take the rule S
@@ -1010,8 +1090,8 @@ def show_feature_contributions_of_i(
 		import mpmath
 	# Take the complexity of the rule
 	complexity = len(S)
-	# Compute the dpi
-	dpi = 1446 / fig_width # so that 1446px (width of the banner) = 12 inches (width of the figure)
+	# Take the dpi
+	dpi = DPI
 	# Create the banner as a separate figure
 	if do_banner:
 		# Create the banner
@@ -1020,17 +1100,31 @@ def show_feature_contributions_of_i(
 			i      = i,
 			loss   = loss,
 		)
-		# Define the height of the banner
-		fig_height_banner_inches = banner.height / dpi
+		# Size in pixels of the banner
+		banner_height_px = banner.height #   78 pixels
+		banner_width_px  = banner.width  # 1446 pixels
+		# Take the ratio height/width
+		banner_ratio = banner_height_px / banner_width_px
+		# Height of the banner in inches
+		fig_height_banner_inches = fig_width * banner_ratio
 		# Create a figure for the banner
-		fig_banner = plt.figure(figsize=(fig_width, fig_height_banner_inches), dpi=dpi)
+		fig_banner = plt.figure(
+			figsize = (fig_width, fig_height_banner_inches),
+			dpi     = dpi,
+		)
 		ax_banner = fig_banner.add_subplot(111)
 		ax_banner.imshow(banner)
 		ax_banner.axis("off")
-		plt.show()
+		if do_show:
+			plt.show()
+		else:
+			figs.append(fig_banner)
 	# Create a bar plot as a separate figure
 	fig_height_plot_inches = a * complexity + b
-	fig_plot = plt.figure(figsize=(fig_width, fig_height_plot_inches), dpi=dpi)
+	fig_plot = plt.figure(
+		figsize = (fig_width, fig_height_plot_inches),
+		dpi     = dpi,
+	)
 	ax_plot = fig_plot.add_subplot(111)
 	# Create the barplot
 	ax = sns.barplot(
@@ -1136,6 +1230,9 @@ def show_feature_contributions_of_i(
 				fontsize = 9,
 			)
 
+	if not do_show:
+		figs.append(fig_plot)
+
 	# Generating the feature labels
 	if any(len(feature_label) > 55 for feature_label in feature_labels):
 		# If any feature label is too long, we add this details section
@@ -1173,18 +1270,27 @@ def show_feature_contributions_of_i(
 			verticalalignment = 'bottom', # Align text from the bottom edge of the figtext box
 		)
 		ax_feature_label.axis("off")
-		plt.show()		
+		if do_show:
+			plt.show()
+		else:
+			figs.append(fig_feature_label)
 
 	# Tight layout
 	plt.tight_layout()
-	# Show the figure
-	plt.show()
+	# Show of return the figure
+	if do_show:
+		# Show the figure
+		plt.show()
+		return None
+	else:
+		# Return the figure
+		return figs
 
 def show_all_feature_contributions(
 	solver,
 	a:float             = 0.5,   # Height per bar
 	b:float             = 1,     # Height for the margin and other elements
-	fig_width:float     = 12,    # Width of the figure
+	fig_width:float     = FIG_WIDTH_IN, # Width of the figure in inches
 	language:str        = 'en',  # Language of the figure
 	do_grid:bool        = True,  # If we want to show a grid
 	do_title:bool       = False, # If we want to show a title which is automatically generated

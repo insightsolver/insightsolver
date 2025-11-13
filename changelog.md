@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.60 (2025-11-13)
+
+- The function `show_all_mutual_information` has a new boolean parameter `do_show`.
+- The function `show_feature_distributions_of_S` has a new boolean parameter `do_show`.
+- The function `show_feature_contributions_of_i` has a new boolean parameter `do_show`.
+- The function `show_all_mutual_information` has a new parameter `fig_width`.
+- The function `show_feature_distributions_of_S_feature` has a new parameter `fig_width`.
+- The function `show_feature_distributions_of_S` has a new parameter `fig_width`.
+- Updated the width of the mutual information figure to conform to the width of the other figures.
+- New function `save_figs_vertical`.
+- New method `to_pdf`.
+- New method `to_zip`.
+- Added `openpyxl` to the requirements.
+
 ## 0.1.59 (2025-11-04)
 
 - Deactivated the automatic push to PyPI in `publish.yml` to prevent pushing commits with mistakes. Instead the pushing to PyPI will be done manually.

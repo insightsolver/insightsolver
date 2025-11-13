@@ -10,3 +10,4 @@ Pillow
 matplotlib
 seaborn
 scikit-learn
+openpyxl

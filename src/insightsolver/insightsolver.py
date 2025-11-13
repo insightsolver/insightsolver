@@ -673,6 +673,68 @@ def gain_to_percent(
 	else:
 		return f"{round(100*gain,decimals)}%"
 
+
+################################################################################
+################################################################################
+# Utility functions for the pdf generation
+
+def save_figs_vertical(
+	figs: list,
+	pdf,
+):
+	"""
+	Stack multiple figures vertically on a page and save to PDF.
+
+	Parameters
+	----------
+	figs : list of matplotlib.figure.Figure
+		The figures to stack.
+	pdf : PdfPages
+		The PdfPages object to save to.
+	"""
+	import io
+	import math
+	from matplotlib.backends.backend_pdf import PdfPages
+	import matplotlib.pyplot as plt
+	from .visualization import FIG_WIDTH_IN, DPI
+	dpi = DPI
+	# Create a list of images
+	imgs = []
+	# Loop over the figures to convert them to images
+	for fig in figs:
+		fig.set_dpi(dpi)
+		fig.canvas.draw()
+		buf, (w, h) = fig.canvas.print_to_buffer()
+		img = np.frombuffer(buf, dtype=np.uint8).reshape(h, w, 4)[:, :, :3]
+		# Append the image in the list of images
+		imgs.append(img)
+		plt.close(fig)
+	target_width_inch = FIG_WIDTH_IN
+	target_width_px = int(target_width_inch * dpi)
+	resized_imgs = []
+	for img in imgs:
+		scale = target_width_px / img.shape[1]
+		new_h = int(img.shape[0] * scale)
+		from PIL import Image
+		img_pil = Image.fromarray(img)
+		img_resized = img_pil.resize((target_width_px, new_h), Image.LANCZOS)
+		resized_imgs.append(np.array(img_resized))
+	# Vertical concatenation of the figures
+	combined = np.vstack(resized_imgs)
+	# Create a single figure with all the images
+	height_inch = combined.shape[0] / dpi
+	fig_page, ax = plt.subplots(figsize=(target_width_inch, height_inch), dpi=dpi)
+	ax.imshow(combined, extent=[0, target_width_inch, 0, height_inch])
+	ax.set_xlim(0, target_width_inch)
+	ax.set_ylim(0, height_inch)
+	ax.axis("off")
+	# Remove the padding
+	fig_page.subplots_adjust(left=0, right=1, top=1, bottom=0)
+	# Save the figure of the page in the pdf
+	pdf.savefig(fig_page)
+	# Close the figure of the page
+	plt.close(fig_page)
+
 ################################################################################
 ################################################################################
 # Defining the API Client
@@ -975,6 +1037,8 @@ class InsightSolver(Mapping):
 		Generates the feature contributions and feature distributions for all rules found in the solver.
 	show_all_feature_contributions_and_distributions: None
 		Generates the feature contributions and feature distributions for all rules found in the solver.
+	to_zip: None
+		Exports the rule mining results to a ZIP file.
 
 	Example
 	-------
@@ -2733,17 +2797,17 @@ class InsightSolver(Mapping):
 		"""
 		from .visualization import show_feature_contributions_of_i
 		show_feature_contributions_of_i(
-			solver    = self,      # The solver
-			i         = i,         # Index of the rule to show
-			a         = a,         # Height per bar
-			b         = b,         # Height for the margins and other elements
-			fig_width = fig_width, # Width of the figure
-			language  = language,  # Language of the figure
-			do_grid   = do_grid,   # If we want to show a vertical grid
-			do_title  = do_title,  # If we want a title automatically generated
-			do_banner = do_banner, # If we want to show the banner
+			solver          = self,      # The solver
+			i               = i,         # Index of the rule to show
+			a               = a,         # Height per bar
+			b               = b,         # Height for the margins and other elements
+			fig_width       = fig_width, # Width of the figure
+			language        = language,  # Language of the figure
+			do_grid         = do_grid,   # If we want to show a vertical grid
+			do_title        = do_title,  # If we want a title automatically generated
+			do_banner       = do_banner, # If we want to show the banner
 			bar_annotations = bar_annotations, # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-			loss      = loss,      # If we want to show a loss
+			loss            = loss,      # If we want to show a loss
 		)
 	def show_all_feature_contributions(
 		self,
@@ -2830,6 +2894,230 @@ class InsightSolver(Mapping):
 			do_banner                     = do_banner,
 			bar_annotations               = bar_annotations,
 		)
+	def to_pdf(
+		self,
+		output_file: Optional[str]  = None,
+		verbose: bool               = False,
+		do_mutual_information: bool = True,
+		do_contributions: bool      = True,
+		do_distributions: bool      = True,
+	):
+		"""
+		This methods exports a PDF file containing various results and figures of the solver.
+
+		Parameters
+		----------
+		output_file : str, optional
+			Path where the PDF should be exported.
+		verbose : bool, default False
+			Verbosity.
+		do_mutual_information: bool, default True
+			If True, add the mutual information figure to the pdf.
+		do_contributions: bool, defalt True
+			If True, add the feature contribution figures to the pdf.
+		do_distributions: bool, defalt True
+			If True, add the feature distribution figures to the pdf.
+
+		Returns
+		-------
+		pdf_base64 : str
+			The PDF content encoded as a base64 string, suitable for in-memory use.
+		"""
+		import matplotlib
+		matplotlib.use("Agg")
+		import matplotlib.pyplot as plt
+		from matplotlib.backends.backend_pdf import PdfPages
+		if verbose:
+			print("Generating PDF...")
+		# Generate PDF in memory
+		import io
+		pdf_buffer = io.BytesIO()
+		with PdfPages(pdf_buffer) as pdf:
+			# Add the mutual information figure in the pdf
+			if do_mutual_information:
+				from .visualization import show_all_mutual_information
+				fig = show_all_mutual_information(
+					solver  = self,
+					do_show = False,
+				)
+				pdf.savefig(fig)
+				plt.close(fig)
+
+			# Loop over the rules
+			for i in self.get_range_i():
+				S = self.i_to_S(i=0)
+				figs = []
+				# Add the contributions figures
+				if do_contributions:
+					from .visualization import show_feature_contributions_of_i
+					figs += show_feature_contributions_of_i(
+						solver  = self,
+						i       = i,
+						do_show = False,
+					)
+				# Add the distribution figures
+				if do_distributions:
+					from .visualization import show_feature_distributions_of_S
+					figs += show_feature_distributions_of_S(
+						solver  = self,
+						S       = S,
+						do_show = False,
+					)
+				# Save the figures in the pdf
+				save_figs_vertical(
+					figs = figs,
+					pdf  = pdf,
+				)
+		# Export the pdf to the disk if requested
+		if output_file is not None:
+			with open(output_file, "wb") as f:
+				f.write(pdf_buffer.getvalue())
+			if verbose:
+				print(f"PDF exported to {output_file}")
+		# Return base64 string
+		pdf_bytes = pdf_buffer.getvalue()
+		import base64
+		pdf_base64 = base64.b64encode(pdf_bytes).decode()
+		return pdf_base64
+	def to_zip(
+		self,
+		output_file: Optional[str] = None,
+		verbose: bool              = False,
+		do_png: bool               = True,
+		do_csv: bool               = True,
+		do_json: bool              = True,
+		do_excel: bool             = True,
+		do_pdf: bool               = True,
+	):
+		"""
+		Export the solver content to a ZIP file.
+
+		Parameters
+		----------
+		output_file : str, optional
+			Path where the ZIP should be exported.
+		verbose : bool, default False
+			Whether to print progress messages.
+		do_png : bool, default True
+			Whether to include PNG figures.
+		do_csv : bool, default True
+			Whether to include the ruleset CSV.
+		do_json : bool, default True
+			Whether to include the ruleset JSON.
+		do_excel : bool, default True
+			Whether to include the ruleset Excel.
+		do_pdf : bool, default True
+			Whether to include the PDF of figures.
+
+		Returns
+		-------
+		zip_base64 : str
+			The ZIP content as a base64 string if output_file is None,
+			otherwise returns the output_file path.
+		"""
+		import io
+		import zipfile
+		import base64
+		import matplotlib
+		matplotlib.use("Agg")
+		import matplotlib.pyplot as plt
+		from matplotlib.backends.backend_pdf import PdfPages
+		import os
+
+		if verbose:
+			print("Generating ZIP...")
+		# Create a buffer
+		zip_buffer = io.BytesIO()
+		with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+
+			# PNG figures
+			if do_png:
+				l_figs = []
+				# Add the mutual information figure
+				from .visualization import (
+					show_all_mutual_information,
+					show_feature_contributions_of_i,
+					show_feature_distributions_of_S,
+				)
+				fig = show_all_mutual_information(
+					solver  = self,
+					do_show = False,
+				)
+				l_figs.append((fig,'mutual_information.png'))
+				# Loop over the rules
+				for i in self.get_range_i():
+					S = self.i_to_S(i=0)
+					# Add the contributions figures
+					figs = show_feature_contributions_of_i(
+						solver  = self,
+						i       = i,
+						do_show = False,
+					)
+					l_figs += [(fig,f'feature_contributions_i={i}_img={k}.png') for k,fig in enumerate(figs)]
+					# Add the distribution figures
+					figs = show_feature_distributions_of_S(
+						solver  = self,
+						S       = S,
+						do_show = False,
+					)
+					l_figs += [(fig,f'feature_distributions_i={i}_img={k}.png') for k,fig in enumerate(figs)]
+
+				for (fig,file_name) in l_figs:
+					img_buffer = io.BytesIO()
+					fig.savefig(img_buffer, format="png")
+					plt.close(fig)
+					img_buffer.seek(0)
+					zip_file.writestr(file_name, img_buffer.read())
+				if verbose:
+					print("Added PNG figures")
+
+			# CSV file
+			if do_csv:
+				csv_content = self.to_csv()
+				zip_file.writestr("insightsolver-ruleset.csv", csv_content)
+				if verbose:
+					print("Added CSV")
+
+			# JSON file
+			if do_json:
+				json_content = self.to_json_string()
+				zip_file.writestr("insightsolver-ruleset.json", json_content)
+				if verbose:
+					print("Added JSON")
+
+			# Excel file
+			if do_excel:
+				excel_content = self.to_excel_string()
+				zip_file.writestr("insightsolver-ruleset.xlsx", excel_content)
+				if verbose:
+					print("Added Excel")
+
+			# PDF file
+			if do_pdf:
+				pdf_base64 = self.to_pdf(
+					output_file           = None,
+					verbose               = verbose,
+					do_mutual_information = True,
+					do_contributions      = True,
+					do_distributions      = True
+				)
+				import base64
+				pdf_bytes = base64.b64decode(pdf_base64)
+				zip_file.writestr("insightsolver-ruleset.pdf", pdf_bytes)
+				if verbose:
+					print("Added PDF")
+
+		if output_file is not None:
+			with open(output_file, "wb") as f:
+				f.write(zip_buffer.getvalue())
+			if verbose:
+				print(f"ZIP written to {output_file}")
+
+		zip_bytes = zip_buffer.getvalue()
+		zip_base64 = base64.b64encode(zip_bytes).decode()
+		if verbose:
+			print("ZIP generated in memory")
+		return zip_base64
 
 ################################################################################
 ################################################################################
