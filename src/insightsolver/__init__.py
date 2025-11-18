@@ -5,8 +5,6 @@
 * `File Name`:     __init__.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-04-24
-* `First Created`: 2024-09-16
 
 Description
 -----------

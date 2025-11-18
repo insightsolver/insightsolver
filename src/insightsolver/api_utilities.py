@@ -5,8 +5,6 @@
 * `File Name`:     api_utilities.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-09-08
-* `First Created`: 2024-09-16
 
 Description
 -----------

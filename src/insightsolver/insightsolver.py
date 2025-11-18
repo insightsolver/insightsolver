@@ -5,8 +5,6 @@
 * `File Name`:     insightsolver.py
 * `Author`:        Noé Aubin-Cadot
 * `Email`:         noe.aubin-cadot@insightsolver.com
-* `Last Updated`:  2025-08-28
-* `First Created`: 2024-09-09
 
 Description
 -----------
@@ -3047,20 +3045,22 @@ class InsightSolver(Mapping):
 				# Loop over the rules
 				for i in self.get_range_i():
 					S = self.i_to_S(i=0)
-					# Add the contributions figures
+					# Add the banner and the contributions figures
 					figs = show_feature_contributions_of_i(
 						solver  = self,
 						i       = i,
 						do_show = False,
 					)
-					l_figs += [(fig,f'feature_contributions_i={i}_img={k}.png') for k,fig in enumerate(figs)]
+					fig_banner = figs.pop(0)
+					l_figs += [(fig_banner,f'i={i}_banner.png')]
+					l_figs += [(fig,f'i={i}_feature_contributions_img={k}.png') for k,fig in enumerate(figs)]
 					# Add the distribution figures
 					figs = show_feature_distributions_of_S(
 						solver  = self,
 						S       = S,
 						do_show = False,
 					)
-					l_figs += [(fig,f'feature_distributions_i={i}_img={k}.png') for k,fig in enumerate(figs)]
+					l_figs += [(fig,f'i={i}_feature_distributions_img={k}.png') for k,fig in enumerate(figs)]
 
 				for (fig,file_name) in l_figs:
 					img_buffer = io.BytesIO()

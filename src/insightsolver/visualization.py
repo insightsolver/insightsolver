@@ -5,8 +5,6 @@
 * `File Name`:     visualization.py
 * `Authors`:       Noé Aubin-Cadot <noe.aubin-cadot@insightsolver.com>,
 				   Arthur Albo <arthur.albo@insightsolver.com>
-* `Last Updated`:  2025-09-10
-* `First Created`: 2025-04-24
 
 Description
 -----------
