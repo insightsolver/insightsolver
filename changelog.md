@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.62 (2025-11-18)
+
+- The function `visualization/show_feature_contributions_of_i` now has a look that better matches the one of the app (i.e. the blue InsightSolver colors with a black contour on the bars).
+- Added the library `cairosvg` to the `requirements.txt`.
+- New function `visualization/svg_to_pil`.
+- The function `visualization/generate_insightsolver_banner` is now completely rebuilt to generate the scores banner on the fly.
+- New folder `google_fonts_icons` in `assets` that contains the font `Roboto-Regular.ttf` and a licence and various Google icons with a licence.
+- Removed the files `insightbanner_no_loss.png` and `insightbanner_with_loss.png` since they are not used anymore.
+
 ## 0.1.61 (2025-11-18)
 
 - In the headers of the scripts, the *first created* and *last updated* dates are removed because they are rarely up to date.
