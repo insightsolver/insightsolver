@@ -75,7 +75,7 @@ def compute_admissible_btypes(
 	dtype:str,
 	nunique:int,
 	name:str,
-)->list[str]:
+):
 	"""
 	This function computes the admissible `btypes` a column can take.
 	The `btypes`:
@@ -85,11 +85,30 @@ def compute_admissible_btypes(
 	- ``'continuous'``
 	- ``'ignore'``
 	"""
-	if dtype=='bool':
+	# Import some functions
+	from pandas.api.types import (
+		pandas_dtype,
+		is_numeric_dtype,
+		is_integer_dtype,
+		is_float_dtype,
+		is_bool_dtype,
+		is_datetime64_any_dtype,
+		is_datetime64tz_dtype,
+		is_timedelta64_dtype,
+		is_categorical_dtype,
+		is_string_dtype,
+		is_object_dtype,
+	)
+
+	if is_bool_dtype(dtype):
 		return [
 			'binary',
+			'ignore',
 		]
-	elif dtype in ['uint8','int32','int64','float32','float64']:
+	elif is_numeric_dtype(dtype)\
+		|is_datetime64_any_dtype(dtype)\
+		|isinstance(pandas_dtype(dtype), pd.DatetimeTZDtype)\
+		|is_timedelta64_dtype(dtype):
 		if nunique<=2:
 			return [
 				'binary',
@@ -97,14 +116,16 @@ def compute_admissible_btypes(
 				'continuous',
 				'ignore',
 			]
-		else: # If nunique>2 it cannot be binary
+		else:
 			return [
 				#'binary',
 				'multiclass',
 				'continuous',
 				'ignore',
 			]
-	elif dtype in ['object']: # If 'object', it cannot be 'continuous'
+	elif isinstance(pandas_dtype(dtype), pd.CategoricalDtype)\
+		|is_object_dtype(dtype)\
+		|is_string_dtype(dtype):
 		if nunique<=2:
 			return [
 				'binary',
@@ -112,21 +133,21 @@ def compute_admissible_btypes(
 				#'continuous',
 				'ignore',
 			]
-		elif nunique<M: # If 3<=nunique<M, it cannot be 'binary'
+		elif nunique<M:
 			return [
 				#'binary',
 				'multiclass',
 				'continuous',
 				'ignore',
 			]
-		else: # If nunique=M, we ignore 'multiclass' because all the modalities appear only once
+		else:
 			return [
 				#'binary',
 				#'multiclass',
 				'continuous',
 				'ignore',
 			]
-	else: # other dtypes are not handled
+	else:
 		print(f"WARNING: The variable='{name}' has a dtype='{dtype}' which is not handled yet. This variable is set to ignore.")
 		return [
 			#'binary',

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.63 (2025-11-19)
+
+- The function `compute_admissible_btypes` is improved.
+
 ## 0.1.62 (2025-11-18)
 
 - The function `visualization/show_feature_contributions_of_i` now has a look that better matches the one of the app (i.e. the blue InsightSolver colors with a black contour on the bars).
