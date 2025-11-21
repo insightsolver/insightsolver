@@ -15,7 +15,8 @@ The reason why the SVG files are included here is to avoid needing an internet c
 
 # About the fonts in this folder
 
-This folder also contains a font:
+This folder also contains fonts:
 - `Roboto-Regular.ttf`
-This font was downloaded from `https://fonts.google.com/specimen/Roboto/`.
-The licence for this font is `SIL Open Font License (OFL) 1.1` and is joined here in the file `OFL.txt`.
+- `Roboto-Bold.ttf`
+These were downloaded from `https://fonts.google.com/specimen/Roboto/`.
+The licence for `Roboto` is `SIL Open Font License (OFL) 1.1` and is joined here in the file `OFL.txt`.

@@ -812,9 +812,9 @@ def svg_to_pil(
 def generate_insightsolver_banner(
     solver,
     i: int,
-    loss: float = None,
-    fig_width: float = 12,   # inches
-    dpi: int = 200,
+    loss: float                = None,
+    fig_width: float           = 12,   # inches
+    dpi: int                   = 200,
     icon_size: tuple[int, int] = (80, 80),
 ):
     """
@@ -840,7 +840,7 @@ def generate_insightsolver_banner(
     PIL.Image
         The generated banner.
     """
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw, ImageFont, ImageFilter
     from importlib.resources import files
 
     # --- Extract rule data ---
@@ -861,20 +861,9 @@ def generate_insightsolver_banner(
         precision_p_values=precision_p_values,
     )
 
-    # --- Banner dimensions ---
-    banner_width  = int(fig_width * dpi)
-    banner_height = 120
-    banner        = Image.new("RGBA", (banner_width, banner_height), "white")
-    draw          = ImageDraw.Draw(banner)
-
-    # --- Load Roboto font ---
-    roboto_path = files("insightsolver.assets") / "google_fonts_icons" / "Roboto-Regular.ttf"
-    font_size = int(icon_size[1] * 0.5)
-    font = ImageFont.truetype(str(roboto_path), size=font_size)
-
     # --- Icon mapping ---
     icons_map = {
-        "insight_id_text": "network_intelligence.svg",
+        "insight_id_text":        "network_intelligence.svg",
         "p_text":                 "offline_bolt.svg",
         "purity_text":            "timelapse.svg",
         "lift_text":              "gondola_lift.svg",
@@ -888,47 +877,131 @@ def generate_insightsolver_banner(
     values_all = [
         ("insight_id_text",        f"Insight #{i+1}"),
         ("p_text",                 p_text),
-        ("purity_text",            f"{round(purity * 100, 2)}%"),
+        ("purity_text",            f"{round(purity * 100, 2)} %"),
         ("lift_text",              f"{round(lift, 2)}"),
-        ("coverage_relative_text", f"{round(coverage_relative * 100, 2)}%"),
+        ("coverage_relative_text", f"{round(coverage_relative * 100, 2)} %"),
         ("coverage_absolute_text", str(coverage_absolute)),
         ("cohen_d_text",           f"{cohen_d:.2f}"),
     ]
     if loss is not None:
         values_all.append(("loss_text", str(loss)))
+        font_ratio = 0.38
+    else:
+        font_ratio =  0.45
+
+    # --- Banner dimensions ---
+    banner_width  = int(fig_width * dpi)
+    banner_height = 120
+    banner        = Image.new("RGBA", (banner_width, banner_height), "white")
+    draw          = ImageDraw.Draw(banner)
+
+    # --- Load Roboto font ---
+    font_size           = int(icon_size[1] * font_ratio)
+    roboto_regular_path = files("insightsolver.assets") / "google_fonts_icons" / "Roboto-Regular.ttf"
+    roboto_bold_path    = files("insightsolver.assets") / "google_fonts_icons" / "Roboto-Bold.ttf"
+    font_regular        = ImageFont.truetype(str(roboto_regular_path), size=font_size)
+    font_bold           = ImageFont.truetype(str(roboto_bold_path), size=font_size)
 
     # --- Fixed horizontal layout ---
     n_blocks = len(values_all)
-    space_per_block = banner_width / n_blocks
-    x_positions = [int(i * space_per_block) for i in range(n_blocks)]
+    margin = 20     # Margin around the cells, in pixels
+    gap = margin*2  # Horizontal gap between cells, in pixels
+    total_gap = gap * (n_blocks - 1)
+    usable_width = banner_width - 2 * margin - total_gap
+    space_per_block = usable_width / n_blocks
+    x_positions = [int(margin + i * (space_per_block + gap)) for i in range(n_blocks)]
 
     # --- Vertical icon placement ---
     y_icon = (banner_height - icon_size[1]) // 2
 
+    # --- Shadow parameters ---
+    shadow_offset = 2            # Slight offset in x,y
+    shadow_radius = 4            # Blur radius
+    shadow_color = (0, 0, 0, 60) # Semi transparent black for the shadow
+
+    # Colorisation du cohen_d
+    if cohen_d>2:
+        cohen_d_color = "#d4edda" # Light greed background
+    elif cohen_d>0:
+        cohen_d_color = "#fff3cd" # Light yellow background
+    else:
+        cohen_d_color = "#f8d7da" # Light red background
+
     # --- Draw icons and text ---
     for (key, text), x in zip(values_all, x_positions):
 
+        # Define the bounding box of the block
+        block_x0 = x
+        block_x1 = int(x + space_per_block)
+        pad      = 10  # Internal margin
+        block_y0 = pad
+        block_y1 = banner_height - pad
+
+        # --- Draw shadow using Gaussian blur ---
+        shadow = Image.new("RGBA", banner.size, (0, 0, 0, 0))
+        shadow_draw = ImageDraw.Draw(shadow)
+
+        # shadow rectangle coords (slightly offset)
+        shadow_rect = [
+            (block_x0 + shadow_offset, block_y0 + shadow_offset),
+            (block_x1 + shadow_offset, block_y1 + shadow_offset),
+        ]
+
+        shadow_draw.rounded_rectangle(
+            shadow_rect,
+            radius = 12,
+            fill   = shadow_color,
+        )
+
+        # Apply blur
+        shadow = shadow.filter(
+            ImageFilter.GaussianBlur(
+                radius = shadow_radius,
+            ),
+        )
+
+        # Paste shadow onto banner
+        banner.alpha_composite(shadow)
+
+        # --- Draw grey outline rectangle ---
+        fill_color = cohen_d_color if key == "cohen_d_text" else (242, 242, 242)
+        draw.rounded_rectangle(
+            [(block_x0 + 2, block_y0), (block_x1 - 2, block_y1)],
+            outline = (213, 213, 213),
+            width   = 2,
+            radius  = 12,
+            fill    = fill_color,
+        )
+
         # Draw icon
         icon = svg_to_pil(
-            svg_filename=icons_map[key],
-            size=icon_size,
+            svg_filename = icons_map[key],
+            size         = icon_size,
         )
-        banner.paste(icon, (x, y_icon), mask=icon)
+        banner.paste(icon, (x + pad, y_icon), mask=icon)
+
+        font = font_bold if key == "insight_id_text" else font_regular
+
+        # --- Horizontal centering for text within the block ---
+        block_text_start_x = x + icon_size[0]
+        block_text_width   = block_x1 - block_text_start_x - pad
+        text_width         = draw.textlength(text, font=font)
+        x_text             = block_text_start_x + (block_text_width - text_width) // 2
 
         # --- Vertical centering using typographic metrics ---
         ascent, descent = font.getmetrics()
-        text_height = ascent + descent
-        icon_center_y = y_icon + icon_size[1] // 2
-        y_text = icon_center_y - text_height // 2
+        text_height     = ascent + descent
+        icon_center_y   = y_icon + icon_size[1] // 2
+        y_text          = icon_center_y - text_height // 2
 
         # Draw text
         draw.text(
-            (x + icon_size[0] + 5, y_text),
+            (x_text, y_text),
             text,
-            fill="black",
-            font=font
+            fill = "black",
+            font = font,
         )
-
+    
     return banner
 
 def wrap_text_with_word_boundary(

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.64 (2025-11-21)
+
+- Added the font `Roboto-Bold.ttf` in the assets of the project.
+- Improved the function `generate_insightsolver_banner`. Now the pairs *icon+text* are inside grey boxes. Theses boxes have a grey shadow. The shuffling score box's color is determined by the value of the `cohen_d`. The text for the `Insight # ...` in the banner of scores is now shown in bold font. The texts in the boxes are now centered horizontally.
+
 ## 0.1.63 (2025-11-19)
 
 - The function `compute_admissible_btypes` is improved.
