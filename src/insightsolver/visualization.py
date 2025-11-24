@@ -20,7 +20,10 @@ Functions provided
 - show_feature_distributions_of_S_feature
 - show_feature_distributions_of_S
 - p_value_to_p_text
+- svg_to_pil
 - generate_insightsolver_banner
+- generate_insightsolver_img_legend
+- generate_insightsolver_fig_legend
 - wrap_text_with_word_boundary
 - show_feature_contributions_of_i
 - show_all_feature_contributions
@@ -460,10 +463,10 @@ def show_feature_distributions_of_S_feature(
             alpha = 0.6,
             ax    = ax,
         )
-        # Superpose a second green bar for the number of missing values in the filtered data
+        # Superpose a second blue bar for the number of missing values in the filtered data
         sns.countplot(
             x     = s_filtered_na,
-            color = 'green',
+            color = '#0530AD',
             alpha = 0.6,
             ax    = ax,
         )
@@ -495,7 +498,7 @@ def show_feature_distributions_of_S_feature(
             sns.histplot(
                 data  = s_filtered,
                 bins  = bin_edges,
-                color = 'green',
+                color = '#0530AD',
                 alpha = 0.6,
                 ax    = ax,
             )
@@ -530,7 +533,7 @@ def show_feature_distributions_of_S_feature(
             # Second plot for the distribution of the filtered variable by the rule
             sns.countplot(
                 x     = s_filtered_dropna,
-                color = 'green',
+                color = '#0530AD',
                 alpha = 0.6,
                 label = "Filtered",
                 order = sorted_categories if feature_name in non_num_cols else None, # Apply alphabetical order
@@ -556,14 +559,14 @@ def show_feature_distributions_of_S_feature(
                 # Add a vertical line
                 if feature_relationship=='≥':
                     # Add a vertical line at the lower boundary
-                    ax.axvline(rule_min, color='green', linestyle='--', label=feature_name+' min')
+                    ax.axvline(rule_min, color='#0530AD', linestyle='--', label=feature_name+' min')
                 elif feature_relationship=='≤':
                     # Add a vertical line at the upper boundary
-                    ax.axvline(rule_max, color='green', linestyle='--', label=feature_name+' max')
+                    ax.axvline(rule_max, color='#0530AD', linestyle='--', label=feature_name+' max')
                 elif feature_relationship=='∈':
                     # Add vertical lines at both boundaries
-                    ax.axvline(rule_min, color='green', linestyle='--', label=feature_name+' min')
-                    ax.axvline(rule_max, color='green', linestyle='--', label=feature_name+' max')
+                    ax.axvline(rule_min, color='#0530AD', linestyle='--', label=feature_name+' min')
+                    ax.axvline(rule_max, color='#0530AD', linestyle='--', label=feature_name+' max')
                    
         # Generate the title
         if language=='fr':
@@ -579,8 +582,8 @@ def show_feature_distributions_of_S_feature(
         # Add custom legend
         import matplotlib.patches as mpatches
         grey_patch  = mpatches.Patch(color="grey",  alpha=0.6, label="Hors de la règle" if language == 'fr' else "Outside the rule")
-        green_patch = mpatches.Patch(color="green", alpha=0.6, label="Dans la règle" if language == 'fr' else "Inside the rule")
-        ax.legend(handles=[grey_patch, green_patch])
+        blue_patch = mpatches.Patch(color="#0530AD", alpha=0.6, label="Dans la règle" if language == 'fr' else "Inside the rule")
+        ax.legend(handles=[grey_patch, blue_patch])
 
         # Get the current x-axis tick locations and labels
         locs, labels = ax.get_xticks(), ax.get_xticklabels()
@@ -1004,6 +1007,256 @@ def generate_insightsolver_banner(
     
     return banner
 
+def generate_insightsolver_img_legend(
+    do_show_loss: bool         = True,
+    fig_width: float           = 12,   # inches
+    dpi: int                   = 200,
+    icon_size: tuple[int, int] = (80, 80),
+    language: str              = 'en',
+    verbose: bool              = False,
+):
+    """
+    Generate a legend that explains what the icons of the legend represent.
+
+    Parameters
+    ----------
+    do_show_loss : bool
+        If we want to describe the symbol for the loss in the legend.
+    fig_width : float
+        Width of the legend (in inches).
+    dpi : int
+        DPI resolution (pixels per inch).
+    icon_size : tuple
+        Icon size in pixels (width, height).
+    verbose: bool
+        Verbosity.
+
+    Returns
+    -------
+    PIL.Image
+        The generated legend.
+    """
+
+    # Create a DataFrame of labels, icons and texts
+    data = {
+        "insight_id": (
+            "network_intelligence.svg",
+            "Number of the insight, starting from 1.",
+            "Numéro de l'insight, en commençant par 1.",
+        ),
+        "p_value": (
+            "offline_bolt.svg",
+            "p-value.",
+            "p-value.",
+        ),
+        "purity": (
+            "timelapse.svg",
+            "Purity.",
+            "Pureté.",
+        ),
+        "lift": (
+            "gondola_lift.svg",
+            "Lift.",
+            "Lift.",
+        ),
+        "coverage_relative": (
+            "zoom_out_map.svg",
+            "Relative coverage.",
+            "Couverture relative.",
+        ),
+        "coverage_absolute": (
+            "select_all.svg",
+            "Absolute coverage.",
+            "Couverture absolue.",
+        ),
+        "cohen_d": (
+            "shuffle.svg",
+            "Shuffling score (Cohen's d).",
+            "Score de permutations (Cohen's d).",
+        ),
+        "loss": (
+            "sell.svg",
+            "Loss",
+            "Coût",
+        ),
+    }
+    columns = [
+        'svg_filename',
+        'en',
+        'fr',
+    ]
+    df = pd.DataFrame.from_dict(
+        data    = data,
+        orient  = 'index',
+        columns = columns,
+    )
+    df.index.name = 'label'
+    # Handle the loss
+    if not do_show_loss:
+        df.drop(index=['loss'],inplace=True)
+    # Import libraries
+    from PIL import Image, ImageDraw, ImageFont, ImageFilter
+    from importlib.resources import files
+    # Number of blocks, one for "Legend:" and one per row of df
+    n_blocks = 1 + len(df)
+    if verbose:
+        print("n_blocks = ",n_blocks)
+    # Legend height per block
+    height_per_block = 120 # 120 pixels per block
+    if verbose:
+        print("height_per_block =",height_per_block)
+    # Legend dimensions
+    legend_width  = int(fig_width * dpi)
+    legend_height = height_per_block*n_blocks
+    if verbose:
+        print("legend_width =",legend_width)
+        print("legend_height =",legend_height)
+    # Create the image
+    img_legend = Image.new("RGBA", (legend_width, legend_height), "white")
+    draw       = ImageDraw.Draw(img_legend)
+    # Load font
+    font_ratio = 0.5
+    font_size  = int(icon_size[1] * font_ratio)
+    font_path_regular  = files("insightsolver.assets") / "google_fonts_icons" / "Roboto-Regular.ttf"
+    font_path_bold     = files("insightsolver.assets") / "google_fonts_icons" / "Roboto-Bold.ttf"
+    font_regular       = ImageFont.truetype(str(font_path_regular), size=font_size)
+    font_bold          = ImageFont.truetype(str(font_path_bold), size=font_size)
+    if verbose:
+        print("icon_size =",icon_size)
+        print("font_size =",font_size)
+    # Compute text height
+    ascent, descent = font_regular.getmetrics()
+    text_height     = ascent + descent
+    if verbose:
+        print("ascent =",ascent)
+        print("descent =",descent)
+        print("text_height =",text_height)    
+    # Vertical layout
+    margin          = 20          # Vertical margin around the blocks, in pixels
+    gap             = margin*2    # Vertical gap between blocks, in pixels
+    total_gap       = gap * (n_blocks - 1) # Total vertical gap
+    usable_height   = legend_height - 2 * margin - total_gap # Usable vertical height
+    usable_height_per_block = usable_height // n_blocks # Usable vertical height per block
+    y_positions     = [int(margin + i * (usable_height_per_block + gap)) for i in range(n_blocks)] # Vertical positions of the blocks
+    if verbose:
+        print("margin =",margin)
+        print("gap =",gap)
+        print("total_gap =",total_gap)
+        print("usable_height =",usable_height)
+        print("usable_height_per_block =",usable_height_per_block)
+        print("y_positions =",y_positions)
+    # Add "Legend:" in bold in the first block
+    x_text_legend = margin
+    y_text_legend = y_positions[0] + text_height // 2
+    if language=='fr':
+        text_legend = "Légende :"
+    else:
+        text_legend = "Legend:"
+    draw.text(
+        xy   = (
+            x_text_legend,
+            y_text_legend,
+        ),
+        text = text_legend,
+        fill = "black",
+        font = font_bold,
+    )
+    if verbose:
+        print("x_text_legend =",x_text_legend)
+        print("y_text_legend =",y_text_legend)
+    # Internal padding of the block
+    padding = 0
+    if verbose:
+        print("padding =",padding)
+    
+    # Draw icons and text
+    for i,label in enumerate(df.index):
+        if verbose:
+            print(f"\n{i} : {label}")
+        # Take the icon and the text
+        svg_filename = df.loc[label,'svg_filename']
+        text = df.loc[label,language]
+        # Position of the block
+        x_block = margin
+        y_block = y_positions[i+1]
+        if verbose:
+            print("x_block =",x_block)
+            print("y_block =",y_block)
+        # Horizontal icon placement
+        x_icon = x_block + padding
+        if verbose:
+            print("x_icon =",x_icon)
+        # Vertical icon placement
+        y_icon = (int(y_block + usable_height_per_block) - icon_size[1])
+        if verbose:
+            print("y_icon =",y_icon)
+        # Draw icon
+        icon = svg_to_pil(
+            svg_filename = svg_filename,
+            size         = icon_size,
+        )
+        img_legend.paste(
+            icon,
+            (x_icon, y_icon),
+            mask = icon,
+        )
+        # Position of the text within the block
+        x_text = x_block + icon_size[0] + 20
+        y_text  = y_block + text_height // 2 - 10
+        if verbose:
+            print("x_text =",x_text)
+            print("y_text =",y_text)
+        # Draw text
+        draw.text(
+            xy   = (
+                x_text,
+                y_text,
+            ),
+            text = text,
+            fill = "black",
+            font = font_regular,
+        )
+    # Return the image
+    return img_legend
+
+def generate_insightsolver_fig_legend(
+    do_show_loss: bool         = False,
+    fig_width: float           = 12,   # inches
+    dpi: int                   = 200,
+    icon_size: tuple[int, int] = (80, 80),
+    language: str              = 'en',
+    verbose: bool              = False,
+    do_show: bool              = False,
+):
+    # Create the legend image
+    img_legend = generate_insightsolver_img_legend(
+        do_show_loss = do_show_loss,
+        fig_width    = fig_width,
+        dpi          = dpi,
+        icon_size    = icon_size,
+        language     = language,
+        verbose      = verbose,
+    )
+    # Size in pixels of the legend image
+    legend_height_px = img_legend.height
+    legend_width_px  = img_legend.width
+    # Take the ratio height/width
+    legend_ratio = legend_height_px / legend_width_px
+    # Height of the legend in inches
+    fig_height = fig_width * legend_ratio
+    # Create a figure for the legend
+    fig_legend = plt.figure(
+        figsize = (fig_width, fig_height),
+        dpi     = dpi,
+    )
+    ax_legend = fig_legend.add_subplot(111)
+    ax_legend.imshow(img_legend)
+    ax_legend.axis("off")
+    if do_show:
+        plt.show()
+    # Return the figure of the legend
+    return fig_legend
+
 def wrap_text_with_word_boundary(
     text: str,                  # The original string to modify.
     max_line_length: int = 150, # The character threshold for insertion.
@@ -1190,8 +1443,8 @@ def show_feature_contributions_of_i(
             loss   = loss,
         )
         # Size in pixels of the banner
-        banner_height_px = banner.height #   78 pixels
-        banner_width_px  = banner.width  # 1446 pixels
+        banner_height_px = banner.height
+        banner_width_px  = banner.width
         # Take the ratio height/width
         banner_ratio = banner_height_px / banner_width_px
         # Height of the banner in inches
@@ -1503,6 +1756,7 @@ def show_all_feature_contributions_and_distributions(
     solver,
     language: str        = 'en',            # Language to use
     do_banner: bool      = True,            # If we want to show the banner
+    do_legend: bool      = True,            # If we want to show the legend
     bar_annotations: str = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
 )->None:
     """
@@ -1516,6 +1770,8 @@ def show_all_feature_contributions_and_distributions(
         Language to use.
     do_banner: bool
         If we want to show the banner.
+    do_legend: bool
+        If we want to show the legend.
     bar_annotations: str
         Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
     """
@@ -1530,6 +1786,12 @@ def show_all_feature_contributions_and_distributions(
             language        = language,
             do_banner       = do_banner,
             bar_annotations = bar_annotations,
+        )
+    # If we want to show the legend
+    if do_legend:
+        generate_insightsolver_fig_legend(
+            language = language,
+            do_show  = True,
         )
 
 ################################################################################

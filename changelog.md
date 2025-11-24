@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.65 (2025-11-24)
+
+- New function `visualization/generate_insightsolver_img_legend` to create the legend image.
+- New function `visualization/generate_insightsolver_fig_legend` to create the legend figure.
+- Now the green bars are blue.
+- Now the function `visualization/show_all_feature_contributions_and_distributions` shows the legend.
+- Now the file `pyproject.toml` specifies the license `Apache-2.0`.
+- Updated the file `THIRD_PARTY_LICENSES.csv`.
+
 ## 0.1.64 (2025-11-21)
 
 - Added the font `Roboto-Bold.ttf` in the assets of the project.

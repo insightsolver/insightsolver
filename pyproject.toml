@@ -7,6 +7,7 @@ name = "insightsolver"
 description = "InsightSolver offers rule-based insights generation for actionable data-driven decisions."
 readme = "README.md"
 requires-python = ">=3.9"
+license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [
   { name = "Noé Aubin-Cadot", email = "noe.aubin-cadot@insightsolver.com" },
