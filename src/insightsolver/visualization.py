@@ -21,7 +21,8 @@ Functions provided
 - show_feature_distributions_of_S
 - p_value_to_p_text
 - svg_to_pil
-- generate_insightsolver_banner
+- generate_insightsolver_img_banner
+- generate_insightsolver_fig_banner
 - generate_insightsolver_img_legend
 - generate_insightsolver_fig_legend
 - wrap_text_with_word_boundary
@@ -57,6 +58,8 @@ from typing import Optional, Union, Dict, Sequence, List
 FIG_WIDTH_IN = 12
 # Dots per inch
 DPI = 300
+# InsightSolver blue
+HEX_INSIGHTSOLVER = "#0530AD"
 
 ################################################################################
 ################################################################################
@@ -109,6 +112,19 @@ def show_all_mutual_information(
     # For a horizontal barplot we must sort to have big values on top of the figure
     if kind=='barh':
         s_mi.sort_values(ascending=True,inplace=True)
+    # Determine the colors of the bars
+    import matplotlib.colors as mcolors
+    cmap = mcolors.LinearSegmentedColormap.from_list(
+        "insightsolver_cmap",
+        ["white", HEX_INSIGHTSOLVER]
+    )
+    # Normalize according to the values
+    norm = mcolors.Normalize(
+        vmin=0,
+        vmax=s_mi.max()
+    )
+    # Color of each bar
+    bar_colors = [cmap(norm(v)) for v in s_mi]
     # Generate the figure
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(
@@ -117,11 +133,13 @@ def show_all_mutual_information(
     s_mi.plot(
         kind      = kind,
         edgecolor = 'black',
+        color     = bar_colors,
+        linewidth = 0.8, # Thinner border
         ax        = ax,
     )
     plt.title('Mutual Information between the features and the target variable')
-    plt.ylabel('Mutual Information')
-    plt.xlabel('Feature')
+    plt.xlabel('Mutual Information')
+    plt.ylabel('Feature')
     plt.xticks(rotation=45, ha='right')
     for idx, value in enumerate(s_mi):
         # Compute the position
@@ -466,8 +484,8 @@ def show_feature_distributions_of_S_feature(
         # Superpose a second blue bar for the number of missing values in the filtered data
         sns.countplot(
             x     = s_filtered_na,
-            color = '#0530AD',
-            alpha = 0.6,
+            color = HEX_INSIGHTSOLVER,
+            alpha = 1.0,
             ax    = ax,
         )
         # Remove legend
@@ -498,8 +516,8 @@ def show_feature_distributions_of_S_feature(
             sns.histplot(
                 data  = s_filtered,
                 bins  = bin_edges,
-                color = '#0530AD',
-                alpha = 0.6,
+                color = HEX_INSIGHTSOLVER,
+                alpha = 1.0,
                 ax    = ax,
             )
             # Rotate the bin edges
@@ -533,8 +551,8 @@ def show_feature_distributions_of_S_feature(
             # Second plot for the distribution of the filtered variable by the rule
             sns.countplot(
                 x     = s_filtered_dropna,
-                color = '#0530AD',
-                alpha = 0.6,
+                color = HEX_INSIGHTSOLVER,
+                alpha = 1.0,
                 label = "Filtered",
                 order = sorted_categories if feature_name in non_num_cols else None, # Apply alphabetical order
                 ax    = ax,
@@ -559,14 +577,14 @@ def show_feature_distributions_of_S_feature(
                 # Add a vertical line
                 if feature_relationship=='≥':
                     # Add a vertical line at the lower boundary
-                    ax.axvline(rule_min, color='#0530AD', linestyle='--', label=feature_name+' min')
+                    ax.axvline(rule_min, color=HEX_INSIGHTSOLVER, linestyle='--', label=feature_name+' min')
                 elif feature_relationship=='≤':
                     # Add a vertical line at the upper boundary
-                    ax.axvline(rule_max, color='#0530AD', linestyle='--', label=feature_name+' max')
+                    ax.axvline(rule_max, color=HEX_INSIGHTSOLVER, linestyle='--', label=feature_name+' max')
                 elif feature_relationship=='∈':
                     # Add vertical lines at both boundaries
-                    ax.axvline(rule_min, color='#0530AD', linestyle='--', label=feature_name+' min')
-                    ax.axvline(rule_max, color='#0530AD', linestyle='--', label=feature_name+' max')
+                    ax.axvline(rule_min, color=HEX_INSIGHTSOLVER, linestyle='--', label=feature_name+' min')
+                    ax.axvline(rule_max, color=HEX_INSIGHTSOLVER, linestyle='--', label=feature_name+' max')
                    
         # Generate the title
         if language=='fr':
@@ -581,8 +599,16 @@ def show_feature_distributions_of_S_feature(
 
         # Add custom legend
         import matplotlib.patches as mpatches
-        grey_patch  = mpatches.Patch(color="grey",  alpha=0.6, label="Hors de la règle" if language == 'fr' else "Outside the rule")
-        blue_patch = mpatches.Patch(color="#0530AD", alpha=0.6, label="Dans la règle" if language == 'fr' else "Inside the rule")
+        grey_patch = mpatches.Patch(
+            color = "grey",
+            alpha = 0.6,
+            label = "Hors de la règle" if language == 'fr' else "Outside the rule",
+        )
+        blue_patch = mpatches.Patch(
+            color = HEX_INSIGHTSOLVER,
+            alpha = 1.0,
+            label = "Dans la règle" if language == 'fr' else "Inside the rule",
+        )
         ax.legend(handles=[grey_patch, blue_patch])
 
         # Get the current x-axis tick locations and labels
@@ -812,7 +838,7 @@ def svg_to_pil(
     )
     return Image.open(io.BytesIO(png_bytes)).convert("RGBA")
 
-def generate_insightsolver_banner(
+def generate_insightsolver_img_banner(
     solver,
     i: int,
     loss: float                = None,
@@ -895,8 +921,8 @@ def generate_insightsolver_banner(
     # --- Banner dimensions ---
     banner_width  = int(fig_width * dpi)
     banner_height = 120
-    banner        = Image.new("RGBA", (banner_width, banner_height), "white")
-    draw          = ImageDraw.Draw(banner)
+    img_banner    = Image.new("RGBA", (banner_width, banner_height), "white")
+    draw          = ImageDraw.Draw(img_banner)
 
     # --- Load Roboto font ---
     font_size           = int(icon_size[1] * font_ratio)
@@ -941,7 +967,7 @@ def generate_insightsolver_banner(
         block_y1 = banner_height - pad
 
         # --- Draw shadow using Gaussian blur ---
-        shadow = Image.new("RGBA", banner.size, (0, 0, 0, 0))
+        shadow = Image.new("RGBA", img_banner.size, (0, 0, 0, 0))
         shadow_draw = ImageDraw.Draw(shadow)
 
         # shadow rectangle coords (slightly offset)
@@ -963,8 +989,8 @@ def generate_insightsolver_banner(
             ),
         )
 
-        # Paste shadow onto banner
-        banner.alpha_composite(shadow)
+        # Paste shadow onto img_banner
+        img_banner.alpha_composite(shadow)
 
         # --- Draw grey outline rectangle ---
         fill_color = cohen_d_color if key == "cohen_d_text" else (242, 242, 242)
@@ -981,7 +1007,7 @@ def generate_insightsolver_banner(
             svg_filename = icons_map[key],
             size         = icon_size,
         )
-        banner.paste(icon, (x + pad, y_icon), mask=icon)
+        img_banner.paste(icon, (x + pad, y_icon), mask=icon)
 
         font = font_bold if key == "insight_id_text" else font_regular
 
@@ -1005,7 +1031,45 @@ def generate_insightsolver_banner(
             font = font,
         )
     
-    return banner
+    return img_banner
+
+def generate_insightsolver_fig_banner(
+    solver,
+    i: int,
+    loss: float                = None,
+    fig_width: float           = 12,   # inches
+    dpi: int                   = 200,
+    icon_size: tuple[int, int] = (80, 80),
+    do_show: bool              = False,
+):
+    # Create the banner image
+    img_banner = generate_insightsolver_img_banner(
+        solver    = solver,
+        i         = i,
+        loss      = loss,
+        fig_width = fig_width,
+        dpi       = dpi,
+        icon_size = icon_size,
+    )
+    # Size in pixels of the banner image
+    height_px = img_banner.height
+    width_px  = img_banner.width
+    # Take the ratio height/width
+    ratio = height_px / width_px
+    # Height of the banner in inches
+    fig_height = fig_width * ratio
+    # Create a figure for the banner
+    fig_banner = plt.figure(
+        figsize = (fig_width, fig_height),
+        dpi     = dpi,
+    )
+    ax = fig_banner.add_subplot(111)
+    ax.imshow(img_banner)
+    ax.axis("off")
+    if do_show:
+        plt.show()
+    # Return the figure of the banner
+    return fig_banner
 
 def generate_insightsolver_img_legend(
     do_show_loss: bool         = True,
@@ -1381,13 +1445,11 @@ def show_feature_contributions_of_i(
     figs : List of matplotlib.figure.Figure or None
         List of Figure if `do_show=False`. Otherwise None.
     """
+    figs = []
     if not do_show:
-        figs = []
         # Non interactive backend
         import matplotlib
         matplotlib.use("Agg")
-    else:
-        figs = None
     # Take the rule i
     rule_i = solver.i_to_rule(i=i)
     # Take the rule S
@@ -1436,31 +1498,15 @@ def show_feature_contributions_of_i(
     dpi = DPI
     # Create the banner as a separate figure
     if do_banner:
-        # Create the banner
-        banner = generate_insightsolver_banner(
-            solver = solver,
-            i      = i,
-            loss   = loss,
+        fig_banner = generate_insightsolver_fig_banner(
+            solver    = solver,
+            i         = i,
+            loss      = loss,
+            fig_width = fig_width,
+            dpi       = dpi,
+            do_show   = do_show,
         )
-        # Size in pixels of the banner
-        banner_height_px = banner.height
-        banner_width_px  = banner.width
-        # Take the ratio height/width
-        banner_ratio = banner_height_px / banner_width_px
-        # Height of the banner in inches
-        fig_height_banner_inches = fig_width * banner_ratio
-        # Create a figure for the banner
-        fig_banner = plt.figure(
-            figsize = (fig_width, fig_height_banner_inches),
-            dpi     = dpi,
-        )
-        ax_banner = fig_banner.add_subplot(111)
-        ax_banner.imshow(banner)
-        ax_banner.axis("off")
-        if do_show:
-            plt.show()
-        else:
-            figs.append(fig_banner)
+        figs.append(fig_banner)
     # Create a bar plot as a separate figure
     fig_height_plot_inches = a * complexity + b
     fig_plot = plt.figure(
@@ -1484,8 +1530,8 @@ def show_feature_contributions_of_i(
     # Change the colors of the bars and their contours
     import matplotlib.colors as mcolors
     vals = df_feature_contributions_S['p_value_contribution'].values
-    normalized_values = vals / vals.max()  # 0 → blanc, max → bleu
-    cmap = mcolors.LinearSegmentedColormap.from_list("white_to_blue", ["#FFFFFF", "#0530AD"])
+    normalized_values = vals / vals.max()  # 0 → white, max → blue
+    cmap = mcolors.LinearSegmentedColormap.from_list("white_to_blue", ["#FFFFFF", HEX_INSIGHTSOLVER])
     bar_colors = [cmap(v) for v in normalized_values]
     for bar, bar_color in zip(ax.patches, bar_colors):
         bar.set_facecolor(bar_color)
@@ -1599,8 +1645,7 @@ def show_feature_contributions_of_i(
                 fontsize = 9,
             )
 
-    if not do_show:
-        figs.append(fig_plot)
+    figs.append(fig_plot)
 
     # Generating the feature labels
     if any(len(feature_label) > 55 for feature_label in feature_labels):
