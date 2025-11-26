@@ -355,6 +355,7 @@ def show_feature_distributions_of_S_feature(
     do_show_kde: bool            = False,
     do_show_vertical_lines: bool = False,
     fig_width: float             = FIG_WIDTH_IN, # Width of the figure in inches
+    verbose: bool                = False,
 )->None:
     """
     This function generates bar plots of the distributions of the points in the specified rule S for a given feature.
@@ -383,8 +384,9 @@ def show_feature_distributions_of_S_feature(
         If we want to show vertical lines.
     fig_width: float
         Width of the figure in inches
+    verbose: bool, default False
+        Verbosity.
     """
-
     # Determine if a new figure needs to be created
     if ax is None:
         # Take the size of a pixel instead of inches
@@ -410,7 +412,6 @@ def show_feature_distributions_of_S_feature(
     s_filtered   = df_filtered[feature_name]
     # Take the filtered data without the missing values
     s_filtered_dropna = s_filtered.dropna()
-
     # Take the btype of the feature
     if isinstance(S[feature_name],list):
         column_btype = 'continuous'
@@ -425,6 +426,10 @@ def show_feature_distributions_of_S_feature(
         )
     else:
         raise Exception(f"ERROR: feature_name='{feature_name}' has a btype='{column_btype}' which is illegal.")
+
+    if verbose:
+        print("column_btype =",column_btype)
+        print("categorical_or_continuous =",categorical_or_continuous)
 
     # Look at the type of feature
     if categorical_or_continuous=='continuous':
@@ -532,6 +537,14 @@ def show_feature_distributions_of_S_feature(
             if pd.api.types.is_float_dtype(s_unfiltered_dropna) and np.all(s_unfiltered_dropna == s_unfiltered_dropna.astype(int)):
                 s_unfiltered_dropna = s_unfiltered_dropna.astype(int).copy()
                 s_filtered_dropna   = s_filtered_dropna.astype(int).copy()
+            # Hangle the other modalities
+            if feature_name in solver.other_modalities and len(solver.other_modalities[feature_name])>0:
+                if verbose:
+                    print("Other modalities found:",len(solver.other_modalities[feature_name]))
+                other_mods = set(solver.other_modalities[feature_name])
+                # Replace all modalities present in other_mods by "Other"
+                s_unfiltered_dropna = s_unfiltered_dropna.apply(lambda x: "other" if x in other_mods else x)
+                s_filtered_dropna   = s_filtered_dropna.apply(lambda x: "other" if x in other_mods else x)
             # Take the non numerical columns
             non_num_cols = df.select_dtypes(exclude='number').columns
             # If the feature is a non numerical column

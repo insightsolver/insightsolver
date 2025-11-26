@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.67 (2025-11-25)
+
+- The function `show_feature_distributions_of_S_feature` has a new parameter `verbose`.
+- Improved the function `show_feature_distributions_of_S_feature` so that now all the `'other'` modalities are shown in a single bar to avoid having a barplot with too many bars.
+
 ## 0.1.66 (2025-11-25)
 
 - Renamed the function `save_figs_vertical` to `save_figs_in_pdf`.
