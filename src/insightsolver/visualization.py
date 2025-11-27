@@ -1945,28 +1945,29 @@ def show_mosaic_plot_of_i(
     )
     # Edit the mosaic plot
     import matplotlib.ticker as mticker
-    # Manually add axis labels
+    # Edit the xlabel and ylabel
     ax.set_xlabel("Coverage (%)", fontsize=12)
-    ax.set_xlim(ax.get_xlim()) # Match the primary x-axis limits first
+    ax.set_ylabel("Purity (%)", fontsize=12)
+    # Edit the xlim and ylim
+    ax.set_xlim(ax.get_xlim())
+    ax.set_ylim(ax.get_xlim())
+    # Edit the xticks and yticks
     ax.set_xticks(np.linspace(0, 1, 6)) # Set ticks at 0%, 20%, 40%, 60%, 80%, 100%
-    ax.xaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0)) # Format as percentages
-    ax.set_ylabel(f"Purity (%)", fontsize=12)
-    ax.set_ylim(ax.get_xlim()) # Match the primary x-axis limits first
     ax.set_yticks(np.linspace(0, 1, 6)) # Set ticks at 0%, 20%, 40%, 60%, 80%, 100%
-    ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0)) # Format as percentages
-    # Create a twin axis sharing the y-axis
-    ax_top = ax.twiny()
+    # Format the ticks as percentages
+    ax.xaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0))
+    ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0))
     # Manually set x-axis tick locations and labels
-    coverage_rule = (m / M)
     ticker_feature_location_in = float(coverage_rule / 2)
     ticker_feature_location_out = float((1-coverage_rule) / 2) + (ticker_feature_location_in*2)
     x_tick_locations = [ticker_feature_location_in, ticker_feature_location_out]
     x_tick_labels = ['in', 'out']
+    ax_top = ax.twiny()
     ax_top.set_xticks(x_tick_locations)
     ax_top.set_xticklabels(x_tick_labels)
-    # xlabel (title of the figure)
+    # Title of the figure
     if not feature_name:
-        xlabel = f'Insight #{i + 1}'
+        title = f'Insight #{i + 1}'
     else:
         # Take the feature label
         feature_label, _ = compute_feature_label(
@@ -1979,10 +1980,10 @@ def show_mosaic_plot_of_i(
             label      = feature_label,
             max_length = 50,
         )
-        # The xlabel is the feature_label
-        xlabel = feature_label
+        # The title is the feature_label
+        title = feature_label
     ax_top.set_xlabel(
-        xlabel,
+        title,
         fontsize   = 12,
         fontweight = 'bold',
     )
@@ -2108,6 +2109,235 @@ def show_all_mosaic_plot_of_i(
     # Adjusts subplot params for a tight layout
     plt.tight_layout()
     # Display the figure
+    plt.show()
+
+def show_mosaic_plot_pop_vs_rule_of_i(
+    solver,
+    i: int,
+    ax = None,
+    do_show_comp:bool = True,
+):
+    # Take the range of rules
+    range_i = solver.get_range_i()
+    # Make sure i is valid
+    if i not in range_i:
+        raise Exception(f"ERROR (show_mosaic_plot_pop_vs_rule_of_i): i={i} is not valid.")
+
+    # Determine if a new figure needs to be created
+    do_show = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(4, 4))
+        do_show = True
+        
+    # Population statistics
+    M  = solver.M
+    M1 = solver.M1
+    M0 = solver.M0
+    # Rule statistics
+    rule_i = solver.i_to_rule(i=i)
+    m  = rule_i['m']
+    m1 = rule_i['m1']
+    m0 = rule_i['m0']
+    # Complement statistics
+    mc  = M-m
+    m1c = M1-m1
+    m0c = M0-m0
+
+    # Computing the various purities
+    mu1_pop  = M1/M if M>0 else 0
+    mu0_pop  = M0/M if M>0 else 0
+    mu1_rule = m1/m if m>0 else 0
+    mu0_rule = m0/m if m>0 else 0
+    mu1_comp = m1c/mc if mc>0 else 0
+    mu0_comp = m0c/mc if mc>0 else 0
+
+    # Create a pandas Series with a MultiIndex
+    if do_show_comp:
+        data = pd.Series(
+            data = [mu1_pop,mu0_pop,mu1_rule,mu0_rule,mu1_comp,mu0_comp],
+            index = pd.MultiIndex.from_product([['Population', 'Rule', 'Complement'], ['1', '0']]),
+        )
+    else:
+        data = pd.Series(
+            data = [mu1_pop,mu0_pop,mu1_rule,mu0_rule],
+            index = pd.MultiIndex.from_product([['Population', 'Rule'], ['1', '0']]),
+        ) 
+
+    def color_func(key):
+        """
+        Returns a dictionary of colors based on the key tuple.
+        Key format: (in rule or not, class 0 or 1)
+        """
+        # Define colors for each combination
+        if key == ('Population', '1'):
+            return {'color': 'grey'}
+        elif key == ('Population', '0'):
+            return {'color': 'grey', 'alpha':0.5}
+        elif key == ('Rule', '1'):
+            return {'color': HEX_INSIGHTSOLVER}
+        elif key == ('Rule', '0'):
+            return {'color': HEX_INSIGHTSOLVER, 'alpha':0.5}
+        elif key == ('Complement', '1'):
+            return {'color': 'grey'}
+        elif key == ('Complement', '0'):
+            return {'color': 'grey', 'alpha':0.5}
+        else:
+            return {}
+
+    # Custom labelizer to show nothing
+    def empty_labelizer(key):
+        return ""
+
+    # Create the plot with your existing parameters
+    from statsmodels.graphics.mosaicplot import mosaic
+    mosaic(
+        data       = data,
+        ax         = ax,
+        properties = color_func,
+        labelizer  = empty_labelizer,
+        gap        = 0.03,
+        title      = "",
+        statistic  = False,
+        axes_label = True,
+    )
+
+    # Add title
+    ax_top = ax.twiny()
+    ax_top.set_xlabel(
+        xlabel     = f"Insight #{i+1}",
+        fontsize   = 12,
+        fontweight = 'bold',
+    )
+    # Add a bit of distance between the title and the figure
+    ax_top.xaxis.labelpad = 10
+
+    # Edit the xlabel and ylabel
+    ax.set_xlabel("Subset", fontsize=12)
+    ax.set_ylabel("Class", fontsize=12)
+    
+    # Mask the top tickers
+    fig = ax.get_figure()
+    for a in fig.axes:
+        if a.xaxis.get_ticks_position() == "top":
+            if not any(lbl in ["Population", "Rule", "Complement"] for lbl in a.get_xticklabels()):
+                a.set_xticks([])
+                a.set_xticklabels([])
+                a.tick_params(top=False)
+
+    alpha = 0.2
+    backgroundcolor = (1,1,1,alpha)
+    fontsize = 9
+    if mu1_pop != 0:
+        ax.text(
+            x        = 0.166 if do_show_comp else 0.25,
+            y        = mu1_pop/2,
+            s        = f"{mu1_pop:.1%}",
+            fontsize = fontsize,
+            ha       = 'center',
+            va       = 'center',
+            backgroundcolor = backgroundcolor,
+        )
+    if mu0_pop != 0:
+        ax.text(
+            x        = 0.166 if do_show_comp else 0.25,
+            y        = mu1_pop+(mu0_pop/2),
+            s        = f"{mu0_pop:.1%}",
+            fontsize = fontsize,
+            ha       = 'center',
+            va       = 'center',
+            backgroundcolor = backgroundcolor,
+        )
+    if mu1_rule != 0:
+        ax.text(
+            x        = 0.5 if do_show_comp else 0.75,
+            y        = mu1_rule/2,
+            s        = f"{mu1_rule:.1%}",
+            fontsize = fontsize,
+            ha       = 'center',
+            va       = 'center',
+            backgroundcolor = backgroundcolor,
+        )
+    if mu0_rule != 0:
+        ax.text(
+            x        = 0.5 if do_show_comp else 0.75,
+            y        = mu1_rule+(mu0_rule/2),
+            s        = f"{mu0_rule:.1%}",
+            fontsize = fontsize,
+            ha       = 'center',
+            va       = 'center',
+            backgroundcolor = backgroundcolor,
+        )
+    if do_show_comp:
+        if mu1_comp != 0:
+            ax.text(
+                x        = 0.833,
+                y        = mu1_comp/2,
+                s        = f"{mu1_comp:.1%}",
+                fontsize = fontsize,
+                ha       = 'center',
+                va       = 'center',
+                backgroundcolor = backgroundcolor,
+            )
+        if mu0_comp != 0:
+            ax.text(
+                x        = 0.833,
+                y        = mu1_comp+(mu0_comp/2),
+                s        = f"{mu0_comp:.1%}",
+                fontsize = fontsize,
+                ha       = 'center',
+                va       = 'center',
+                backgroundcolor = backgroundcolor,
+            )
+    
+    if do_show:
+        # Only tight_layout if showing an individual plot
+        plt.tight_layout()
+        plt.show()
+
+def show_mosaic_plot_pop_vs_rule(
+    solver,
+    do_show_comp: bool = True,
+    ncols:int = 3,
+    fig_width: float = 12,
+    verbose: bool = False,
+):
+    # Take the list of rule index available in the solver
+    range_i = solver.get_range_i()
+    # Number of rows
+    nrows = 1+(len(range_i)-1)//ncols
+    # Width per fig
+    width_per_plot = fig_width/ncols
+    # Fig size (inches)
+    fig_height = width_per_plot*nrows
+    figsize = (
+        fig_width,
+        fig_height,
+    )
+    if verbose:
+        print("\nshow_mosaic_plot_pop_vs_rule :")
+        print("- nrows      =",nrows)
+        print("- ncols      =",ncols)
+        print("- fig_width  =",fig_width)
+        print("- fig_height =",fig_height)
+    # Create a single figure with a row of subplots
+    fig, axes = plt.subplots(
+        nrows   = nrows,
+        ncols   = ncols,
+        figsize = figsize,
+    )
+    # Flatten the 2D array of axes into a 1D array
+    axes = axes.flatten()
+    for i in range_i:
+        show_mosaic_plot_pop_vs_rule_of_i(
+            solver       = solver,
+            ax           = axes[i],
+            i            = i,
+            do_show_comp = do_show_comp,
+        )
+    # Hide any remaining, unused subplots
+    for i in range(len(range_i),ncols*nrows):
+        axes[i].set_visible(False)
+    plt.tight_layout()
     plt.show()
 
 ################################################################################

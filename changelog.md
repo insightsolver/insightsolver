@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.69 (2025-11-27)
+
+- Cleaned the function `show_mosaic_plot_of_i` a little bit.
+- New function `visualization/show_mosaic_plot_pop_vs_rule_of_i`.
+- New function `visualization/show_mosaic_plot_pop_vs_rule`.
+
 ## 0.1.68 (2025-11-26)
 
 - New method `solver.i_to_feature_names()`.
