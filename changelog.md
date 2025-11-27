@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.68 (2025-11-26)
+
+- New method `solver.i_to_feature_names()`.
+- New function `visualization/show_mosaic_plot_of_i`.
+- New function `visualization/show_all_mosaic_plot_of_i`.
+
 ## 0.1.67 (2025-11-25)
 
 - The function `show_feature_distributions_of_S_feature` has a new parameter `verbose`.

@@ -30,6 +30,8 @@ Functions provided
 - show_all_feature_contributions
 - show_feature_contributions_and_distributions_of_i
 - show_all_feature_contributions_and_distributions
+- show_mosaic_plot_of_i
+- show_all_mosaic_plot_of_i
 
 License
 -------
@@ -1851,6 +1853,262 @@ def show_all_feature_contributions_and_distributions(
             language = language,
             do_show  = True,
         )
+
+def show_mosaic_plot_of_i(
+    solver,
+    i: int,
+    feature_name: Optional[str] = None,
+    ax                          = None,
+):
+    # Determine if a new figure needs to be created
+    do_show = False
+    if ax == None:
+        fig, ax = plt.subplots(figsize=(4, 4))
+        do_show = True
+    # Take the rule S at position i
+    S = solver.i_to_S(i=i)
+    # Take the target_name
+    target_name = solver.target_name
+    # Take some global statistics
+    M   = solver.M
+    M0  = solver.M0
+    M1  = solver.M1
+    # Take some rule statistics
+    if feature_name is None:
+        # Take the rule at position i
+        rule_i = solver.i_to_rule(i=i)
+        # Take some statistics
+        m   = rule_i['m']
+        m1  = rule_i['m1']
+    else:
+        # Create a subrule
+        S = {feature_name:S[feature_name]}
+        # Take the index of the points in the subrule
+        index_points_in_rule = solver.S_to_index_points_in_rule(S=S)
+        # Compute the statistics of the subrule
+        s_y = solver.convert_target_to_binary().loc[index_points_in_rule]
+        m = len(s_y)
+        m1 = s_y.sum()
+    m0 = m-m1
+    mc  = M-m
+    m0c = M0-m0
+    m1c = M1-m1
+    # Coverage
+    coverage_rule = m/M if M>0 else 0
+    coverage_comp = 1-coverage_rule
+    # Purities
+    mu1_pop  = M1/M if M>0 else 0
+    mu0_rule = m0/m if m>0 else 0
+    mu1_rule = m1/m if m>0 else 0
+    mu0_comp = m0c/mc if mc>0 else 0
+    mu1_comp = m1c/mc if mc>0 else 0
+    # Create a pandas Series with a MultiIndex
+    data = pd.Series(
+        data  = [m1,m0,m1c,m0c],
+        index = pd.MultiIndex.from_product([['in', 'out'], ['1', '0']]),
+    )
+    # Define a coloring function
+    def color_func(key):
+        """
+        Returns a dictionary of colors based on the key tuple.
+        """
+        # Define colors for each combination
+        if key == ('in', '1'):
+            # Inside the rule, class 1
+            return {'color': HEX_INSIGHTSOLVER}
+        elif key == ('in', '0'):
+            # Inside the rule, class 0
+            return {'color': 'grey'}
+        elif key == ('out', '1'):
+            # Outsite the rule, class 1
+            return {'color': HEX_INSIGHTSOLVER, 'alpha':0.5}
+        elif key == ('out', '0'):
+            # Outside the rule, class 0
+            return {'color': 'grey', 'alpha':0.5}
+        else:
+            # Default color
+            return {}
+    # Custom labelizer to show nothing
+    def empty_labelizer(key):
+        return ""
+    # Create the plot with your existing parameters
+    from statsmodels.graphics.mosaicplot import mosaic
+    mosaic(
+        data       = data,
+        ax         = ax,
+        properties = color_func,
+        labelizer  = empty_labelizer,
+        gap        = 0.02,
+        title      = "",
+        statistic  = False,
+        axes_label = True,
+    )
+    # Edit the mosaic plot
+    import matplotlib.ticker as mticker
+    # Manually add axis labels
+    ax.set_xlabel("Coverage (%)", fontsize=12)
+    ax.set_xlim(ax.get_xlim()) # Match the primary x-axis limits first
+    ax.set_xticks(np.linspace(0, 1, 6)) # Set ticks at 0%, 20%, 40%, 60%, 80%, 100%
+    ax.xaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0)) # Format as percentages
+    ax.set_ylabel(f"Purity (%)", fontsize=12)
+    ax.set_ylim(ax.get_xlim()) # Match the primary x-axis limits first
+    ax.set_yticks(np.linspace(0, 1, 6)) # Set ticks at 0%, 20%, 40%, 60%, 80%, 100%
+    ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0)) # Format as percentages
+    # Create a twin axis sharing the y-axis
+    ax_top = ax.twiny()
+    # Manually set x-axis tick locations and labels
+    coverage_rule = (m / M)
+    ticker_feature_location_in = float(coverage_rule / 2)
+    ticker_feature_location_out = float((1-coverage_rule) / 2) + (ticker_feature_location_in*2)
+    x_tick_locations = [ticker_feature_location_in, ticker_feature_location_out]
+    x_tick_labels = ['in', 'out']
+    ax_top.set_xticks(x_tick_locations)
+    ax_top.set_xticklabels(x_tick_labels)
+    # xlabel (title of the figure)
+    if not feature_name:
+        xlabel = f'Insight #{i + 1}'
+    else:
+        # Take the feature label
+        feature_label, _ = compute_feature_label(
+            solver       = solver,       # The solver
+            feature_name = feature_name, # The name of the feature
+            S            = S,            # The rule S
+        )
+        # Truncate the feature label
+        feature_label = truncate_label(
+            label      = feature_label,
+            max_length = 50,
+        )
+        # The xlabel is the feature_label
+        xlabel = feature_label
+    ax_top.set_xlabel(
+        xlabel,
+        fontsize   = 12,
+        fontweight = 'bold',
+    )
+    #alpha = 0
+    alpha = 0.2
+    #alpha = 0.35
+    backgroundcolor = (1,1,1,alpha)
+    fontsize = 9
+    if mu1_rule != 0:
+        ax.text(
+            coverage_rule/2,
+            mu1_rule+0.02,
+            f"{mu1_rule:.1%}",
+            fontsize = fontsize,
+            ha       = 'center',
+            va       = 'center',
+            backgroundcolor = backgroundcolor,
+        )
+    if mu1_comp != 0:
+        ax.text(
+            coverage_rule+(coverage_comp/2),
+            mu1_comp+0.02,
+            f"{mu1_comp:.1%}",
+            fontsize = fontsize,
+            ha       = 'center',
+            va       = 'center',
+            backgroundcolor = backgroundcolor,
+        )
+    # Add a dashed line for the purity of the population
+    ax.axhline(
+        y         = mu1_pop,
+        linewidth = 1,
+        color     = 'r',
+        linestyle = ":",
+    )
+    # Add a text over the dashed line
+    ax.text(
+        x        = 0.5,
+        y        = mu1_pop+0.01,
+        s        = f"{mu1_pop:.1%}",
+        fontsize = fontsize,
+        color    = 'r',
+        ha       = "center",
+        backgroundcolor = backgroundcolor,
+    )
+    if do_show:
+        # Only tight_layout if showing an individual plot
+        plt.tight_layout()
+        plt.show()
+
+def show_all_mosaic_plot_of_i(
+    solver,
+    i: int,
+    ncols: int = 3,
+):
+    """
+    This function shows the mosaic plot of the rule at position i.
+    One figure is generated for the whole rule and then one figure is generated per feature in the rule.
+
+    Parameters
+    ----------
+    solver: InsightSolver
+        The solver.
+    i: int
+        Index of the rule.
+    ncols: int
+        Number of figures per row (should be 1, 2, 3, 4).
+    """
+    # Make sure the solver if fitted
+    if not solver._is_fitted:
+        return None
+    # Make sure i is valid
+    if i not in range(len(solver)):
+        return None
+    # Make sure ncols is valid
+    if ncols not in [1,2,3,4]:
+        return None
+    # Take the feature names in the rule, sorted by contribution, descending
+    feature_names = solver.i_to_feature_names(
+        i       = i,
+        do_sort = True,
+    )
+    # Number of features
+    n_features = len(feature_names)
+    # Compute the number of rows (one for then target then rows for the features)
+    nrows = 1 + (1+ (n_features-1)//ncols)
+    # Determine the size of the figure
+    fig_width  = 12 # 12 inch wide, 3 figure per row, 4 inch per figure
+    fig_height = 4 * nrows # Each figure is a square of size (4 inch x 4 inch)
+    figsize = (
+        fig_width,
+        fig_height,
+    )
+    # Create the subplot grid
+    fig, axes = plt.subplots(
+        nrows   = nrows,
+        ncols   = ncols,
+        figsize = figsize,
+    )
+    # Flatten the 2D array of axes into a 1D array
+    axes = axes.flatten()
+    # Add the mosaic plot of the whole rule on the first row
+    show_mosaic_plot_of_i(
+        solver        = solver,
+        i             = i,
+        feature_name  = None,
+        ax            = axes[0],
+    )
+    # Add the mosaic plot of the feature rules in the other rows
+    for k, feature_name in enumerate(feature_names):
+        show_mosaic_plot_of_i(
+            solver        = solver,
+            i             = i,
+            feature_name  = feature_name,
+            ax            = axes[ncols + k],
+        )
+    # Hide any remaining, unused subplots
+    for k in range(1, ncols):
+        axes[k].set_visible(False)    
+    total_plots = n_features + 1
+    for k in range(total_plots + ncols-1, len(axes)):
+        axes[k].set_visible(False)
+    # Adjusts subplot params for a tight layout
+    plt.tight_layout()
+    # Display the figure
+    plt.show()
 
 ################################################################################
 ################################################################################

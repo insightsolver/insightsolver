@@ -1674,6 +1674,41 @@ class InsightSolver(Mapping):
         if do_rename_cols:
             df_feature_contributions_S.columns = [col.replace('_contribution','') for col in df_feature_contributions_S.columns]
         return df_feature_contributions_S
+    def i_to_feature_names(
+        self,
+        i:int,
+        do_sort:bool = True,
+    ):
+        """
+        Returns the list of feature names in the rule at position ``i``.
+        The feature are sorted by contribution, descending.
+
+        Parameters
+        ----------
+        i: int
+            Index of the rule in the solver.
+        do_sort: bool
+            If we want to sort the features by contribution, descending.
+        """
+        # Take the solver
+        solver = self
+        # Look at if it is fitted
+        if not solver._is_fitted:
+            # Raise an exception
+            raise Exception(f"ERROR (i_to_feature_names): the solver is not fitted yet.")
+        elif i>=len(solver):
+            raise Exception(f"ERROR (i_to_feature_names): i={i} is out of range for the solver.")
+        else:
+            # Take the rule S
+            S = solver.i_to_S(i=i)
+            # Take the feature names
+            feature_names = list(S.keys())
+            # Sort the features if required
+            if do_sort:
+                rule_i = solver.i_to_rule(i=i)
+                feature_names.sort(key = lambda feature_name:-rule_i['feature_contributions_S']['p_value_contribution'][feature_name])
+            # Return the result
+            return feature_names
     def i_to_readable_text(
         self,
         i,
