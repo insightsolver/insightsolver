@@ -232,7 +232,10 @@ def validate_class_integrity(
 
     # Validate that target_name is a column of df
     if target_name not in df.columns:
-        raise Exception(f"ERROR (target_name invalid): target_name='{target_name}' not in df.columns.")
+        raise Exception(f"ERROR (validate_class_integrity): target_name='{target_name}' not in df.columns.")
+    # Make sure the target column does not contain missing values
+    if df[target_name].isna().any():
+        raise Exception(f"ERROR (validate_class_integrity): The target column target_name='{target_name}' contains {df[target_name].isna().sum()} missing values, but it should not contain missing values.")
 
     # Compute the admissible btypes per column
     columns_names_to_admissible_btypes = compute_columns_names_to_admissible_btypes(
@@ -695,68 +698,6 @@ def gain_to_percent(
 
 ################################################################################
 ################################################################################
-# Utility functions for the pdf generation
-
-def save_figs_in_pdf(
-    figs: list,
-    pdf,
-    do_padding: bool = True
-):
-    """
-    Stack multiple figures vertically on a page and save to PDF.
-
-    Parameters
-    ----------
-    figs : list of matplotlib.figure.Figure
-        The figures to stack.
-    pdf : PdfPages
-        The PdfPages object to save to.
-    do_padding: bool, default True
-        If a padding should be present in the pdf.
-    """
-    import matplotlib.pyplot as plt
-    from .visualization import FIG_WIDTH_IN, DPI
-    dpi = DPI
-    # Create a list of images
-    imgs = []
-    # Loop over the figures to convert them to images
-    for fig in figs:
-        fig.set_dpi(dpi)
-        fig.canvas.draw()
-        buf, (w, h) = fig.canvas.print_to_buffer()
-        img = np.frombuffer(buf, dtype=np.uint8).reshape(h, w, 4)[:, :, :3]
-        # Append the image in the list of images
-        imgs.append(img)
-        plt.close(fig)
-    target_width_inch = FIG_WIDTH_IN
-    target_width_px = int(target_width_inch * dpi)
-    resized_imgs = []
-    for img in imgs:
-        scale = target_width_px / img.shape[1]
-        new_h = int(img.shape[0] * scale)
-        from PIL import Image
-        img_pil = Image.fromarray(img, mode="RGB")
-        img_resized = img_pil.resize((target_width_px, new_h), Image.LANCZOS)
-        resized_imgs.append(np.array(img_resized))
-    # Vertical concatenation of the figures
-    combined = np.vstack(resized_imgs)
-    # Create a single figure with all the images
-    height_inch = combined.shape[0] / dpi
-    fig_page, ax = plt.subplots(figsize=(target_width_inch, height_inch), dpi=dpi)
-    ax.imshow(combined, extent=[0, target_width_inch, 0, height_inch])
-    ax.set_xlim(0, target_width_inch)
-    ax.set_ylim(0, height_inch)
-    ax.axis("off")
-    # Remove the padding
-    if not do_padding:
-        fig_page.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    # Save the figure of the page in the pdf
-    pdf.savefig(fig_page)
-    # Close the figure of the page
-    plt.close(fig_page)
-
-################################################################################
-################################################################################
 # Defining the API Client
 
 def search_best_ruleset_from_API_public(
@@ -1047,17 +988,9 @@ class InsightSolver(Mapping):
         Converts the target variable to a binary {0,1}-valued Pandas Series.
     compute_mutual_information: pd.Series
         Computes a Pandas Series of the mutual information between features and the target variable.
-    show_all_mutual_information: None
-        Generates a bar plot of the mutual information between the features and the target variable.
-    show_feature_distributions_of_S: None
-        Generates bar plots of the distributions of the points in the specified rule S.
-    show_feature_contributions_of_i: None
-        Generates a horizontal bar plot of the feature contributions of the rule at position ``i``.
-    show_all_feature_contributions: None
-        Generates the feature contributions and feature distributions for all rules found in the solver.
-    show_all_feature_contributions_and_distributions: None
-        Generates the feature contributions and feature distributions for all rules found in the solver.
-    to_zip: None
+    to_pdf: str
+         Generates a PDF containing all visualization figures for the solver.
+    to_zip: str
         Exports the rule mining results to a ZIP file.
 
     Example
@@ -2761,206 +2694,68 @@ class InsightSolver(Mapping):
         ).sort_values(ascending=False)
         # Return the mutual information
         return s_mi
-    def show_all_mutual_information(
-        self,
-        n_samples:Optional[int] = 1000,
-        n_cols:Optional[int]    = 20,
-        kind: str               = 'barh',       
-    )->None:
-        """
-        This method generates a bar plot of the mutual information between the features and the target variable.    
-
-        Parameters
-        ----------
-        n_samples: int
-            An integer that specifies the number of data rows to use in the computation of the mutual information.
-        n_cols: int
-            An integer that specifies the maximum number of features to show
-        """
-        from .visualization import show_all_mutual_information
-        show_all_mutual_information(
-            solver    = self,
-            n_samples = n_samples,
-            n_cols    = n_cols,
-            kind      = kind,
-        )
-    def show_feature_distributions_of_S(
-        self,
-        S:dict,
-        padding_y:int               = 5,
-        do_show_kde:bool            = False,
-        do_show_vertical_lines:bool = False,
-    )->None:
-        """
-        This method generates bar plots of the distributions of the points in the specified rule ``S``.
-
-        Parameters
-        ----------
-        S : dict
-            The rule S that we wish to visualize.
-        padding_y: int
-            The padding used for the ylim.
-        do_show_kde: bool
-            Boolean to show the KDE of the continuous features.
-        """
-        from .visualization import show_feature_distributions_of_S
-        show_feature_distributions_of_S(
-            solver                 = self,
-            S                      = S,
-            padding_y              = padding_y,
-            do_show_kde            = do_show_kde,
-            do_show_vertical_lines = do_show_vertical_lines,
-        )
-    def show_feature_contributions_of_i(
-        self,
-        i:int,                        # Index of the rule to show
-        a:float              = 0.5,   # Height per bar
-        b:float              = 1,     # Height for the margins and other elements
-        fig_width:float      = 12,    # Width of the figure
-        language:str         = 'en',  # Language of the figure
-        do_grid:bool         = True,  # If we want to show a vertical grid
-        do_title:bool        = False, # If we want a title automatically generated
-        do_banner:bool       = True,  # If we want to show the banner
-        bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-        loss:Optional[float] = None,  # If we want to show a loss
-    )->None:
-        """
-        This method generates a horizontal bar plots of the feature constributions of the rule at position ``i``.
-        
-        Parameters
-        ----------
-        i: int
-            The index of the rule to show.
-        a: float
-            Height per bar.
-        b: float
-            Added height to the figure.
-        fig_width: float
-            Width of the figure
-        language: str
-            Language of the figure ('fr' or 'en').
-        do_grid: bool
-            If we want to show a vertical grid behind the horizontal bars.
-        do_title: bool
-            If we want to show a title.
-        do_banner: bool
-            If we want to show the banner.
-        bar_annotations: str
-            Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-        loss: float
-            If we want to show a loss.
-        """
-        from .visualization import show_feature_contributions_of_i
-        show_feature_contributions_of_i(
-            solver          = self,      # The solver
-            i               = i,         # Index of the rule to show
-            a               = a,         # Height per bar
-            b               = b,         # Height for the margins and other elements
-            fig_width       = fig_width, # Width of the figure
-            language        = language,  # Language of the figure
-            do_grid         = do_grid,   # If we want to show a vertical grid
-            do_title        = do_title,  # If we want a title automatically generated
-            do_banner       = do_banner, # If we want to show the banner
-            bar_annotations = bar_annotations, # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-            loss            = loss,      # If we want to show a loss
-        )
-    def show_all_feature_contributions(
-        self,
-        a:float             = 0.5,   # Height per bar
-        b:float             = 1,     # Height for the margin and other elements
-        fig_width:float     = 12,    # Width of the figure
-        language:str        = 'en',  # Language of the figure
-        do_grid:bool        = True,  # If we want to show a grid
-        do_title:bool       = False, # If we want to show a title which is automatically generated
-        do_banner:bool      = True,  # If we want to show the banner
-        bar_annotations:str = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-    )->None:
-        """
-        This method generates a horizontal bar plot of the feature contributions for each rule found in a solver.
-        
-        Parameters
-        ----------
-        a: float
-            Height per bar.
-        b: float
-            Added height to the figure.
-        fig_width: float
-            Width of the figure
-        language: str
-            Language of the figure ('fr' or 'en').
-        do_grid: bool
-            If we want to show a vertical grid behind the horizontal bars.
-        do_title: bool
-            If we want to show a title.
-        do_banner: bool
-            If we want to show the banner.
-        bar_annotations: str
-            Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-        """
-        from .visualization import show_all_feature_contributions
-        show_all_feature_contributions(
-            solver          = self,
-            a               = a,         # Height per bar
-            b               = b,         # Height for the margin and other elements
-            fig_width       = fig_width, # Width of the figure
-            language        = language,  # Language of the figure
-            do_grid         = do_grid,   # If we want to show a grid
-            do_title        = do_title,  # If we want to show a title which is automatically generated
-            do_banner       = do_banner, # If we want to show the banner
-            bar_annotations = bar_annotations, # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-        )
-    def show_all_feature_contributions_and_distributions(
-        self,
-        do_banner:bool       = True,            # If we want to show the banner
-        bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-    )->None:
-        """
-        This method generates the feature contributions and feature distributions for all rules found in a fitted solver.
-        
-        Parameters
-        ----------
-        do_banner: bool
-            If we want to show the banner.
-        bar_annotations: str
-            Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-        """
-        from .visualization import show_all_feature_contributions_and_distributions
-        show_all_feature_contributions_and_distributions(
-            solver          = self,
-            do_banner       = do_banner, # If we want to show the banner
-            bar_annotations = bar_annotations,
-        )
     def plot(
         self,
-        do_banner:bool       = True,            # If we want to show the banner
-        bar_annotations:str  = 'p_value_ratio', # Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
-    )->None:
+        language: str = "en",
+        do_mutual_information: bool   = True,
+        do_banner: bool               = True,
+        do_contributions: bool        = True,
+        do_distributions: bool        = True,
+        do_mosaics_rule_vs_comp: bool = True,
+        do_mosaics_rule_vs_pop: bool  = True,
+        do_legend: bool               = True,
+    ) -> None:
         """
-        This method is an alias for the method .show_all_feature_contributions_and_distributions()
-        
+        Displays all visualization figures for the solver.
+
         Parameters
         ----------
-        do_banner: bool
-            If we want to show the banner.
-        bar_annotations: str
-            Type of values to show at the end of the bars (can be 'p_value_ratio', 'p_value_contribution' or None)
+        language : str
+            Language for the plots ('en' or 'fr').
+        do_mutual_information : bool
+            Whether to show the mutual information figure.
+        do_banner : bool
+            Whether to show the banner figures.
+        do_contributions : bool
+            Whether to show feature contributions.
+        do_distributions : bool
+            Whether to show feature distributions.
+        do_mosaics_rule_vs_comp : bool
+            Whether to show the mosaics of rule vs complement figures.
+        do_mosaics_rule_vs_pop : bool
+            Whether to show the mosaics of rule vs population figures.
+        do_legend : bool
+            Whether to show the legend figure.
         """
-        self.show_all_feature_contributions_and_distributions(
-            do_banner                     = do_banner,
-            bar_annotations               = bar_annotations,
+        from .visualization import plot_all
+        plot_all(
+            solver                  = self,
+            language                = language,
+            do_mutual_information   = do_mutual_information,
+            do_banner               = do_banner,
+            do_contributions        = do_contributions,
+            do_distributions        = do_distributions,
+            do_mosaics_rule_vs_comp = do_mosaics_rule_vs_comp,
+            do_mosaics_rule_vs_pop  = do_mosaics_rule_vs_pop,
+            do_legend               = do_legend,
         )
     def to_pdf(
         self,
-        output_file: Optional[str]  = None,
-        verbose: bool               = False,
-        do_banner: bool             = True,
-        do_mutual_information: bool = True,
-        do_contributions: bool      = True,
-        do_distributions: bool      = True,
-        do_legend       : bool      = True,
+        output_file: Optional[str]    = None,
+        verbose: bool                 = False,
+        do_mutual_information: bool   = True,
+        do_banner: bool               = True,
+        do_contributions: bool        = True,
+        do_distributions: bool        = True,
+        do_mosaics_rule_vs_comp: bool = True,
+        do_mosaics_rule_vs_pop: bool  = True,
+        do_legend: bool               = True,
+        language: str                 = "en",
     ):
         """
-        This methods exports a PDF file containing various results and figures of the solver.
+        Export a PDF file containing various results and figures of the solver.
+
+        This method is now a simple wrapper around visualization.make_pdf().
 
         Parameters
         ----------
@@ -2968,253 +2763,71 @@ class InsightSolver(Mapping):
             Path where the PDF should be exported.
         verbose : bool, default False
             Verbosity.
-        do_mutual_information: bool, default True
-            If True, add the mutual information figure to the pdf.
-        do_contributions: bool, default True
-            If True, add the feature contribution figures to the pdf.
-        do_distributions: bool, default True
-            If True, add the feature distribution figures to the pdf.
-        do_legend: bool, default True
-            If True, add the legend figure to the pdf.
+        do_mutual_information : bool
+            Include mutual information figure.
+        do_banner : bool
+            Include banner figures.
+        do_contributions : bool
+            Include contribution figures.
+        do_distributions : bool
+            Include distribution figures.
+        do_mosaics_rule_vs_comp : bool
+            Include mosaics of rule vs complement figures.
+        do_mosaics_rule_vs_pop : bool
+            Include mosaics of rule vs population figures.
+        do_legend : bool
+            Include the legend figure.
+        language : str
+            Language for the plots ('en' or 'fr').
 
         Returns
         -------
         pdf_base64 : str
             The PDF content encoded as a base64 string, suitable for in-memory use.
         """
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
-        if verbose:
-            print("Generating PDF...")
-        # Generate PDF in memory
-        import io
-        pdf_buffer = io.BytesIO()
-        from .visualization import (
-            show_all_mutual_information,
-            generate_insightsolver_fig_banner,
-            show_feature_contributions_of_i,
-            show_feature_distributions_of_S,
-            generate_insightsolver_fig_legend,
+        from .visualization import make_pdf
+        pdf_base64 = make_pdf(
+            solver                  = self,
+            output_file             = output_file,
+            verbose                 = verbose,
+            do_mutual_information   = do_mutual_information,
+            do_banner               = do_banner,
+            do_contributions        = do_contributions,
+            do_distributions        = do_distributions,
+            do_mosaics_rule_vs_comp = do_mosaics_rule_vs_comp,
+            do_mosaics_rule_vs_pop  = do_mosaics_rule_vs_pop,
+            do_legend               = do_legend,
+            language                = language,
         )
-        with PdfPages(pdf_buffer) as pdf:
-            # Add the mutual information figure in the pdf
-            if do_mutual_information:
-                fig_mutual_information = show_all_mutual_information(
-                    solver  = self,
-                    do_show = False,
-                )
-                # Save the figure in the pdf
-                save_figs_in_pdf(
-                    figs = [fig_mutual_information],
-                    pdf  = pdf,
-                )
-            # Loop over the rules
-            for i in self.get_range_i():
-                S = self.i_to_S(i=0)
-                figs = []
-
-                # Add the banner
-                if do_banner:
-                    fig_banner = generate_insightsolver_fig_banner(
-                        solver    = self,
-                        i         = i,
-                        do_show   = False,
-                    )
-                    figs.append(fig_banner)
-                # Add the contributions figures
-                if do_contributions:
-                    figs += show_feature_contributions_of_i(
-                        solver    = self,
-                        i         = i,
-                        do_show   = False,
-                        do_banner = False,
-                    )
-                # Add the distribution figures
-                if do_distributions:
-                    figs += show_feature_distributions_of_S(
-                        solver  = self,
-                        S       = S,
-                        do_show = False,
-                    )
-                # Save the figures in the pdf
-                save_figs_in_pdf(
-                    figs = figs,
-                    pdf  = pdf,
-                )
-            # Add the legend
-            if do_legend:
-                # Generate the legend figure
-                fig_legend = generate_insightsolver_fig_legend()
-                # Save the figure in the pdf
-                save_figs_in_pdf(
-                    figs = [fig_legend],
-                    pdf  = pdf,
-                )
-        # Export the pdf to the disk if requested
-        if output_file is not None:
-            with open(output_file, "wb") as f:
-                f.write(pdf_buffer.getvalue())
-            if verbose:
-                print(f"PDF exported to {output_file}")
-        # Return base64 string
-        pdf_bytes = pdf_buffer.getvalue()
-        import base64
-        pdf_base64 = base64.b64encode(pdf_bytes).decode()
         return pdf_base64
     def to_zip(
         self,
         output_file: Optional[str] = None,
-        verbose: bool              = False,
-        do_png: bool               = True,
-        do_csv: bool               = True,
-        do_json: bool              = True,
-        do_excel: bool             = True,
-        do_pdf: bool               = True,
+        verbose: bool = False,
+        do_png: bool = True,
+        do_csv: bool = True,
+        do_json: bool = True,
+        do_excel: bool = True,
+        do_pdf: bool = True,
+        language: str = "en",
     ):
         """
         Export the solver content to a ZIP file.
 
-        Parameters
-        ----------
-        output_file : str, optional
-            Path where the ZIP should be exported.
-        verbose : bool, default False
-            Whether to print progress messages.
-        do_png : bool, default True
-            Whether to include PNG figures.
-        do_csv : bool, default True
-            Whether to include the ruleset CSV.
-        do_json : bool, default True
-            Whether to include the ruleset JSON.
-        do_excel : bool, default True
-            Whether to include the ruleset Excel.
-        do_pdf : bool, default True
-            Whether to include the PDF of figures.
-
-        Returns
-        -------
-        zip_base64 : str
-            The ZIP content as a base64 string if output_file is None,
-            otherwise returns the output_file path.
+        This method is now a simple wrapper around visualization.make_zip().
         """
-        import io
-        import zipfile
-        import base64
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
-        import os
-
-        if verbose:
-            print("Generating ZIP...")
-        # Create a buffer
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-
-            # PNG figures
-            if do_png:
-                l_figs = []
-                # Add the mutual information figure
-                from .visualization import (
-                    show_all_mutual_information,
-                    show_feature_contributions_of_i,
-                    show_feature_distributions_of_S,
-                    generate_insightsolver_fig_banner,
-                    generate_insightsolver_fig_legend,
-                )
-                fig = show_all_mutual_information(
-                    solver  = self,
-                    do_show = False,
-                )
-                l_figs.append((fig,'mutual_information.png'))
-                # Loop over the rules
-                for i in self.get_range_i():
-                    S = self.i_to_S(i=0)
-                    # Add the banner
-                    fig_banner = generate_insightsolver_fig_banner(
-                        solver  = self,
-                        i       = i,
-                        do_show = False,
-                    )
-                    l_figs += [(fig_banner,f'i={i}_banner.png')]
-                    # Add the contributions figures
-                    figs = show_feature_contributions_of_i(
-                        solver    = self,
-                        i         = i,
-                        do_show   = False,
-                        do_banner = False,
-                    )
-                    l_figs += [(fig,f'i={i}_feature_contributions_img={k}.png') for k,fig in enumerate(figs)]
-                    # Add the distribution figures
-                    figs = show_feature_distributions_of_S(
-                        solver  = self,
-                        S       = S,
-                        do_show = False,
-                    )
-                    l_figs += [(fig,f'i={i}_feature_distributions_img={k}.png') for k,fig in enumerate(figs)]
-                # Add the legend
-                fig_legend = generate_insightsolver_fig_legend()
-                l_figs.append((fig_legend,'legend.png'))
-
-                for (fig,file_name) in l_figs:
-                    img_buffer = io.BytesIO()
-                    fig.savefig(img_buffer, format="png")
-                    plt.close(fig)
-                    img_buffer.seek(0)
-                    zip_file.writestr(file_name, img_buffer.read())
-                if verbose:
-                    print("Added PNG figures")
-
-            # CSV file
-            if do_csv:
-                csv_content = self.to_csv()
-                zip_file.writestr("insightsolver-ruleset.csv", csv_content)
-                if verbose:
-                    print("Added CSV")
-
-            # JSON file
-            if do_json:
-                json_content = self.to_json_string()
-                zip_file.writestr("insightsolver-ruleset.json", json_content)
-                if verbose:
-                    print("Added JSON")
-
-            # Excel file
-            if do_excel:
-                excel_content = self.to_excel_string()
-                zip_file.writestr("insightsolver-ruleset.xlsx", excel_content)
-                if verbose:
-                    print("Added Excel")
-
-            # PDF file
-            if do_pdf:
-                pdf_base64 = self.to_pdf(
-                    output_file           = None,
-                    verbose               = verbose,
-                    do_mutual_information = True,
-                    do_contributions      = True,
-                    do_distributions      = True,
-                    do_legend             = True,
-                )
-                import base64
-                pdf_bytes = base64.b64decode(pdf_base64)
-                zip_file.writestr("insightsolver-ruleset.pdf", pdf_bytes)
-                if verbose:
-                    print("Added PDF")
-
-        if output_file is not None:
-            with open(output_file, "wb") as f:
-                f.write(zip_buffer.getvalue())
-            if verbose:
-                print(f"ZIP written to {output_file}")
-
-        zip_bytes = zip_buffer.getvalue()
-        zip_base64 = base64.b64encode(zip_bytes).decode()
-        if verbose:
-            print("ZIP generated in memory")
+        from .visualization import make_zip
+        zip_base64 = make_zip(
+            solver      = self,
+            output_file = output_file,
+            verbose     = verbose,
+            do_png      = do_png,
+            do_csv      = do_csv,
+            do_json     = do_json,
+            do_excel    = do_excel,
+            do_pdf      = do_pdf,
+            language    = language,
+        )
         return zip_base64
 
 ################################################################################

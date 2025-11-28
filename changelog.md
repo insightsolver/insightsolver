@@ -1,6 +1,19 @@
 # Changelog
 
-## 0.1.70 (2025-11-28)
+## 0.1.71 (2025-11-28)
+
+- Complete refactoring of the script `visualization.py`.
+- Removed the method `solver.show_all_mutual_information`.
+- Removed the method `solver.show_feature_distributions_of_S`.
+- Removed the method `solver.show_feature_contributions_of_i`.
+- Removed the method `solver.show_all_feature_contributions`.
+- Removed the method `solver.show_all_feature_contributions_and_distributions`.
+- Refactoring of the method `solver.plot` that now exploits the new function `plot_all`.
+- Refactoring of the method `solver.to_pdf` that now exploits the new function `pdf_all`.
+- Refactoring of the method `solver.to_zip` that now exploits the new function `zip_all`.
+- Now the function `validate_class_integrity` raises an exception if the target column contains missing values.
+
+## 0.1.70 (2025-11-27)
 
 - Renamed `show_mosaic_plot_pop_vs_rule` to `show_all_mosaic_plot_pop_vs_rule`
 - Renamed `show_mosaic_of_i` to `show_feature_mosaic_of_i`.
