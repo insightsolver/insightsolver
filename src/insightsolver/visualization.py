@@ -30,8 +30,10 @@ Functions provided
 - show_all_feature_contributions
 - show_feature_contributions_and_distributions_of_i
 - show_all_feature_contributions_and_distributions
-- show_mosaic_plot_of_i
-- show_all_mosaic_plot_of_i
+- show_feature_mosaic_of_i
+- show_all_mosaic_of_i
+- show_mosaic_pop_vs_rule_of_i
+- show_all_mosaic_pop_vs_rule
 
 License
 -------
@@ -831,14 +833,31 @@ def p_value_to_p_text(
     return p_text
 
 def svg_to_pil(
-    svg_filename,
-    assets_package = "insightsolver.assets",
-    subfolder      = "google_fonts_icons",
-    size           = (80,80),
+    svg_filename: str,
+    assets_package: str  = "insightsolver.assets",
+    subfolder: str       = "google_fonts_icons",
+    size: tuple[int,int] = (80,80),
 ):
     """
-    Convert SVG to PIL Image with specified size.
+    Convert an SVG file resource into a PIL (Pillow) Image object with a specified size.
+
+    Parameters
+    ----------
+    svg_filename: str
+        The filename of the SVG icon located in the assets subfolder.
+    assets_package: str
+        The Python package name where the assets are located (e.g., 'insightsolver.assets').
+    subfolder: str
+        The subfolder within the assets package where the SVG file resides.
+    size: tuple(int, int)
+        The target size (width, height) in pixels for the output PIL Image.
+
+    Returns
+    -------
+    img : PIL.Image.Image
+        The converted image as a PIL Image object, typically in RGBA format.
     """
+
     from importlib.resources import files
     import cairosvg
     import io
@@ -1057,6 +1076,32 @@ def generate_insightsolver_fig_banner(
     icon_size: tuple[int, int] = (80, 80),
     do_show: bool              = False,
 ):
+    """
+    This function generates a figure of the banner of the statistics of the rule at index ``i``.
+
+    Parameters
+    ----------
+    solver: InsightSolver
+        The fitted solver.
+    i: int
+        The index of the rule to be displayed in the banner.
+    loss: float
+        An optional loss value to display in the banner.
+    fig_width: float
+        Width of the figure in inches. Height is automatically adjusted.
+    dpi: int
+        Resolution (dots per inch) of the figure.
+    icon_size: tuple[int, int]
+        Size of the icons used in the banner image (width, height in pixels).
+    do_show: bool
+        If True, displays the figure immediately using ``plt.show()``.
+
+    Returns
+    -------
+    fig_banner : matplotlib.figure.Figure
+        The Matplotlib Figure object containing the rule banner.
+    """
+
     # Create the banner image
     img_banner = generate_insightsolver_img_banner(
         solver    = solver,
@@ -1307,6 +1352,32 @@ def generate_insightsolver_fig_legend(
     verbose: bool              = False,
     do_show: bool              = False,
 ):
+    """
+    This function generates a figure of the legend which explains the meaning of the icons in the banner.
+    
+    Parameters
+    ----------
+    do_show_loss: bool
+        If True, describe the loss icon in the legend.
+    fig_width: float
+        The width of the figure to generate.
+    dpi: int
+        The dots per inch (resolution) for the figure.
+    icon_size: tuple[int, int]
+        The size (width, height) in pixels for the icons used within the legend image.
+    language: str
+        Language of the text labels in the figure legend ('fr' or 'en').
+    verbose: bool
+        If True, display verbose output during the legend image generation process.
+    do_show: bool
+        If True, the figure is immediately displayed using ``plt.show()``.
+        If False, the figure object is returned without being displayed.
+
+    Returns
+    -------
+    fig_legend : matplotlib.figure.Figure
+        The Matplotlib Figure object containing the legend image.
+    """
     # Create the legend image
     img_legend = generate_insightsolver_img_legend(
         do_show_loss = do_show_loss,
@@ -1854,12 +1925,33 @@ def show_all_feature_contributions_and_distributions(
             do_show  = True,
         )
 
-def show_mosaic_plot_of_i(
+def show_feature_mosaic_of_i(
     solver,
     i: int,
     feature_name: Optional[str] = None,
-    ax                          = None,
+    ax:plt.Axes                 = None,
 ):
+    """
+    This function generates a mosaic plot for the rule i.
+    If a feature name is specified, then only the rule restricted to the feature is used.
+
+    Parameters
+    ----------
+    solver: InsightSolver
+        The solver.
+    i: int
+        The index of the rule to show.
+    feature_name, Optional[str]
+        The name of the feature used to restrict the rule.
+    ax: Optional[plt.Axes]
+        Axes where to plot the figure.
+    """
+    # Make sure the solver if fitted
+    if not solver._is_fitted:
+        return None
+    # Make sure i is valid
+    if i not in range(len(solver)):
+        raise Exception(f"ERROR (show_feature_mosaic_of_i): i={i} is not valid.")
     # Determine if a new figure needs to be created
     do_show = False
     if ax == None:
@@ -2034,7 +2126,7 @@ def show_mosaic_plot_of_i(
         plt.tight_layout()
         plt.show()
 
-def show_all_mosaic_plot_of_i(
+def show_all_mosaic_of_i(
     solver,
     i: int,
     ncols: int = 3,
@@ -2057,7 +2149,7 @@ def show_all_mosaic_plot_of_i(
         return None
     # Make sure i is valid
     if i not in range(len(solver)):
-        return None
+        raise Exception(f"ERROR (show_all_mosaic_of_i): i={i} is not valid.")
     # Make sure ncols is valid
     if ncols not in [1,2,3,4]:
         return None
@@ -2086,7 +2178,7 @@ def show_all_mosaic_plot_of_i(
     # Flatten the 2D array of axes into a 1D array
     axes = axes.flatten()
     # Add the mosaic plot of the whole rule on the first row
-    show_mosaic_plot_of_i(
+    show_feature_mosaic_of_i(
         solver        = solver,
         i             = i,
         feature_name  = None,
@@ -2094,7 +2186,7 @@ def show_all_mosaic_plot_of_i(
     )
     # Add the mosaic plot of the feature rules in the other rows
     for k, feature_name in enumerate(feature_names):
-        show_mosaic_plot_of_i(
+        show_feature_mosaic_of_i(
             solver        = solver,
             i             = i,
             feature_name  = feature_name,
@@ -2111,18 +2203,32 @@ def show_all_mosaic_plot_of_i(
     # Display the figure
     plt.show()
 
-def show_mosaic_plot_pop_vs_rule_of_i(
+def show_mosaic_pop_vs_rule_of_i(
     solver,
     i: int,
-    ax = None,
-    do_show_comp:bool = True,
+    ax: Optional[plt.Axes] = None,
+    do_show_comp:bool      = True,
 ):
-    # Take the range of rules
-    range_i = solver.get_range_i()
-    # Make sure i is valid
-    if i not in range_i:
-        raise Exception(f"ERROR (show_mosaic_plot_pop_vs_rule_of_i): i={i} is not valid.")
+    """
+    This function shows a mosaic plot that compares the purity of the rule at index i vs the population.
 
+    Parameters
+    ----------
+    solver: InsightSolver
+        The solver.
+    i: int
+        Index of the rule to show.
+    ax: Optional[plt.Axes]
+        The axes on which to plot the figure.
+    do_show_comp: bool
+        If we want to show the purity of the complement of the rule or not.
+    """
+    # Make sure the solver if fitted
+    if not solver._is_fitted:
+        return None
+    # Make sure i is valid
+    if i not in range(len(solver)):
+        raise Exception(f"ERROR (show_mosaic_pop_vs_rule_of_i): i={i} is not valid.")
     # Determine if a new figure needs to be created
     do_show = False
     if ax is None:
@@ -2294,13 +2400,32 @@ def show_mosaic_plot_pop_vs_rule_of_i(
         plt.tight_layout()
         plt.show()
 
-def show_mosaic_plot_pop_vs_rule(
+def show_all_mosaic_pop_vs_rule(
     solver,
     do_show_comp: bool = True,
-    ncols:int = 3,
-    fig_width: float = 12,
-    verbose: bool = False,
+    ncols:int          = 3,
+    fig_width: float   = 12,
+    verbose: bool      = False,
 ):
+    """
+    This function shows the mosaic plot of the purity of the rules vs the population for all rule in the ruleset.
+
+    Parameters
+    ----------
+    solver: InsightSolver
+        The solver.
+    do_show_comp: bool
+        If we want to show the purity of the complement of the rule or not.
+    ncols: int
+        Number of columns to show.
+    fig_width: float
+        Width of the figure in inches.
+    verbose: bool
+        Verbosity.
+    """
+    # Make sure the solver if fitted
+    if not solver._is_fitted:
+        return None
     # Take the list of rule index available in the solver
     range_i = solver.get_range_i()
     # Number of rows
@@ -2314,7 +2439,7 @@ def show_mosaic_plot_pop_vs_rule(
         fig_height,
     )
     if verbose:
-        print("\nshow_mosaic_plot_pop_vs_rule :")
+        print("\nshow_all_mosaic_pop_vs_rule :")
         print("- nrows      =",nrows)
         print("- ncols      =",ncols)
         print("- fig_width  =",fig_width)
@@ -2328,7 +2453,7 @@ def show_mosaic_plot_pop_vs_rule(
     # Flatten the 2D array of axes into a 1D array
     axes = axes.flatten()
     for i in range_i:
-        show_mosaic_plot_pop_vs_rule_of_i(
+        show_mosaic_pop_vs_rule_of_i(
             solver       = solver,
             ax           = axes[i],
             i            = i,

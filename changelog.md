@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.70 (2025-11-28)
+
+- Renamed `show_mosaic_plot_pop_vs_rule` to `show_all_mosaic_plot_pop_vs_rule`
+- Renamed `show_mosaic_of_i` to `show_feature_mosaic_of_i`.
+- Improved the docstring of the functions in the `visualization.py` file.
+
 ## 0.1.69 (2025-11-27)
 
 - Cleaned the function `show_mosaic_plot_of_i` a little bit.
