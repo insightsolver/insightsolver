@@ -102,6 +102,7 @@ Here are some examples:
 Comprehensive technical documentation for the `insightsolver` module is available here:
 
 - [PDF version](https://github.com/insightsolver/insightsolver/blob/main/doc/insightsolver_api_client.pdf).
+- [Sphinx version](https://insightsolver.github.io/sphinx/index.html)
 
 ## 📄 Changelog
 
@@ -139,7 +140,8 @@ This information is provided to help users and organizations verify compliance w
 ## 🤝 Contact
 
 - Email [support@insightsolver.com](mailto:support@insightsolver.com)
-- Official website: [www.insightsolver.com](https://www.insightsolver.com)
+- Official website: [insightsolver.com](https://www.insightsolver.com)
+- GitHub website: [insightsolver.github.io](https://insightsolver.github.io)
 - [LinkedIn](https://www.linkedin.com/company/insightsolver/)
 
 

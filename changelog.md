@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.73 (2025-11-29)
+
+- The `README` now has a link to the Sphinx documentation and to the GitHub website of InsightSolver.
+
 ## 0.1.72 (2025-11-29)
 
 - Updated the PDF doc.
