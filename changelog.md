@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.72 (2025-11-29)
+
+- Updated the PDF doc.
+
 ## 0.1.71 (2025-11-28)
 
 - Complete refactoring of the script `visualization.py`.
