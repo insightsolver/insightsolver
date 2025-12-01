@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.76 (2025-12-01)
+
+- Replaced `cairosvg` by `svglib`.
+- ...
+
 ## 0.1.75 (2025-12-01)
 
 - Added `statsmodels` to the requirements.

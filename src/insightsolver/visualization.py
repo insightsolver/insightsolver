@@ -350,6 +350,7 @@ def svg_to_pil(
     assets_package: str  = "insightsolver.assets",
     subfolder: str       = "google_fonts_icons",
     size: tuple[int,int] = (80,80),
+    fill_color: Union[str, tuple] = "white",
 ):
     """
     Convert an SVG file resource into a PIL (Pillow) Image object with a specified size.
@@ -364,6 +365,8 @@ def svg_to_pil(
         The subfolder within the assets package where the SVG file resides.
     size: tuple(int, int)
         The target size (width, height) in pixels for the output PIL Image.
+    fill_color: str or tuple
+        The background color to use (e.g., "white", "#FFFFFF", (255, 255, 255)).
 
     Returns
     -------
@@ -372,18 +375,47 @@ def svg_to_pil(
     """
 
     from importlib.resources import files
-    import cairosvg
+    from svglib.svglib import svg2rlg
+    from reportlab.graphics import renderPM
+    from reportlab.lib import colors
     import io
     from PIL import Image
+
     svg_file = files(assets_package) / subfolder / svg_filename
+    
+    # Load the SVG file into a ReportLab Drawing
+    # We open in binary mode as svglib/lxml handles XML parsing
     with svg_file.open("rb") as f:
-        svg_bytes = f.read()
-    png_bytes = cairosvg.svg2png(
-        bytestring    = svg_bytes,
-        output_width  = size[0],
-        output_height = size[1],
-    )
-    return Image.open(io.BytesIO(png_bytes)).convert("RGBA")
+        drawing = svg2rlg(f)
+    
+    # Scale the drawing to the requested size
+    if drawing.width > 0 and drawing.height > 0:
+        sx = size[0] / drawing.width
+        sy = size[1] / drawing.height
+        drawing.scale(sx, sy)
+        drawing.width = size[0]
+        drawing.height = size[1]
+    
+    # Convert the fill_color to a ReportLab color
+    if isinstance(fill_color, tuple) and len(fill_color) == 3:
+        # Convert (R, G, B) tuple to hex string for toColor, or use Color(r,g,b)
+        # reportlab.lib.colors.toColor handles various formats but (r,g,b) 0-255 might need care if passed as tuple?
+        # Actually toColor supports many things. Let's try to pass it directly if it's a string,
+        # or construct a Color object if it's a tuple.
+        # ReportLab Color expects 0-1 range if initialized directly, but toColor might handle others.
+        # Safest is to convert 0-255 tuple to 0-1 args for Color.
+        bg_color = colors.Color(fill_color[0]/255, fill_color[1]/255, fill_color[2]/255)
+    else:
+        bg_color = colors.toColor(fill_color)
+
+    # Configure for transparency/background
+    # We use the specified background color
+    drawing._renderPM_bg = bg_color
+
+    # Render to PIL image
+    img = renderPM.drawToPIL(drawing, bg=bg_color)
+    
+    return img.convert("RGBA")
 
 def wrap_text_with_word_boundary(
     text: str,                  # The original string to modify.
@@ -859,6 +891,7 @@ def make_banner_img_for_i(
         icon = svg_to_pil(
             svg_filename = icons_map[key],
             size         = icon_size,
+            fill_color   = fill_color,
         )
         img_banner.paste(icon, (x + pad, y_icon), mask=icon)
 
@@ -913,12 +946,12 @@ def plot_banner_img_for_i(
         Icon size in pixels (width, height).
     """
     img = make_banner_img_for_i(
-        solver=solver,
-        i=i,
-        loss=loss,
-        fig_width=fig_width,
-        dpi=dpi,
-        icon_size=icon_size,
+        solver    = solver,
+        i         = i,
+        loss      = loss,
+        fig_width = fig_width,
+        dpi       = dpi,
+        icon_size = icon_size,
     )
     img.show()
 
@@ -1208,6 +1241,7 @@ def make_legend_img(
         icon = svg_to_pil(
             svg_filename = svg_filename,
             size         = icon_size,
+            fill_color   = "white",
         )
         img_legend.paste(
             icon,

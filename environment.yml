@@ -15,7 +15,7 @@ dependencies:
   - seaborn
   - scikit-learn
   - openpyxl
-  - cairosvg
+  - svglib
   - statsmodels
   - pip
   - pip:
