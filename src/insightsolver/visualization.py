@@ -394,8 +394,19 @@ def load_icon(
         # Keep transparency
         pass
     else:
+        # Normalize fill_color to RGBA tuple
+        if isinstance(fill_color, tuple):
+            if len(fill_color) == 3:
+                # Add alpha channel
+                fill_color_rgba = fill_color + (255,)
+            else:
+                fill_color_rgba = fill_color
+        else:
+            # It's a string color name or hex
+            fill_color_rgba = fill_color
+        
         # Create a solid background
-        bg = Image.new("RGBA", size, fill_color)
+        bg = Image.new("RGBA", size, fill_color_rgba)
         # Paste the icon on top (using its alpha channel as mask)
         bg.paste(img, (0, 0), mask=img)
         img = bg

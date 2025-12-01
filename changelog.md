@@ -1,8 +1,14 @@
 # Changelog
 
+## 0.1.78 (2025-12-01)
+
+- New files `__init__.py` in the folder `png` so that the `.png` files are included in the library.
+- Removed the `.svg` files from the library because they are not used.
+- The `.png` files now have a transparent background instead of black. They are downloaded directly from `fonts.google.com` instead of being generated from the `svg` files.
+
 ## 0.1.77 (2025-12-01)
 
-- Removed `svglib` fom the requirements file and from `visualization.py` because it relies on `cairosvg` which relies on system libraries that are not portable.
+- Removed `svglib` fom the requirements file and from `visualization.py`, because it relies on `cairosvg`, which relies on system libraries that are not portable.
 - Now the exploited icons are the `.png` files, not the `.svg` files.
 
 ## 0.1.76 (2025-12-01)
@@ -11,11 +17,11 @@
 
 ## 0.1.75 (2025-12-01)
 
-- Added `statsmodels` to the requirements.
+- Added `statsmodels` to the requirements, because it is required for the mosaic plots.
 
 ## 0.1.74 (2025-12-01)
 
-- Updated `pyproject.toml` to include the fonts with the library.
+- Updated `pyproject.toml` to include the `.ttf` font files with the library.
 
 ## 0.1.73 (2025-11-29)
 
