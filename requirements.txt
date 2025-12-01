@@ -12,3 +12,4 @@ seaborn
 scikit-learn
 openpyxl
 cairosvg
+statsmodels

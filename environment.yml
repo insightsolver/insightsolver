@@ -14,6 +14,9 @@ dependencies:
   - matplotlib
   - seaborn
   - scikit-learn
+  - openpyxl
+  - cairosvg
+  - statsmodels
   - pip
   - pip:
     - urllib3>=2.0.2

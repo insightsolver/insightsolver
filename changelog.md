@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.75 (2025-12-01)
+
+- Added `statsmodels` to the requirements.
+
 ## 0.1.74 (2025-12-01)
 
 - Updated `pyproject.toml` to include the fonts with the library.
