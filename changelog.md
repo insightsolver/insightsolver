@@ -1,9 +1,13 @@
 # Changelog
 
+## 0.1.77 (2025-12-01)
+
+- Removed `svglib` fom the requirements file and from `visualization.py` because it relies on `cairosvg` which relies on system libraries that are not portable.
+- Now the exploited icons are the `.png` files, not the `.svg` files.
+
 ## 0.1.76 (2025-12-01)
 
-- Replaced `cairosvg` by `svglib`.
-- ...
+- Replaced `cairosvg` by `svglib` in the requirements file and in `visualization.py` because `cairosvg` requires system libraries that are not portable.
 
 ## 0.1.75 (2025-12-01)
 

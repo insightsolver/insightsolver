@@ -22,7 +22,7 @@ Utilities
 - ``compute_feature_label``: Computes the label of a feature.
 - ``truncate_label``: Truncates a label.
 - ``p_value_to_p_text``: Converts the p-value to a text.
-- ``svg_to_pil``: Converts a SVG to a PIL image.
+- ``load_icon``: Loads a PNG icon.
 - ``wrap_text_with_word_boundary``: Wrap text on multiple lines.
 - ``save_figs_in_pdf``: Stack multiple figures vertically on a page and save to PDF.
 
@@ -345,24 +345,24 @@ def p_value_to_p_text(
     # Return the result
     return p_text
 
-def svg_to_pil(
-    svg_filename: str,
+def load_icon(
+    icon_filename: str,
     assets_package: str  = "insightsolver.assets",
     subfolder: str       = "google_fonts_icons",
     size: tuple[int,int] = (80,80),
     fill_color: Union[str, tuple] = "white",
 ):
     """
-    Convert an SVG file resource into a PIL (Pillow) Image object with a specified size.
+    Load a PNG icon and return it as a PIL Image object with a specified size.
 
     Parameters
     ----------
-    svg_filename: str
-        The filename of the SVG icon located in the assets subfolder.
+    icon_filename: str
+        The filename of the icon (e.g., 'icon.png').
     assets_package: str
         The Python package name where the assets are located (e.g., 'insightsolver.assets').
     subfolder: str
-        The subfolder within the assets package where the SVG file resides.
+        The subfolder within the assets package. The function will look into a 'png' subdirectory of this folder.
     size: tuple(int, int)
         The target size (width, height) in pixels for the output PIL Image.
     fill_color: str or tuple
@@ -371,49 +371,34 @@ def svg_to_pil(
     Returns
     -------
     img : PIL.Image.Image
-        The converted image as a PIL Image object, typically in RGBA format.
+        The loaded image as a PIL Image object, in RGBA format.
     """
 
     from importlib.resources import files
-    from svglib.svglib import svg2rlg
-    from reportlab.graphics import renderPM
-    from reportlab.lib import colors
-    import io
-    from PIL import Image
+    from PIL import Image, ImageOps
 
-    svg_file = files(assets_package) / subfolder / svg_filename
+    # Locate the PNG file
+    # We assume the structure is .../google_fonts_icons/png/icon.png
+    png_file = files(assets_package) / subfolder / "png" / icon_filename
     
-    # Load the SVG file into a ReportLab Drawing
-    # We open in binary mode as svglib/lxml handles XML parsing
-    with svg_file.open("rb") as f:
-        drawing = svg2rlg(f)
-    
-    # Scale the drawing to the requested size
-    if drawing.width > 0 and drawing.height > 0:
-        sx = size[0] / drawing.width
-        sy = size[1] / drawing.height
-        drawing.scale(sx, sy)
-        drawing.width = size[0]
-        drawing.height = size[1]
-    
-    # Convert the fill_color to a ReportLab color
-    if isinstance(fill_color, tuple) and len(fill_color) == 3:
-        # Convert (R, G, B) tuple to hex string for toColor, or use Color(r,g,b)
-        # reportlab.lib.colors.toColor handles various formats but (r,g,b) 0-255 might need care if passed as tuple?
-        # Actually toColor supports many things. Let's try to pass it directly if it's a string,
-        # or construct a Color object if it's a tuple.
-        # ReportLab Color expects 0-1 range if initialized directly, but toColor might handle others.
-        # Safest is to convert 0-255 tuple to 0-1 args for Color.
-        bg_color = colors.Color(fill_color[0]/255, fill_color[1]/255, fill_color[2]/255)
+    with png_file.open("rb") as f:
+        img = Image.open(f).convert("RGBA")
+        
+    # Resize to the requested size
+    # We use LANCZOS for high-quality downsampling
+    if img.size != size:
+        img = img.resize(size, Image.Resampling.LANCZOS)
+        
+    # Apply fill_color
+    if fill_color == "transparent":
+        # Keep transparency
+        pass
     else:
-        bg_color = colors.toColor(fill_color)
-
-    # Configure for transparency/background
-    # We use the specified background color
-    drawing._renderPM_bg = bg_color
-
-    # Render to PIL image
-    img = renderPM.drawToPIL(drawing, bg=bg_color)
+        # Create a solid background
+        bg = Image.new("RGBA", size, fill_color)
+        # Paste the icon on top (using its alpha channel as mask)
+        bg.paste(img, (0, 0), mask=img)
+        img = bg
     
     return img.convert("RGBA")
 
@@ -777,14 +762,14 @@ def make_banner_img_for_i(
 
     # --- Icon mapping ---
     icons_map = {
-        "insight_id_text":        "network_intelligence.svg",
-        "p_text":                 "offline_bolt.svg",
-        "purity_text":            "timelapse.svg",
-        "lift_text":              "gondola_lift.svg",
-        "coverage_relative_text": "zoom_out_map.svg",
-        "coverage_absolute_text": "select_all.svg",
-        "cohen_d_text":           "shuffle.svg",
-        "loss_text":              "sell.svg",
+        "insight_id_text":        "network_intelligence.png",
+        "p_text":                 "offline_bolt.png",
+        "purity_text":            "timelapse.png",
+        "lift_text":              "gondola_lift.png",
+        "coverage_relative_text": "zoom_out_map.png",
+        "coverage_absolute_text": "select_all.png",
+        "cohen_d_text":           "shuffle.png",
+        "loss_text":              "sell.png",
     }
 
     # --- Values to display ---
@@ -888,10 +873,10 @@ def make_banner_img_for_i(
         )
 
         # Draw icon
-        icon = svg_to_pil(
-            svg_filename = icons_map[key],
-            size         = icon_size,
-            fill_color   = fill_color,
+        icon = load_icon(
+            icon_filename = icons_map[key],
+            size          = icon_size,
+            fill_color    = fill_color,
         )
         img_banner.paste(icon, (x + pad, y_icon), mask=icon)
 
@@ -1087,48 +1072,48 @@ def make_legend_img(
     # Create a DataFrame of labels, icons and texts
     data = {
         "insight_id": (
-            "network_intelligence.svg",
+            "network_intelligence.png",
             "Number of the insight, starting from 1.",
             "Numéro de l'insight, en commençant par 1.",
         ),
         "p_value": (
-            "offline_bolt.svg",
+            "offline_bolt.png",
             "p-value.",
             "p-value.",
         ),
         "purity": (
-            "timelapse.svg",
+            "timelapse.png",
             "Purity.",
             "Pureté.",
         ),
         "lift": (
-            "gondola_lift.svg",
+            "gondola_lift.png",
             "Lift.",
             "Lift.",
         ),
         "coverage_relative": (
-            "zoom_out_map.svg",
+            "zoom_out_map.png",
             "Relative coverage.",
             "Couverture relative.",
         ),
         "coverage_absolute": (
-            "select_all.svg",
+            "select_all.png",
             "Absolute coverage.",
             "Couverture absolue.",
         ),
         "cohen_d": (
-            "shuffle.svg",
+            "shuffle.png",
             "Shuffling score (Cohen's d).",
             "Score de permutations (Cohen's d).",
         ),
         "loss": (
-            "sell.svg",
+            "sell.png",
             "Loss",
             "Coût",
         ),
     }
     columns = [
-        'svg_filename',
+        'icon_filename',
         'en',
         'fr',
     ]
@@ -1221,7 +1206,7 @@ def make_legend_img(
         if verbose:
             print(f"\n{i} : {label}")
         # Take the icon and the text
-        svg_filename = df.loc[label,'svg_filename']
+        icon_filename = df.loc[label,'icon_filename']
         text = df.loc[label,language]
         # Position of the block
         x_block = margin
@@ -1238,10 +1223,10 @@ def make_legend_img(
         if verbose:
             print("y_icon =",y_icon)
         # Draw icon
-        icon = svg_to_pil(
-            svg_filename = svg_filename,
-            size         = icon_size,
-            fill_color   = "white",
+        icon = load_icon(
+            icon_filename = icon_filename,
+            size          = icon_size,
+            fill_color    = "white",
         )
         img_legend.paste(
             icon,

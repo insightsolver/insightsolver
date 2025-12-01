@@ -11,6 +11,4 @@ matplotlib
 seaborn
 scikit-learn
 openpyxl
-svglib
-reportlab>=4.2.0
 statsmodels
