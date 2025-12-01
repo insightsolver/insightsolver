@@ -36,4 +36,7 @@ where = ["src"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-insightsolver = ["assets/*.png"]
+insightsolver = [
+    "assets/__init__.py",
+    "assets/google_fonts_icons/*",         # inclut .ttf, .svg, README.md, OFL.txt, LICENSE, etc.
+]

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.74 (2025-12-01)
+
+- Updated `pyproject.toml` to include the fonts with the library.
+
 ## 0.1.73 (2025-11-29)
 
 - The `README` now has a link to the Sphinx documentation and to the GitHub website of InsightSolver.
