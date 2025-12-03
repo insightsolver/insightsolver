@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.79 (2025-12-03)
+
+- Fixed a bug with the feature contribution figure where the labels were cut on the left and a useless white space was at the right of the figure.
+
 ## 0.1.78 (2025-12-01)
 
 - New files `__init__.py` in the folder `png` so that the `.png` files are included in the library.

@@ -1694,6 +1694,9 @@ def make_feature_contributions_for_i(
         bar_annotations=bar_annotations,
     )
 
+    # Apply tight_layout to prevent truncation on the left and excess whitespace on the right
+    fig_plot.tight_layout()
+
     figs.append(fig_plot)
 
     # Generating the feature labels
@@ -2618,18 +2621,6 @@ def draw_mosaic_rule_vs_comp_for_feature_for_i(
         print("mc  =",mc)
         print("m0c =",m0c)
         print("m1c =",m1c)
-    """
-    M   = 782
-    M0  = 700
-    M1  = 82
-    m   = 852
-    m0  = 770
-    m1  = 82
-    mc  = -70
-    m0c = -70
-    m1c = 0
-    782 700 82 852 770 82 -70 -70 0
-    """
 
     # Coverage
     coverage_rule = m/M if M>0 else 0
@@ -3621,8 +3612,7 @@ def make_pdf(
     language: str                 = "en",
 ) -> str:
     """
-    Generates a PDF containing all visualization figures for the solver,
-    using make_all() to generate figures.
+    Generates a PDF containing all visualization figures for the solver.
 
     Parameters
     ----------
@@ -3665,7 +3655,7 @@ def make_pdf(
     if verbose:
         print("Generating PDF...")
 
-    # Generate all figures using make_all()
+    # Generate all figures
     figs = make_all(
         solver                  = solver,
         language                = language,
@@ -3805,7 +3795,7 @@ def make_zip(
             figs = []
             l_figs = []
 
-            # Use make_all() to generate figures according to language
+            # Generate figures
             figs_all = make_all(
                 solver,
                 language                = language,
