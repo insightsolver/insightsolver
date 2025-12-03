@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.80 (2025-12-03)
+
+- The new upper bound on the length of a dataset is `40000` rows.
+
 ## 0.1.79 (2025-12-03)
 
 - Fixed a bug with the feature contribution figure where the labels were cut on the left and a useless white space was at the right of the figure.

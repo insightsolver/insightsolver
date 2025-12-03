@@ -747,7 +747,7 @@ def search_best_ruleset_from_API_public(
     columns_names_to_descr: dict
         A dict that specifies the descriptions of the columns.
     threshold_M_max: int
-        Threshold on the maximum number of points to use during the rule mining (max. 10000 pts in the public API).
+        Threshold on the maximum number of points to use during the rule mining (max. 40000 pts in the public API).
     specified_constraints: dict
         A dict that specifies contraints to be used during the rule mining.
     top_N_rules: int
@@ -903,7 +903,7 @@ class InsightSolver(Mapping):
         Textual descriptions of the columns.
     other_modalities: dict
         Modalities that are mapped to the modality 'other'.
-    threshold_M_max: int (default 10000)
+    threshold_M_max: int (default 40000)
         Threshold on the maximum number of observations to consider, above which we under sample the observations.
     specified_constraints: dict
         Dictionary of the specified constraints on ``m_min``, ``m_max``, ``coverage_min``, ``coverage_max``.
@@ -1037,7 +1037,7 @@ class InsightSolver(Mapping):
         target_goal: Optional[Union[str,numbers.Real,np.uint8]] = None,   # Target goal
         columns_types: Optional[Dict]                           = dict(), # Types of the columns
         columns_descr:Optional[Dict]                            = dict(), # Descriptions of the columns
-        threshold_M_max: Optional[int]                          = 10000,  # Maximum number of observations to consider (by default 10000)
+        threshold_M_max: Optional[int]                          = 40000,  # Maximum number of observations to consider (by default 40000)
         specified_constraints: Optional[Dict]                   = dict(), # Specified constraints on the rule mining
         top_N_rules: Optional[int]                              = 10,     # Maximum number of rules to get from the rule mining
         filtering_score: str                                    = 'auto', # Filtering score to be used when selecting rules.
