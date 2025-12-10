@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.81 (2025-12-10)
+
+- Improved `api_utilities`.
+
 ## 0.1.80 (2025-12-03)
 
 - The new upper bound on the length of a dataset is `40000` rows.

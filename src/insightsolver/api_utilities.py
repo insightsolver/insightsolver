@@ -472,10 +472,10 @@ def transform_dict(
 		)
 		print(d_transformed)
 		# {
-		#	'transformations': 'encrypted_gzip_base64',
-		#	'json_format': 'json',
-		#	'transformed_string': 'q30qPkK19Z3sENnfk77t4CnpzWKV+gdHLLSpNNgU3DjdmEbLcZWj+AjZyFmUquuUmh6obZmTh8k=',
-		#	'nonce_string': '7PpTvoc0Ksx8whRy',
+		#   'transformations': 'encrypted_gzip_base64',
+		#   'json_format': 'json',
+		#   'transformed_string': 'q30qPkK19Z3sENnfk77t4CnpzWKV+gdHLLSpNNgU3DjdmEbLcZWj+AjZyFmUquuUmh6obZmTh8k=',
+		#   'nonce_string': '7PpTvoc0Ksx8whRy',
 		# }
 	"""
 	# Convert the dict to a string
@@ -808,7 +808,6 @@ def request_cloud_credits_infos(
 		typically fast and does not involve computation.
 
 	"""
-
 	# Make sure that the dict contains both keys
 	if ('do_compute_credits_available' not in d_out_credits_infos.keys()):
 		raise Exception("ERROR: the key 'do_compute_credits_available' is not in the outgoing dict.")
@@ -819,38 +818,39 @@ def request_cloud_credits_infos(
 	if (not d_out_credits_infos['do_compute_credits_available'])&(not d_out_credits_infos['do_compute_df_credits_infos']):
 		raise Exception("ERROR: the outgoing dict needs that at least one of the keys 'do_compute_credits_available' or 'do_compute_df_credits_infos' to be True.")
 
-	# Make sure the private_key_id is in the dict
-	if computing_source in ['remote_cloud_function', 'remote_cloud_function_prod','remote_cloud_function_dev']:
-		# Determine where the code is running
-		import os
-		if "K_SERVICE" not in os.environ:
-			# If the API client is running outside a Google Cloud Run container, we need a service key
-			if (input_file_service_key==None)&('private_key_id' not in d_out_credits_infos.keys()):
-				# If no service key is provided, raise an error
-				raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
-			elif (input_file_service_key==None)&('private_key_id' in d_out_credits_infos.keys()):
-				...
-			elif (input_file_service_key!=None)&('private_key_id' not in d_out_credits_infos.keys()):
-				# If a service key is provided, take the ID of the key
-				import json
-				# Open the key
-				with open(input_file_service_key, 'r') as f:
-					# Take the service_key
-					d_out_credits_infos['private_key_id'] = json.load(f)['private_key_id']
-			elif (input_file_service_key!=None)&('private_key_id' in d_out_credits_infos.keys()):
-				...
-		else:
-			# If the API client is running inside a Google Cloud Run container
-			if (user_email==None)&('user_email' not in d_out_credits_infos.keys()):
-				# If there is no email, raise an error
-				raise Exception("ERROR: The InsightSolver API client is running inside a Google Cloud Run container and the user email is None, but it must be specified for remote cloud computing.")
-			elif (user_email==None)&('user_email' in d_out_credits_infos.keys()):
-				...
-			elif (user_email!=None)&('user_email' not in d_out_credits_infos.keys()):
-				# We identify the user via its email instead of the private key id from the service key
-				d_out_credits_infos['user_email'] = user_email
-			elif (user_email!=None)&('user_email' in d_out_credits_infos.keys()):
-				...
+	# Determine where the code is running
+	import os
+	if "K_SERVICE" not in os.environ:
+		# If the API client is running outside a Google Cloud Run container, we need a service key
+		if (input_file_service_key==None)&('private_key_id' not in d_out_credits_infos.keys()):
+			# If no service key is provided, raise an error
+			raise Exception("ERROR: The InsightSolver API client is running outside a Google Cloud Run container and the service key is None, but it must be specified for remote cloud computing.")
+		elif (input_file_service_key==None)&('private_key_id' in d_out_credits_infos.keys()):
+			...
+		elif (input_file_service_key!=None)&('private_key_id' not in d_out_credits_infos.keys()):
+			# If a service key is provided, take the ID of the key
+			import json
+			# Open the key
+			with open(input_file_service_key, 'r') as f:
+				# Take the service_key
+				d_out_credits_infos['private_key_id'] = json.load(f)['private_key_id']
+		elif (input_file_service_key!=None)&('private_key_id' in d_out_credits_infos.keys()):
+			...
+	else:
+		# If the API client is running inside a Google Cloud Run container
+		if (user_email==None)&('user_email' not in d_out_credits_infos.keys()):
+			# If there is no email, raise an error
+			raise Exception("ERROR: The InsightSolver API client is running inside a Google Cloud Run container and the user email is None, but it must be specified for remote cloud computing.")
+		elif (user_email==None)&('user_email' in d_out_credits_infos.keys()):
+			...
+		elif (user_email!=None)&('user_email' not in d_out_credits_infos.keys()):
+			# We identify the user via its email instead of the private key id from the service key
+			d_out_credits_infos['user_email'] = user_email
+		elif (user_email!=None)&('user_email' in d_out_credits_infos.keys()):
+			...
+
+	if ('private_key_id' not in d_out_credits_infos.keys())&('user_email' not in d_out_credits_infos.keys()):
+		raise Exception(f"ERROR (request_cloud_credits_infos) Either the private_key_id or the user_email must be specified in d_out_credits_infos.")
 
 	# Make sure that the 'requested_action' key is specified
 	if 'requested_action' not in d_out_credits_infos.keys():
@@ -870,7 +870,7 @@ def request_cloud_credits_infos(
 		json           = d_out_credits_infos, # The dict of to send to the URL
 		timeout        = timeout,             # Max number of seconds to wait for the server for a response.
 	)
-	
+
 	# Make sure that the response is ok
 	if response.status_code != 200:
 		print(response.text)
