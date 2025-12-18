@@ -3,9 +3,7 @@
 * `Project Name`:  InsightSolver
 * `Module Name`:   demo_insightsolver
 * `Author`:        Noé Aubin-Cadot
-* `Email`:         noe.aubin-cadot@datascienceinstitute.ca
-* `Last Updated`:  2025-06-20
-* `First Created`: 2024-09-09
+* `Email`:         noe.aubin-cadot@insightsolver.com
 
 Description
 -----------

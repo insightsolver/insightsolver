@@ -1,5 +1,9 @@
 # InsightSolver
 
+[![PyPI version](https://badge.fury.io/py/insightsolver.svg)](https://badge.fury.io/py/insightsolver)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Build Status](https://github.com/insightsolver/insightsolver/actions/workflows/ci.yml/badge.svg)](https://github.com/insightsolver/insightsolver/actions)
+
 **InsightSolver** is a solution for advanced data insights powered by a centralized cloud-based rule-mining engine.
 It enables organizations to uncover hidden patterns, generate actionable insights, and make smarter data-driven decisions.
 This repository hosts the Python-based *InsightSolver API client*.
@@ -14,27 +18,17 @@ To get started, you need the following:
 
 ## 🛠️ Installation
 
-You can install the `insightsolver` Python module in different ways:
+You can install the `insightsolver` Python module directly from PyPI:
 
-1. *100% CLI*. If you have git installed and you don't need a local copy of the repo: 
+```bash
+pip install insightsolver
+```
+
+Or for the latest development version from GitHub:
+
 ```bash
 pip install git+https://github.com/insightsolver/insightsolver.git
 ```
-2. *100% CLI*. If you have git installed and you want also a local copy of the repo:
-```bash
-git clone https://github.com/insightsolver/insightsolver.git
-cd insightsolver
-pip install .
-```
-3. *50% GUI + 50% CLI*. If you don't have git installed, in a browser go to [https://github.com/insightsolver/insightsolver](https://github.com/insightsolver/insightsolver) and clic on the green button ```<> Code``` then ```Download Zip```. Then open the zip file, then with a CLI ```cd``` to the unzipped folder then do:
-```bash
-pip install .
-```
-4. *100% CLI*. *(coming soon)* From PyPi: `pip install insightsolver`.
-
-Because the current GitHub repo is private, the first two methods need a github account with an active [personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
-
-*Warning for Anaconda users:* When using a virtual environment managed by [Anaconda](http://anaconda.org), the installation of the `insightsolver` library as specified above could install dependencies (specified in the file `requirements.txt`) via pip that are not handled by Anaconda. There are two options available. The first option is to do as specified above, which lets pip install dependencies, but risk that the virtual environment is no longer handled by Anaconda. The second option is to add a `--no-deps` flag to the pip install, e.g. `pip install --no-deps .`. This last command would install the scripts of the `insightsolver` module without installing the dependencies. This prevents breaking the Anaconda environment but could result in `insightsolver` not finding all the required dependencies at runtime. These required dependencies should therefore either be installed manually from within the Anaconda application or either using the `environment.yml` file.
 
 ## ⚡ Quick start
 

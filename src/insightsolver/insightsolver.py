@@ -47,24 +47,8 @@ from collections.abc import Mapping # To make the InsightSolver behave like a ma
 ################################################################################
 # Printing settings
 
-#pd.set_option('display.max_rows', 3000)
-pd.set_option('display.max_columns', 12)
-pd.set_option('max_colwidth', 20)
-pd.set_option('display.width', 1000)
-
-# Since numpy 2.0.0 printing numbers show their type but it makes reading results quickly harder.
-# We revert to the legacy way of printing numbers.
-if np.__version__>='2.0.0':
-    legacy = '1.25'
-else:
-    legacy = None
-np.set_printoptions(
-    #linewidth = np.inf,
-    #precision = 20,
-    #precision = 1,
-    #threshold = sys.maxsize,
-    legacy = legacy,
-)
+# Global settings removed to avoid side effects on user environment.
+# Use context managers if specific display settings are needed locally.
 
 ################################################################################
 ################################################################################

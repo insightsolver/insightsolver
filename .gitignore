@@ -1,20 +1,20 @@
-# Exclure tous les fichiers .DS_Store dans tous les dossiers
+# Exclude all .DS_Store files in all directories
 .DS_Store
-tests/
+dev_local/
 input/
 venv/
 txt/
 
-# Dossiers générés lors de la construction du package
+# Directories generated during package build
 build/
 dist/
 *.egg-info/
 
-# Caches Python
+# Python Caches
 insightsolver/__pycache__/
 __pycache__/
 *.pyc
 *.pyo
 
-# Checkpoints des notebooks
+# Notebook Checkpoints
 **/.ipynb_checkpoints/

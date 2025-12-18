@@ -4,22 +4,28 @@ channels:
   - defaults
 dependencies:
   - python>=3.9
+  - pip
+  # Runtime dependencies
   - pandas>=2.2.2
   - numpy>=2.0.0
   - requests>=2.32.3
   - google-auth>=2.6.0
   - cryptography>=43.0.0
   - mpmath>=1.3.0
+  - urllib3>=2.0.2
+  - idna>=2.10
   - pillow
   - matplotlib
   - seaborn
   - scikit-learn
   - openpyxl
-  - svglib
   - statsmodels
-  - pip
+  # Development dependencies
+  - pytest>=7.0
+  - pytest-mock
+  - ruff>=0.1.0
+  - mypy>=1.0
+  - pandas-stubs
+  - types-requests
   - pip:
-    - urllib3>=2.0.2
-    - idna>=2.10
-    - google-auth-oauthlib==1.2.0
-    - google-auth-httplib2==0.2.0
+    - . # Install the package itself

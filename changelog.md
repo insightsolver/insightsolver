@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.82 (2025-12-18)
+
+- **Project Structure**: Restructured the repository to separate source code, automated tests, and local development scripts.
+    - Moved manual tests and notebooks to `dev_local/` (excluded from git).
+    - Cleaned up `tests/` to contain only automated unit tests.
+- **Testing**: Added a comprehensive suite of automated unit tests using `pytest` and `unittest.mock`.
+    - Added `tests/test_client_mock.py` to test the `InsightSolver` client logic without API keys.
+    - Added `tests/test_api_utilities.py` to test utility functions.
+    - Added `tests/README.md`.
+- **Configuration**: Modernized `pyproject.toml`.
+    - Added project metadata (keywords, classifiers, URLs).
+    - Configured `ruff`, `pytest`, and `mypy`.
+    - Added `dev` optional dependencies.
+- **CI/CD**: Added GitHub Actions workflow (`.github/workflows/ci.yml`) for automated testing and linting.
+- **Code Quality**:
+    - Removed global side-effects on pandas and numpy options in `insightsolver.py`.
+    - Renamed manual test functions to `demo_*` to avoid confusion with pytest.
+- **Documentation**: Updated `README.md` with badges, simplified installation instructions, and removed private repo references.
+
 ## 0.1.81 (2025-12-10)
 
 - Improved `api_utilities`.
